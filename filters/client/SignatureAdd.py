@@ -21,7 +21,7 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	"""
 	* Private key used for hashed messages sent to the server
 	"""
-	strAPIKEY = ""
+	strAPIKey = ""
 
 
 	"""
