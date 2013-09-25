@@ -39,7 +39,7 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	def __init__(self, strKey):
 
 		self.strAPIKey = strKey
-		self.nUserID = strKey[0:strKEY.find(':')]
+		self.nUserID = strKey[0:strKey.find(':')]
 
 
 
