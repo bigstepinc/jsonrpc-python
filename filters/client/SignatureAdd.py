@@ -27,7 +27,9 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	"""
 	* User ID
 	"""
-	nUserID = 0
+	dictExtraURLVariables = {}
+
+
 
 	"""
 	* This is the constructor function. It creates a new instance of JSONRPC_filter_signature_add.
@@ -36,10 +38,11 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	* @param string strKEY. The private key used for hashed messages sent to the server.
 	"""
 
-	def __init__(self, strKey):
+	def __init__(self, strKey, dictExtraURLVariables):
 
 		self.strAPIKey = strKey
 		self.nUserID = strKey[0:strKey.find(':')]
+		self.dictExtraURLVariables = dictExtraURLVariables
 
 
 
@@ -84,10 +87,13 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 			dictFilterParams["strEndpointURL"] += "?"
 
 		if dictFilterParams["strEndpointURL"].find("?verify") == -1:
-			dictFilterParams["strEndpointURL"] += "verify="+urllib.quote(strVerifyHash)+"&user_id="+str(self.nUserID)
+			dictFilterParams["strEndpointURL"] += "verify="+urllib.quote(strVerifyHash);
 		
 		if dictFilterParams["strEndpointURL"][-1] == '&':
 			dictFilterParams["strEndpointURL"] = dictFilterParams["strEndpointURL"][:-1]
+
+		for key, value in self.dictExtraURLVariables.items()
+			dictFilterParams["strEndpointURL"] += "&"+urllib.quote(key)+"="+urllib.quote(value)
 
 		
 		return dictFilterParams
