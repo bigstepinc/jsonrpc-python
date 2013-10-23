@@ -25,7 +25,7 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 
 
 	"""
-	* User ID
+	* Extra URL variables
 	"""
 	dictExtraURLVariables = {}
 
@@ -41,7 +41,6 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	def __init__(self, strKey, dictExtraURLVariables):
 
 		self.strAPIKey = strKey
-		self.nUserID = strKey[0:strKey.find(':')]
 		self.dictExtraURLVariables = dictExtraURLVariables
 
 
