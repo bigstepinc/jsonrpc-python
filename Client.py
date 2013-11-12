@@ -4,7 +4,6 @@ import urllib2
 import hmac
 import hashlib
 import time
-import logging
 import os
 from urllib2 import HTTPError
 from JSONRPC_Exception import JSONRPC_Exception
@@ -34,18 +33,6 @@ class JSONRPC_client(object):
 	_strJSONRPCRouterURL = ""
 
 
-	"""
-	* Log File Path
-	"""
-	_strCommunicationLOGFilePath = ""
-
-
-	"""
-	* Logging object
-	"""
-	_logger = logging.getLogger("CommunicationLog")
-
-
 	
 	"""
 	* This is the constructor function. It creates a new instance of JSONRPC_client.
@@ -58,37 +45,6 @@ class JSONRPC_client(object):
 	def __init__(self, strJSONRPCRouterURL, strLogFilePath = None):
 		
 		self._strJSONRPCRouterURL = strJSONRPCRouterURL
-		
-		if strLogFilePath is not None:
-			self.setCommunicationLOGFilePath(strLogFilePath)
-
-		else:
-			self.setCommunicationLOGFilePath("CommunicationLogFile.log")
-
-		
-		
-	"""
-	* This is a function used to set the path of the file where the info messages are saved.
-	* Example: setCommunicationLOGFilePath("MyLog.log")
-	*
-	* @param string strCommunicationLogFilePath. The log file path.
-	"""	
-	def setCommunicationLOGFilePath(self, strCommunicationLogFilePath):
-
-		
-		if os.path.exists(strCommunicationLogFilePath):
-			objFile = file(strCommunicationLogFilePath, "r+")
-
-		else:
-			objFile = file(strCommunicationLogFilePath, "a+")
-
-		logging.basicConfig(
-			filename = strCommunicationLogFilePath,
-			filemode = 'a',
-			format = '%(asctime)s  %(message)s',
-			datefmt = '[%d-%b-%Y %H:%M:%S]',
-			level = logging.INFO
-		)
 
 
 	
@@ -142,7 +98,6 @@ class JSONRPC_client(object):
 
 		strRequest = json.dumps(dictRequest)
 		strEndPointURL = self._strJSONRPCRouterURL
-		self._logger.info("Request \n"+str(json.dumps(dictRequest, sort_keys=True, indent=8, separators=(',', ': ')))+"\n")
 				
 		dictHTTPHeaders = {
 			"Content-Type": "application/json"
@@ -204,12 +159,7 @@ class JSONRPC_client(object):
 	* @return mixed mxResponse["result"]. This is the sever response result. 
 	"""
 	def processRAWResponse(self, strResult, bErrorMode = False):
-	
-		strR = strResult.replace(",","\n")
-		strR = strR.replace("{","\n")
-		strR = strR.replace("}","\n")
-		strR = strR.replace("\n","\n\t")
-		self._logger.info("Response \n    "+strR+"\n")
+
 		try:
 		
 			mxResponse = None
