@@ -1,11 +1,11 @@
 from ...ClientFilterBase import JSONRPC_client_filter_plugin_base
-from JSONRPC_Exception import JSONRPC_Exception
+from BSI.BSI_Exception import BSI_Exception
 
 class BSIExceptionFilter(JSONRPC_client_filter_plugin_base):
 
 	def exceptionCatch(self, exception):
 
-		if exception.getCode() >= 0:
-			raise BSI_Exception(exception.message, exception.code)
+		if exception.nCode >= 0:
+			raise BSI_Exception(exception.strMessage, exception.nCode)
 		else:
 			raise exception

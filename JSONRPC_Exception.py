@@ -1,5 +1,9 @@
 class JSONRPC_Exception(Exception):
 
+	def __init__(self, strMessage, nCode):
+		self.strMessage = strMessage
+		self.nCode = nCode
+
 	"""
 	* Bad credentials (user, password, signing hash, account does not exist, etc.).
 	* Not part of JSON-RPC 2.0 spec.
