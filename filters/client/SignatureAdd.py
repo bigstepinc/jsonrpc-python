@@ -30,6 +30,11 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	dictExtraURLVariables = {}
 
 
+	"""
+	* Private key used for hashed messages sent to the server
+	"""
+	strKeyMetaData = ""
+
 
 	"""
 	* This is the constructor function. It creates a new instance of JSONRPC_filter_signature_add.
@@ -42,7 +47,11 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 
 		self.strAPIKey = strKey
 		self.dictExtraURLVariables = dictExtraURLVariables
+		self.getKeyMetaData()
 
+	def getKeyMetaData (self) :
+		strKEYSplit = self.strAPIKey.split(":", 2)
+		self.strKeyMetaData = strKEYSplit[0]
 
 
 	"""
@@ -62,7 +71,6 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 
 
 
-
 	"""
 	* This function is used for authentication. It alters the Endpoint URL such that it contains
 	* a specific signature.
@@ -78,6 +86,13 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	def afterJSONEncode(self, dictFilterParams):
 
 		strVerifyHash = hmac.new(self.strAPIKey, dictFilterParams["strJSONRequest"], hashlib.md5).hexdigest()
+
+		
+		if self.strKeyMetaData.isdigit():
+		    strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash
+		else:
+			raise Exception("Invalid API key format")
+
 		
 		if dictFilterParams["strEndpointURL"].find('?') != -1:
 			dictFilterParams["strEndpointURL"] += "&"
