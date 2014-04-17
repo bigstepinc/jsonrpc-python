@@ -62,7 +62,7 @@ class JSONRPC_client(object):
 	* @param string strUsername. 
 	* @param string strPassword.
 	"""
-	def httpCredentialsSet(self, strUsername, strPassword):
+	def setHTTPCredentials(self, strUsername, strPassword):
 		assert isinstance(strUsername, str)
 		assert isinstance(strPassword, str)
 
@@ -303,17 +303,3 @@ class JSONRPC_client(object):
 	"""
 	def rpcReflectionFunctions(self, arrFunctionNames):
 		return _rpc("rpc.reflectionFunctions", [arrFunctionNames])
-
-
-
-	
-		
-		
-
-
-
-
-	
-
-
-
