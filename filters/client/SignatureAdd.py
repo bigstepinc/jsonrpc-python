@@ -51,7 +51,10 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 
 	def getKeyMetaData (self) :
 		strKEYSplit = self.strAPIKey.split(":", 2)
-		self.strKeyMetaData = strKEYSplit[0]
+		if(strKEYSplit.__len__() == 1):
+			self.strKeyMetaData = "null"
+		else:
+			self.strKeyMetaData = strKEYSplit[0]
 
 
 	"""
@@ -88,11 +91,8 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 		strVerifyHash = hmac.new(self.strAPIKey, dictFilterParams["strJSONRequest"], hashlib.md5).hexdigest()
 
 		
-		if self.strKeyMetaData.isdigit():
+		if (self.strKeyMetaData != "null"):
 		    strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash
-		else:
-			raise Exception("Invalid API key format")
-
 		
 		if dictFilterParams["strEndpointURL"].find('?') != -1:
 			dictFilterParams["strEndpointURL"] += "&"
