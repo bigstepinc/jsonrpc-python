@@ -79,7 +79,7 @@ class JSONRPC_client(object):
 	*
 	* @return JSON sent to processRAWResponse
 	"""	
-	def _rpc(self, strFunctionName, arrParams ):
+	def _rpc(self, strFunctionName, arrParams):
 		
 		dictRequest = {
 			"jsonrpc" : "2.0",

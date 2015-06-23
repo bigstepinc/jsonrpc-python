@@ -52,5 +52,10 @@ class JSONRPC_Exception(Exception):
 	* Internal JSON-RPC error.
 	"""
 	INTERNAL_ERROR=-32603;
+
+	"""
+	* Invalid method return type.
+	"""
+	INVALID_RETURN_TYPE=-32604;
 	
 	#-32000 to -32099 Server error. Reserved for implementation-defined server-errors.
