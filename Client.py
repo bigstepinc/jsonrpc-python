@@ -12,7 +12,7 @@ from pprint import pprint
 import base64
 
 
-class JSONRPC_client(object):
+class JSONRPC_Client(object):
 
 			
 	"""
