@@ -3,15 +3,12 @@
 * This is the class every other client filter plugin class should extend.
 """
 
-class JSONRPC_client_filter_plugin_base:
-
+class JSONRPC_ClientFilterBase:
 
 
 	def __construct(self):
-
 		return
 		
-	
 	
 		
 	"""
@@ -19,14 +16,14 @@ class JSONRPC_client_filter_plugin_base:
 	* - add extra request object keys;
 	* - translate or encode output params into the expected server request object format.
 	*
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
+	* @param dictionary dictRequest. It is used for reference return for multiple variables,
 	* which can be retrieved using specific keys
 	* - "dictRequest"  
 	*
-	* @return dict dictFilterParams
+	* @return dict dictRequest
 	"""
-	def beforeJSONEncode(self, dictFilterParams):
-		return dictFilterParams
+	def beforeJSONEncode(self, dictRequest):
+		return
 	
 	
 	
@@ -35,30 +32,29 @@ class JSONRPC_client_filter_plugin_base:
 	* - encrypt, encode or otherwise prepare the JSON request string into the expected server input format;
 	* - log raw output.
 	*
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-	* which can be retrieved using specific keys
-	* - "strJSONRequest"
-	* - "strEndpointURL"
-	* - "dictHTTPHeaders"
+	* @param str strJSONRequest.
+	* @param str strEndpointURL.
+	* @param dict dictHTTPHeaders. 
 	*
-	* @return dict dictFilterParams
+	* @return dict dictHTTPHeaders
 	"""
-	def afterJSONEncode(self, dictFilterParams):
-		return dictFilterParams
+	def afterJSONEncode(self, strJSONRequest, strEndpointURL, dictHTTPHeaders):
+		return
 	
 	
 		
 	"""
 	* First plugin to make a request will be the last one. The respective plugin MUST set bCalled to true.
 	*
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
+	* @param str strJSONRequest.
+	* @param str strEndpointURL
+	* @param bool bCalled. It is used for reference return for multiple variables,
 	* which can be retrieved using specific keys
-	* - "mixed". The RAW string output of the server or false on error (or can throw).
 	*
-	* @return dict dictFilterParams
+	* @return "mixed". The RAW string output of the server or false on error (or can throw).
 	"""
-	def makeRequest(self, dictFilterParams):
-		return dictFilterParams
+	def makeRequest(self, strJSONRequest, strEndpointURL, bCalled):
+		return
 	
 	
 
@@ -67,14 +63,11 @@ class JSONRPC_client_filter_plugin_base:
 	* - decrypt, decode or otherwise prepare the JSON response into the expected JSON-RPC client format;
 	* - log raw input.
 	*
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
+	* @param str strJSONResponse. It is used for reference return for multiple variables,
 	* which can be retrieved using specific keys
-	* - "strJSONResponse"
-	*
-	* @return dict dictFilterParams
 	"""
-	def beforeJSONDecode(self, dictFilterParams):
-		return dictFilterParams
+	def beforeJSONDecode(self, strJSONResponse):
+		return
 	
 	
 		
@@ -83,13 +76,9 @@ class JSONRPC_client_filter_plugin_base:
 	* - add extra response object keys;
 	* - translate or decode response params into the expected JSON-RPC client response object format.
 	*
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-	* which can be retrieved using specific keys
-	* - "dictResponse"
-	*
-	* @return dict dictFilterParams
+	* @param dictionary dictResponse.
 	"""
-	def afterJSONDecode(self, dictFilterParams):
+	def afterJSONDecode(self, dictResponse):
 		return dictFilterParams
 	
 
@@ -98,7 +87,7 @@ class JSONRPC_client_filter_plugin_base:
 	* Should be used to rethrow exceptions as different types.
 	* The first plugin to throw an exception will be the last one.
 	* If there are no filter plugins registered or none of the plugins have thrown an exception,
-	* then JSONRPC_client will throw the original JSONRPC_Exception.
+	* then JSONRPC_Client will throw the original JSONRPC_Exception.
 	*
 	* @param Error exception.
 	*
