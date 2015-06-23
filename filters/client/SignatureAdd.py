@@ -12,16 +12,16 @@ sys.path.append("../..")
 import urllib
 import hashlib
 import time
-from ...ClientFilterBase import JSONRPC_client_filter_plugin_base
+from ...ClientFilterBase import JSONRPC_ClientFilterBase
 from pprint import pprint
 
-class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
+class JSONRPC_filter_signature_add(JSONRPC_ClientFilterBase):
 
 
 	"""
 	* Private key used for hashed messages sent to the server
 	"""
-	strAPIKey = ""
+	strAPIKey = None
 
 
 	"""
@@ -33,44 +33,42 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	"""
 	* Private key used for hashed messages sent to the server
 	"""
-	strKeyMetaData = ""
+	strKeyMetaData = None
 
 
 	"""
 	* This is the constructor function. It creates a new instance of JSONRPC_filter_signature_add.
 	* Example: JSONRPC_filter_signature_add("secretKey")
 	*
-	* @param string strKEY. The private key used for hashed messages sent to the server.
+	* @param string strKey. The private key used for hashed messages sent to the server.
 	"""
 
-	def __init__(self, strKey, dictExtraURLVariables):
+	def __init__(self, strAPIKey, dictExtraURLVariables):
 
-		self.strAPIKey = strKey
+		self.strAPIKey = strAPIKey
 		self.dictExtraURLVariables = dictExtraURLVariables
-		self.getKeyMetaData()
+		self._getKeyMetaData()
 
-	def getKeyMetaData (self) :
-		strKEYSplit = self.strAPIKey.split(":", 2)
-		if(strKEYSplit.__len__() == 1):
-			self.strKeyMetaData = "null"
+	def _getKeyMetaData(self):
+		arrKEYSplit = self.strAPIKey.split(":", 2)
+		if(arrKEYSplit.__len__() == 1):
+			self.strKeyMetaData = None
 		else:
-			self.strKeyMetaData = strKEYSplit[0]
+			self.strKeyMetaData = arrKEYSplit[0]
 
 
 	"""
 	* This function sets an uptime for the request.
 	*
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-	* which can be retrieved using specific keys
-	* -"dictRequest"
+	* @param dictionary dictRequest.
 	*
-	* @return dict dictFilterParams
+	* @return dict dictRequest
 	"""
-	def beforeJSONEncode(self, dictFilterParams):
+	def beforeJSONEncode(self, dictRequest):
 
-		dictFilterParams["dictRequest"]["expires"] = int(time.time()+86400)
+		dictRequest["expires"] = int(time.time()+86400)
 
-		return dictFilterParams
+		return dictRequest
 
 
 
@@ -78,35 +76,30 @@ class JSONRPC_filter_signature_add(JSONRPC_client_filter_plugin_base):
 	* This function is used for authentication. It alters the Endpoint URL such that it contains
 	* a specific signature.
 	* 
-	* @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-	* which can be retrieved using specific keys
-	* - "strJSONRequest"
-	* - "strEndpointURL"
-	* - "dictHTTPHeaders"
+	* @param str strJSONRequest 
+	* @param str strEndpointURL
+	* @param str dictHTTPHeaders
 	*
-	* @return dict dictFilterParams
+	* @return dict dictFilterParams?
 	"""
-	def afterJSONEncode(self, dictFilterParams):
+	def afterJSONEncode(self, strJSONRequest, strEndpointURL, dictHTTPHeaders):
 
-		strVerifyHash = hmac.new(self.strAPIKey, dictFilterParams["strJSONRequest"], hashlib.md5).hexdigest()
-
+		strVerifyHash = hmac.new(self.strAPIKey, strJSONRequest, hashlib.md5).hexdigest()
 		
-		if (self.strKeyMetaData != "null"):
+		if (self.strKeyMetaData != None):
 		    strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash
 		
-		if dictFilterParams["strEndpointURL"].find('?') != -1:
-			dictFilterParams["strEndpointURL"] += "&"
-
+		if (strEndpointURL.find('?') != -1):
+			strEndpointURL += "&"
 		else:
-			dictFilterParams["strEndpointURL"] += "?"
+			strEndpointURL += "?"
 
-		if dictFilterParams["strEndpointURL"].find("?verify") == -1:
-			dictFilterParams["strEndpointURL"] += "verify="+urllib.quote(strVerifyHash);
+		if (strEndpointURL.find("?verify") == -1):
+			strEndpointURL += "verify=" + urllib.quote(strVerifyHash);
 
 		for key, value in self.dictExtraURLVariables.items():
 			value = str(value)
-			dictFilterParams["strEndpointURL"] += "&"+urllib.quote(key)+"="+urllib.quote(value)		
-
+			strEndpointURL += "&" + urllib.quote(key) + "=" + urllib.quote(value)		
 		
 		return dictFilterParams
 
