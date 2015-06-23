@@ -3,39 +3,53 @@
 * Adds authentication and signed request expiration for the JSONRPC ResellerDomainsAPI.
 * Also translates thrown exceptions.
 """
+
+"""THIS IS NOT FULLY IMPLEMENTED"""
+"""It does not support output to browser"""
+
+
 import json
 import datetime
+import sys
 from time import strftime, localtime
-from ...ClientFilterBase import JSONRPC_client_filter_plugin_base
+from ...ClientFilterBase import JSONRPC_ClientFilterBase
 
-class DebugLogger(JSONRPC_client_filter_plugin_base):
+class DebugLogger(JSONRPC_ClientFilterBase):
 
-	LOG_TO_CONSOLE = True
-	LOG_TO_FILE = False
+	LOG_AUTO = 0
+	LOG_TO_CONSOLE = 1
+	LOG_TO_FILE = 2
+	LOG_TO_BROWSER = 3
 
-	bLogType = True
+	nLogType = 0
+	strLogPath = "output"
 
 
 
-	def __init__(self, bLogType, strLogPath = ""):
+	def __init__(self, bLogType, strLogPath = "console"):
 
-		self.bLogType = bLogType
+		self.nLogType = nLogType
 
-		if bLogType == False:
+		"""TODO"""
+		if (nLogType == LOG_TO_FILE):
 			if strLogPath != "":
 				self.hFile = open(strLogPath, "a")
 			else:
 				raise Exception("No log path specified")
+		else if (nLogType == LOG_TO_CONSOLE):
+			self.strLogPath = "console"
+		else:
+			raise Exception("Log to browser not supported!")
 
 
 
-	def beforeJSONDecode(self, dictFilterParams):
+	def beforeJSONDecode(self, strJSONResponse):
 
-		strOutput = dictFilterParams["strJSONResponse"]
+		strOutput = strJSONResponse
 		objDecoded = json.loads(strOutput)
 		strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys=True, indent=4) + "\n"
 
-		if self.bLogType == True:
+		if self.nLogType == LOG_TO_CONSOLE:
 			print strOutput
 		else:
 			self.hFile.write(strOutput + "\n")
@@ -43,16 +57,28 @@ class DebugLogger(JSONRPC_client_filter_plugin_base):
 
 
 
-	def afterJSONEncode(self, dictFilterParams):
+	def afterJSONEncode(self, strJSONRequest, strEndpointURL, dictHTTPHeaders):
 
-		strOutput = dictFilterParams["strJSONRequest"]
-		objDecoded = json.loads(strOutput)
+		strOutput = strJSONRequest
+		if (strOutput == "console"):
+			objDecoded = json.loads(sys.stdin)
+		else:
+			objDecoded = json.loads(strOutput)
 		strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys=True, indent=4) + "\n"
 		
-		if self.bLogType == True:
+		if self.nLogType == LOG_TO_CONSOLE:
 			print strOutput
 		else:
 			self.hFile.write(strOutput + "\n")
+
+
+	"""TODO"""
+	def formatJSON(self, strJSON, nIndentLevel = 0, strTabCharacter = "	"):
+		return
+
+	"""TODO"""
+	def logger(string):
+		return
 
 
 
