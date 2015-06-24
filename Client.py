@@ -43,7 +43,6 @@ class JSONRPC_Client(object):
 	* be written. It is not mandatory, a file "CommunicationLog.log" is created by default.
 	"""
 	def __init__(self, strJSONRPCRouterURL, strLogFilePath = None):
-		
 		self._strJSONRPCRouterURL = strJSONRPCRouterURL
 
 
@@ -68,6 +67,7 @@ class JSONRPC_Client(object):
 
 		self._strHTTPUser = strUsername
 		self._strHTTPPassword = strPassword	
+
 
 
 	"""
