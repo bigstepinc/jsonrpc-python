@@ -1,4 +1,6 @@
 import request
+import os
+import json
 from JSONRPC_Exception import JSONRPC_Exception
 class JSONRPC_Server(object):
 	
@@ -165,9 +167,9 @@ class JSONRPC_Server(object):
 				raise JSONRPC_Exception("Invalid request. Empty input. Was expecting a POST request of a JSON.", JSONRPC_Exception.PARSE_ERROR);
 				
 			"""TODO"""
-			"dictRequest = static::decodeJSONSafely($strJSONRequest);
+			#dictRequest = static::decodeJSONSafely($strJSONRequest);
 				
-			" May have a problem at indexation in dictionaries	
+			# May have a problem at indexation in dictionaries	
 			if (dictRequest[0] != None)
 				raise JSONRPC_Exception("JSON-RPC batch requests are not supported by this server.", JSONRPC_Exception.INVALID_REQUEST);
 					
@@ -178,50 +180,49 @@ class JSONRPC_Server(object):
 				try:
 					self.arrFunctionReflection = objReflectionPlugin.reflectionFunction(dictRequest["method"])
 				except Exception as e: 
-				    "Ignoring because the reflection is expected to sometimes fail here.
-                    "The reflection will be retried later where it is not expected to fail.
-                    "One of these tries must succeed to obtain the functions reflection object.
+				    #Ignoring because the reflection is expected to sometimes fail here.
+                    #The reflection will be retried later where it is not expected to fail.
+                    #One of these tries must succeed to obtain the functions reflection object.
 				
 				if(self.arrFunctionReflection != None):
 					self.namedParamsTranslationAndValidation(self.arrFunctionReflection["function_params"], dictRequest["params"], dictRequest["method"])
 					self.validateDataTypes(self.arrFunctionReflection["function_params"], dictRequest["params"])
 				
-			foreach($this->arrFilterPlugins as $plugin) 
-				$plugin->afterJSONDecode($arrRequest);
+			for plugin in self.arrFilterPlugins: 
+				plugin.afterJSONDecode(dictRequest)
 			
 
-			//A String containing the name of the method to be invoked. 
-			//Method names that begin with the word rpc followed by a period character (U+002E or ASCII 46)
-			//are reserved for rpc-internal methods and extensions and MUST NOT be used for anything else.
-			if(
-				!isset($arrRequest["method"]) 
-				|| !is_string($arrRequest["method"]) 
-				|| !strlen(trim($arrRequest["method"]))
-			)
-				throw new \JSONRPC\Exception("The \"method\" key must be a string with a function name.", \JSONRPC\Exception::INVALID_REQUEST);
+			#A String containing the name of the method to be invoked. 
+			#Method names that begin with the word rpc followed by a period character (U+002E or ASCII 46)
+			#are reserved for rpc-internal methods and extensions and MUST NOT be used for anything else.
+			if (
+				(dictRequest["method"] != None) 
+				|| (not isintstance(dictRequest["method"], basestring)) 
+				|| (len(dictRequest["method"].strip()) != 0)
+			):
+				raise JSONRPC_Exception("The \"method\" key must be a string with a function name.", JSONRPC_Exception.INVALID_REQUEST)
 				
 				
 				
-			//A Structured value that holds the parameter values to be used during the invocation of the method.
-			//This member MAY be omitted.
-			if(!array_key_exists("params", $arrRequest))
-				$arrRequest["params"]=array();
+			#A Structured value that holds the parameter values to be used during the invocation of the method.
+			#This member MAY be omitted.
+			if (not "params" in dictRequest):
+				dictRequest["params"] = []
 				
-			if(!is_array($arrRequest["params"]))
-				throw new \JSONRPC\Exception("The \"params\" key must be an array.", \JSONRPC\Exception::INVALID_REQUEST);
+			if (not isinstance(dictRequest["params"], list)):
+				raise JSONRPC_Exception("The \"params\" key must be an array.", JSONRPC_Exception.INVALID_REQUEST);
 
 
 				
-			if(is_callable($arrRequest["method"]) || function_exists($arrRequest["method"]))
-			{
-				$this->arrFunctionReflection=$objReflectionPlugin->reflectionFunction($arrRequest["method"]);
-				$this->namedParamsTranslationAndValidation($this->arrFunctionReflection["function_params"], $arrRequest["params"], $arrRequest["method"]);
-				$this->validateDataTypes($this->arrFunctionReflection["function_params"], $arrRequest["params"]);
-			}
+			#second if condition may be incorrect
+			if (hasattr(dictRequest["method"], '__call__') || (dictRequest["method"] != None)):
+				self.arrFunctionReflection = objReflectionPlugin.reflectionFunction(dictRequest["method"])
+				self.namedParamsTranslationAndValidation(self.arrFunctionReflection["function_params"], dictRequest["params"], dictRequest["method"])
+				self.validateDataTypes(self.arrFunctionReflection["function_params"], dictRequest["params"])
+			
 
-
-
-			if(
+			"""TODO"""
+			"""if (
                 isset($_SERVER["REQUEST_METHOD"])
 				&& $_SERVER["REQUEST_METHOD"]==="OPTIONS" 
 				&& !in_array($arrRequest["method"], $this->arrAllowedFunctionCallsFor_HTTP_OPTIONS)
@@ -230,443 +231,390 @@ class JSONRPC_Server(object):
 				echo "HTTP request method ".$_SERVER["REQUEST_METHOD"]." ignored.";
 				exit(0);
 			}
+			"""
 
 
-
-			//An identifier established by the Client that MUST contain a String, Number, or NULL value if included. 
-			//If it is not included it is assumed to be a notification. 
-			//The value SHOULD normally not be Null and Numbers SHOULD NOT contain fractional parts.
-			$this->bNotificationMode=!array_key_exists("id", $arrRequest);
+			#An identifier established by the Client that MUST contain a String, Number, or NULL value if included. 
+			#If it is not included it is assumed to be a notification. 
+			#The value SHOULD normally not be Null and Numbers SHOULD NOT contain fractional parts.
+			self.bNotificationMode = not "id" in dictRequest
 				
-			if(!$this->bNotificationMode && !is_int($arrRequest["id"]) && !is_null($arrRequest["id"]))
-				throw new \JSONRPC\Exception("The \"id\" key must be an integer, a null or be omitted for Notification requests.", \JSONRPC\Exception::INVALID_REQUEST);
+			if ((not self.bNotificationMode) && (not ininstance(dictRequest["id"], int)) && (not dictRequest["id"] != None)):
+				raise JSONRPC_Exception("The \"id\" key must be an integer, a null or be omitted for Notification requests.", JSONRPC_Exception::INVALID_REQUEST)
 				
-			if(!$this->bNotificationMode)
-				$mxRequestID=$arrRequest["id"];
-				
-				
-				
-			//A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
-			if(!isset($arrRequest["jsonrpc"]) || $arrRequest["jsonrpc"]!=self::JSONRPC_VERSION)
-				throw new \JSONRPC\Exception("The \"jsonrpc\" version must be equal to ".self::JSONRPC_VERSION, \JSONRPC\Exception::INVALID_REQUEST);
+			if (not self.bNotificationMode):
+				mxRequestID = dictRequest["id"]
 				
 				
 				
-			$this->assertFunctionNameAllowed($arrRequest["method"]);
+			#A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
+			if ((not dictRequest["jsonrpc"] == None) || (dictRequest["jsonrpc"] != self.JSONRPC_VERSION)):
+				raise JSONRPC_Exception("The \"jsonrpc\" version must be equal to ".self.JSONRPC_VERSION, JSONRPC_Exception.INVALID_REQUEST)
 				
 				
 				
-			//Safe-guard, so developers don't accidentally open the RPC server to the world (default is false, not authenticated).
-			//Exceptions should be thrown by authentication filters.
-			//Authentication filters must set JSONRPC_server::$bAuthenticated to true upon successfull authentication.
-			if(!$this->bAuthenticated)
-				throw new \JSONRPC\Exception("Not authenticated (bad credentials or signature).", \JSONRPC\Exception::NOT_AUTHENTICATED);
+			self.assertFunctionNameAllowed(dictRequest["method"])
 				
 				
-			//Safe-guard, so developers don't accidentally open the RPC server to any user account (default is false, not authorized).
-			//Exceptions should be thrown by authorization filters.
-			//Authorization filters must set JSONRPC_server::$bAuthorized to true upon successfull authorization.
-			if(!$this->bAuthorized)
-				throw new \JSONRPC\Exception("Authenticated user is not authorized.", \JSONRPC\Exception::NOT_AUTHORIZED);
+				
+			#Safe-guard, so developers don't accidentally open the RPC server to the world (default is false, not authenticated).
+			#Exceptions should be thrown by authentication filters.
+			#Authentication filters must set JSONRPC_server::$bAuthenticated to true upon successfull authentication.
+			if (not self.bAuthenticated):
+				raise JSONRPC_Exception("Not authenticated (bad credentials or signature).", JSONRPC_Exception.NOT_AUTHENTICATED)
+				
+				
+			#Safe-guard, so developers don't accidentally open the RPC server to any user account (default is false, not authorized).
+			#Exceptions should be thrown by authorization filters.
+			#Authorization filters must set JSONRPC_server::$bAuthorized to true upon successfull authorization.
+			if (not self.bAuthorized):
+				raise JSONRPC_Exception("Authenticated user is not authorized.", JSONRPC_Exception.NOT_AUTHORIZED)
 					
 				
-			$arrResponse=array("result"=>null);
-			$arrResponse["result"]=$this->callFunction($arrRequest["method"], $arrRequest["params"]);
+			dictResponse = {"result" : None}
+			dictResponse["result"] = self.callFunction(dictRequest["method"], dictRequest["params"])
 				
-			if(isset($this->arrFunctionReflection) && count($this->arrFunctionReflection))
-				$this->returnDataTypeValidation($arrRequest["method"], $this->arrFunctionReflection["function_return_type"], $arrResponse["result"]);
+			if ((self.arrFunctionReflection != None) && count(self.arrFunctionReflection) != 0):
+				self.returnDataTypeValidation(dictRequest["method"], self.arrFunctionReflection["function_return_type"], dictResponse["result"])
 
-			if(!$this->nHTTPResponseCode)
-			{
-				if($this->bNotificationMode)
-					$this->nHTTPResponseCode=self::HTTP_204_NO_CONTENT;
+			if (self.nHTTPResponseCode == 0):
+				if (self.bNotificationMode == True):
+					self.nHTTPResponseCode = self.HTTP_204_NO_CONTENT
 				else
-					$this->nHTTPResponseCode=self::HTTP_200_OK;
-			}
-		}
-		catch(\Exception $exc)
-		{
-			try
-			{
-				$this->_log_exception($exc);
+					self.nHTTPResponseCode = self.HTTP_200_OK
+			
+		
+		except Exception as exc:
+			try:
+				self._log_exception(exc)
 					
-				//Gives a chance to log the original Exception and/or throw another "translated" Exception.
-				//If nothing is thrown inside exceptionCatch, this catch block will rethrow the original Exception anyway.
-				foreach($this->arrFilterPlugins as $plugin)
-					$plugin->exceptionCatch($exc);
-				throw $exc;
-			}
-			catch(\Exception $exc)
-			{
-				$arrResponse=$this->_exceptionToJSONResponse($exc);
-			}
-		}
+				#Gives a chance to log the original Exception and/or throw another "translated" Exception.
+				#If nothing is thrown inside exceptionCatch, this catch block will rethrow the original Exception anyway.
+				for plugin in self.arrFilterPlugins:
+					plugin.exceptionCatch(exc)
+				raise exc
+
+			except Exception as exc:
+				dictResponse = self._exceptionToJSONResponse(exc)
 			
-		$arrResponse["jsonrpc"]=self::JSONRPC_VERSION;
-		if(!$this->bNotificationMode)
-			$arrResponse["id"]=$mxRequestID;
 			
+		dictResponse["jsonrpc"] = self.JSONRPC_VERSION
+		if (not self.bNotificationMode):
+			dictResponse["id"] = mxRequestID			
             
-    	try
-        {
-            foreach($this->arrFilterPlugins as $plugin)
-       			$plugin->response($arrResponse);
-        }
-        catch(\Exception $exc)
-        {
-            $this->_log_exception($exc);
+    	try:
+            for plugin in self.arrFilterPlugins:
+       			plugin.response(dictResponse)
+
+        except Exception as exc:
+            this._log_exception(exc)
                 
-            if(!isset($arrResponse["error"]))
-                $arrResponse=$this->_exceptionToJSONResponse($exc);
-        }
+            if (dictResponse["error"] == None):
+                dictResponse = self._exceptionToJSONResponse(exc)
             
 			
-		return $arrResponse;
-	}
+		return dictResponse
 		
         
-    /**
+
+
+    """
     * Will affect the HTTP status.
-    */
-    protected function _exceptionToJSONResponse(\Exception $exc)
-    {
-        $strExceptionClass=get_class($exc);
-		while(substr($strExceptionClass, 0, 1)=="\\")
+    """
+    def _exceptionToJSONResponse(self, Exception exc):
+        strExceptionClass = exc.__class__.__name__
+        """TODO"""
+        """Trim the class name for slashes"""
+        """
+		while (substr(strExceptionClass, 0, 1)=="\\"):
 		{
 			$strExceptionClass=substr($strExceptionClass, 1);
 		}
-			
+		"""	
     		
-		if(in_array($strExceptionClass, $this->arrExceptionTypesForMessages))
-		{
-			$strMessage=$exc->getMessage();
-		}
-		else if($this->bDebugAllowAllExceptionMessages)
-		{
-			$strMessage=
-				"[Internal error: ".$strExceptionClass."] ".$exc->getMessage()." "
-				.PHP_EOL.$exc->getFile()."#".$exc->getLine()." "
-				.PHP_EOL.$exc->getTraceAsString()
-			;
-		}
-		else
-		{
-			$strMessage="Internal error.";
-		}
+		if (strExceptionClass in self.arrExceptionTypesForMessages):
+			strMessage = exc.getMessage()
+		
+		"""TODO"""
+		"""Check exception functions"""
+		else if (self.bDebugAllowAllExceptionMessages == True):
+			strMessage =
+				"[Internal error: " + strExceptionClass + "] " + exc.getMessage() + " "
+				+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
+				+ os.linesep + exc.getTraceAsString()
+		else:
+			strMessage = "Internal error."
 				
-			
-		if(in_array($strExceptionClass, $this->arrExceptionTypesForCodes))
-			$nCode=(int)$exc->getCode();
+		if (strExceptionClass in self.arrExceptionTypesForCodes):
+			nCode = (int)exc.getCode()
 		else
-			$nCode=0;
+			nCode = 0
+						
+		if (self.nHTTPResponseCode == 0):
+			if (nCode in [JSONRPC_Exception.NOT_AUTHENTICATED, JSONRPC_Exception.NOT_AUTHORIZED]):
+				self.nHTTPResponseCode = self.HTTP_403_FORBIDDEN
+			else:
+				self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
 			
-			
-		if(!$this->nHTTPResponseCode)
-		{
-			if(
-				in_array($nCode, array(
-					\JSONRPC\Exception::NOT_AUTHENTICATED, 
-					\JSONRPC\Exception::NOT_AUTHORIZED
-				))
-			)
-			{
-				$this->nHTTPResponseCode=self::HTTP_403_FORBIDDEN;
-			}
-			else
-			{
-				$this->nHTTPResponseCode=self::HTTP_500_INTERNAL_SERVER_ERROR;
-			}
-		}
-			
-		$arrResponse["error"]=array(
-			"message"=>$strMessage,
-			"code"=>$nCode,
-		);
+		dictResponse["error"] = ["message" : strMessage, "code" :$nCode]
             
-           return $arrResponse;
-    }
+    	return dictResponse
         
 		
-	protected function _exitWithResponse(array $arrResponse)
-	{
-		$this->_http_response_code($this->nHTTPResponseCode);
-		$this->_header("Cache-Control: no-cache, must-revalidate");
-		$this->_header("Expires: Mon, 26 Jul 1991 05:00:00 GMT");
-		$this->_header("Accept-Ranges: none");
-		$this->_header("Connection: close");
-		$this->_header("Content-type: application/json");
-		//self::_header("Content-type: text/plain;charset=utf-8");
+	def _exitWithResponse(self, dictResponse):
+		self._http_response_code(self.nHTTPResponseCode)
+		self._header("Cache-Control: no-cache, must-revalidate")
+		self._header("Expires: Mon, 26 Jul 1991 05:00:00 GMT")
+		self._header("Accept-Ranges: none")
+		self._header("Connection: close")
+		self._header("Content-type: application/json")
+		#self::_header("Content-type: text/plain;charset=utf-8");
 			
 			
-		/**
+		"""
 		* JSON-RPC 2.0 Specification, 4.1 Notification
 		* Notifications are not confirmable by definition, since they do not have a Response object to be returned. 
 		* As such, the Client would not be aware of any errors (like e.g. "Invalid params","Internal error").
-		*/
-		if(!$this->bNotificationMode)
-			echo json_encode($arrResponse);
+		"""
+		if (self.bNotificationMode == False):
+			print json_encode(dictResponse)
 			
-		if(in_array($this->nHTTPResponseCode, array(
-			self::HTTP_200_OK, 
-			self::HTTP_204_NO_CONTENT,
-		)))
-		{
-			exit(0);
-		}
-		exit(1);
-	}
+		if (self.nHTTPResponseCode in [self.HTTP_200_OK, self.HTTP_204_NO_CONTENT]):
+			sys.exit(0)
+		
+		sys.exit(1)
 
 		
-	public function callFunction($strFunctionName, array $arrParams)
-	{
-		ignore_user_abort(true);
+	def callFunction(self, strFunctionName, dictParams):
+		"""TODO"""
+		"""Find similar function for python"""
+		#ignore_user_abort(true);
 			
-		$this->assertFunctionNameAllowed($strFunctionName);
+		self.assertFunctionNameAllowed(strFunctionName)
 			
-		foreach($this->arrFilterPlugins as $plugin)
-			$plugin->resolveFunctionName($strFunctionName);
+		for plugin in self.arrFilterPlugins:
+			plugin.resolveFunctionName(strFunctionName)
+					
+		"""WARNING: Double check/Error prone"""	
+		bCalled = False
+		for pluginExisting in self.arrFilterPlugins:
+			mxResult = pluginExisting.callFunction(strFunctionName, dictParams, bCalled)
+			if (bCalled == True):
+				break
 			
-			
-		$bCalled=false;
-		foreach($this->arrFilterPlugins as $pluginExisting)
-		{
-			$mxResult=$pluginExisting->callFunction($strFunctionName, $arrParams, $bCalled);
-			if($bCalled)
-				break;
-		}
-			
-		if(!$bCalled)
-		{
-			if(!is_callable($strFunctionName))
-			{
-				$callable=$this->functionNameToCallableArray($strFunctionName);
-				$mxResult=call_user_func_array($callable, $this->array_make_references($arrParams));
-			}
-			else
-			{
-				$mxResult=call_user_func_array($strFunctionName, $this->array_make_references($arrParams));
-			}
-		}
+		if (bCalled == False):
+			if(strFunctionName.__call__ != None):
+				fcallable = self.functionNameToCallableArray(strFunctionName)
+				"""TODO"""
+				"""Find equivalent for call_user_func_array in python"""
+				mxResult = call_user_func_array(fcallable, self.array_make_references(dictParams))
+			else:
+				mxResult = call_user_func_array(strFunctionName, self.array_make_references(dictParams))
+				"""END_TODO"""
 				
-		return $mxResult;
-	}
+		return mxResult
 		
 		
-	public function addFilterPlugin(\JSONRPC\ServerFilterBase $plugin)
-	{
-		foreach($this->arrFilterPlugins as $pluginExisting)
-			if(get_class($pluginExisting)==get_class($plugin))
-				return;
-		$plugin->setServerInstance($this);
-		$this->arrFilterPlugins[]=$plugin;
-	}
+	"""
+	plugin is of type JSONRPC_ServerFilterBase
+	"""
+	def addFilterPlugin(self, plugin):
+		for pluginExisting in self.arrFilterPlugins:
+			if (pluginExisting.__class__ == plugin.__class__):
+				return
+		plugin.setServerInstance(self)
+		"""???"""
+		self.arrFilterPlugins[] = plugin
 		
 		
-	public function removeFilterPlugin(\JSONRPC\ServerFilterBase $plugin)
-	{
-		$nIndex=NULL;
-		foreach($this->arrFilterPlugins as $nIndexExisting=>$pluginExisting)
-			if(get_class($pluginExisting)==get_class($plugin))
-			{
-				$nIndex=$nIndexExisting;
-				break;
-			}
-		if(!is_int($nIndex))
-			throw new \Exception("Failed to remove filter plugin object, maybe plugin is not registered.");
+	"""
+	plugin is of type JSONRPC_ServerFilterBase
+	"""
+	def removeFilterPlugin(self, plugin):
+		nIndex = None
+		for nIndexExisting in self.arrFilterPlugins:
+			if (self.arrFilterPlugins[nIndexExisting].__class__ == plugin.__class__):
+				nIndex = nIndexExisting
+				break
+
+		if (isinstance(nIndex, int) == False):
+			raise Exception("Failed to remove filter plugin object, maybe plugin is not registered.")
 			
-		array_splice($this->arrFilterPlugins, $nIndex, 1);
-	}
+		"""WARNING: Splice attempt"""
+		self.arrFilterPlugins = self.arrFilterPlugins[:nIndex]
 		
 		
-	public function addMethodsMapper(\JSONRPC\MethodsMapper $methodsMapper)
-	{
-		foreach($this->arrMethodsMappers as /*$strInstanceAPIClassNameExisting =>*/ $methodsMapperExisting)
-		{
-			if($methodsMapperExisting===$methodsMapper)
-			{
-				return;
-			}
-		}
-		$this->arrMethodsMappers[get_class($methodsMapper->instanceWithAPIMethods())]=$methodsMapper;
-	}
+	"""
+	methodsMapper is of type JSONRPC_MethodsMapper
+	"""
+	def addMethodsMapper(self, methodsMapper):
+		for methodsMapperExisting in self.arrMethodsMappers:
+			if (methodsMapperExisting == methodsMapper):
+				return
+
+		self.arrMethodsMappers[methodsMapper.__class__.instanceWithAPIMethods()] = methodsMapper
 		
 		
-	public function removeMethodsMapper(\JSONRPC\MethodsMapper $methodsMapper)
-	{
+	def removeMethodsMapper(self, methodsMapper):			
+		strInstanceAPIClassNameExisting = methodsMapper.instanceWithAPIMethods().__class__
 			
-		$strInstanceAPIClassNameExisting=get_class($methodsMapper->instanceWithAPIMethods());
-			
-		if(array_key_exists($strInstanceAPIClassNameExisting, $this->arrMethodsMappers))
-		{
-			unset($this->arrMethodsMappers[$strInstanceAPIClassNameExisting]);
-		}
-		else
-		{
-			throw new \Exception("Failed to remove methodsMapper object.");
-		}
-	}
+		if (strInstanceAPIClassNameExisting in self.arrMethodsMappers):
+			self.arrMethodsMappers[strInstanceAPIClassNameExisting] = None;
+		else:
+			raise Exception("Failed to remove methodsMapper object.")
+
+		
+	def methodsMappers(self):
+		return self.arrMethodsMappers
 		
 		
-	public function methodsMappers()
-	{
-		return $this->arrMethodsMappers;
-	}
-		
-		
-	/**
-	 * @param string $strFunctionName
+	"""
+	 * @param string strFunctionName
 	 * 
 	 * @return callable
-	 */
-	public function functionNameToCallableArray($strFunctionName)
-	{
-		foreach($this->methodsMappers() as /*$strInstanceAPIClassName =>*/ $methodsMapper)
-		{
-			if(array_key_exists($strFunctionName, $methodsMapper->arrAPIFunctionsNamesToMethodsNames()))
-			{
-				// Returning callable "type".
-				return array(
-					/*Class instance*/ 0=>$methodsMapper->instanceWithAPIMethods(),
-					/*Method name*/ 1=>$methodsMapper->arrAPIFunctionsNamesToMethodsNames()[$strFunctionName],
-				);
-			}
-		}
+	"""
+	def functionNameToCallableArray(self, strFunctionName):
+		for methodsMapper in self.methodsMappers():
+			if (strFunctionName in methodsMapper.arrAPIFunctionsNamesToMethodsNames()):
+				# Returning callable "type".
+				return [
+					/*Class instance*/ 0 : methodsMapper.instanceWithAPIMethods(),
+					/*Method name*/ 1 : methodsMapper.arrAPIFunctionsNamesToMethodsNames()[strFunctionName]
+					]
 			
-		throw new \JSONRPC\Exception("The function ".$strFunctionName." is not defined or loaded.", \JSONRPC\Exception::METHOD_NOT_FOUND);
-	}
+		raise JSONRPC_Exception("The function " + strFunctionName + " is not defined or loaded.", JSONRPC_Exception.METHOD_NOT_FOUND)		
 		
-		
-	/**
-	 * @param string $strFunctionName 
-	 * 
-	 * @throws \JSONRPC\Exception 
-	 * @return null
-	 */
-	public function assertFunctionNameAllowed($strFunctionName)
-	{
-		$bFunctionNameAllowed=false;
-		foreach($this->arrFilterPlugins as $plugin)
-		{
-			$bFunctionNameAllowed=$plugin->isFunctionNameAllowed($strFunctionName);
-				
-			if($bFunctionNameAllowed)
-			{
-				break;
-			}
-		}
 
-		if(!$bFunctionNameAllowed && !in_array($strFunctionName, $this->arrAllowedFunctionCalls))
-		{
-			$this->nHTTPResponseCode=self::HTTP_403_FORBIDDEN;
-			throw new \JSONRPC\Exception("The function \"".$strFunctionName."\" is not exported and/or does not exist.", \JSONRPC\Exception::METHOD_NOT_FOUND);
-		}
-	}
+	"""
+	 * @param string strFunctionName 
+	 * 
+	 * @throws JSONRPC_Exception 
+	 * @return None
+	"""
+	def assertFunctionNameAllowed(self, strFunctionName):
+		bFunctionNameAllowed = False
+		for plugin in self.arrFilterPlugins:
+			bFunctionNameAllowed = plugin.isFunctionNameAllowed(strFunctionName)
+			if (bFunctionNameAllowed = True):
+				break
+
+		if ((bFunctionNameAllowed == False) && (not strFunctionName in self.arrAllowedFunctionCalls)):
+			self.nHTTPResponseCode = self.HTTP_403_FORBIDDEN
+			raise JSONRPC_Exception("The function \"" + $strFunctionName + "\" is not exported and/or does not exist.", JSONRPC_Exception.METHOD_NOT_FOUND)
 		
 		
-	/**
+	"""
 	* Safely decode JSON strings, because json_decode() does not throw errors.
-	* @param string $strJSON.
-	* @param bool $bAssoc.
+	* @param string strJSON.
+	* @param bool bAssoc.
 	* @return mixed.
-	* @throws \JSONRPC\Exception.
-	*/
-	public static function decodeJSONSafely($strJSON, $bAssoc=true)
-	{
-		if(strlen(trim($strJSON))==0)
-		{
-			throw new \PHorse\Utils\JSONException("Cannot run json_decode() on empty string.", \JSONRPC\Exception::PARSE_ERROR);
-		}
+	* @throws JSONRPC_Exception.
+	"""
+	@staticmethod
+	def decodeJSONSafely(self, strJSON, bAssoc = True):
+		if (len(strJSON.strip()) == 0):
+			"""TODO"""
+			#raise PHorse\Utils\JSONException("Cannot run json_decode() on empty string.", \JSONRPC\Exception::PARSE_ERROR);
 			
-		$mxReturn=json_decode($strJSON, $bAssoc);
+		if (bAssoc == True):
+			mxReturn = json.loads(strJSON)[0]
+		else:
+			mxReturn = json.loads(strJSON)
 			
-		if(json_last_error()!=JSON_ERROR_NONE)
+		"""TODO"""
+		"""Check for errors"""
+		"""
+		if (json_last_error()!=JSON_ERROR_NONE)
 		{
 			throw new \JSONRPC\Exception(
 				"JSON deserialization failed. Error message: ".json_last_error_msg().PHP_EOL." RAW input: ".$strJSON, 
 				\JSONRPC\Exception::PARSE_ERROR
 			);
 		}
+		"""
 
-		return $mxReturn;
-	}
+		return mxReturn
 		
-	
-	public function &array_make_references(array &$arrSomething)
-	{ 
-		$arrAllValuesReferencesToOriginalValues=array();
-		foreach($arrSomething as $mxKey=>&$mxValue)
-			$arrAllValuesReferencesToOriginalValues[$mxKey]=&$mxValue;
-		return $arrAllValuesReferencesToOriginalValues;
-	}
+	"""WARNING: Eliminated & reference"""
+	def array_make_references(self, arrSomething):
+		arrAllValuesReferencesToOriginalValues = []
+		for mxKey in arrSomething:
+			arrAllValuesReferencesToOriginalValues[mxKey] = arrSomething[mxKey]
+		return arrAllValuesReferencesToOriginalValues
 		
 		
-	protected function _log_exception(\Exception $exception)
-	{
-		try
-		{
-			if(strlen($this->strErrorLogFilePath))
-			{
-				$strClientInfo="";
-				if(array_key_exists("REMOTE_ADDR", $_SERVER))
-					$strClientInfo.=" ".$_SERVER["REMOTE_ADDR"];
+	def _log_exception(self, exception):
+		try:
+			if (len(self.strErrorLogFilePath) != 0):
+				strClientInfo = ""
+				"""TODO"""
+				"""
+				if (array_key_exists("REMOTE_ADDR", $_SERVER))
+					strClientInfo = strClientInfo + " " + $_SERVER["REMOTE_ADDR"]
 				if(array_key_exists("HTTP_USER_AGENT", $_SERVER))
-					$strClientInfo.=" ".$_SERVER["HTTP_USER_AGENT"];
+					strClientInfo = strClientInfo + " " + $_SERVER["HTTP_USER_AGENT"]
+				"""
 					
-				try
-				{
-					$arrTrace=$exception->getTrace();
+				"""WARNING: Get exception functions"""
+				try:
+					arrTrace = exception.getTrace()
 
-					if(preg_match_all('@*RECURSION*@', print_r($arrTrace, true), $arrMatches))
+					"""TODO"""
+					"""
+					if (preg_match_all('@*RECURSION*@', print_r($arrTrace, true), $arrMatches))
 						throw new \Exception("Recursive stack trace.");
+					"""
 
-					$strTrace=var_export($arrTrace, true);
-					$strTrace.=PHP_EOL."Short trace: ".PHP_EOL.$exception->getTraceAsString();
-				}
-				catch(\Exception $exc)
-				{
-					$strTrace=$exception->getTraceAsString();
-				}
+					"""WARNING: Get exception functions"""
+					"""WARNING: Check var_export strTrace = arrTrace"""
+					strTrace = arrTrace
+					strTrace = strTrace + os.linesep + "Short trace: " + os.linesep + exception.getTraceAsString()
+	
+				except Exception as exc:
+					strTrace = exception.getTraceAsString()
 
-				$strError=
-					$exception->getFile()."#".$exception->getLine().PHP_EOL.
-					"Exception type: ".get_class($exception).PHP_EOL.
-					"Message: ".$exception->getMessage().PHP_EOL.
-					"Code: ".$exception->getCode().PHP_EOL.
-					$strTrace.PHP_EOL
-				;
+				"""WARNING: Get exception functions"""
+				strError =
+					exception.getFile() + "#" + exception.getLine() + os.linesep +
+					"Exception type: " + exception.__class__.__name__ + os.linesep + 
+					"Message: " + exception.getMessage() + os.linesep +
+					"Code: " + exception.getCode() + os.linesep +
+					strTrace + os.linesep
 
+				"""TODO: file_exists"""
+				"""
 				if(!file_exists(dirname($this->strErrorLogFilePath)))
 				{
 					mkdir(dirname($this->strErrorLogFilePath), 0777, true);
 				}
 				error_log($strError, 3, $this->strErrorLogFilePath);
-			}
-		}
-		catch(\Exception $exc)
-		{
-			echo "Failed error logging at ".__FILE__."#".__LINE__;
-			echo ", exception code ".json_encode($exc->getCode()).", exception message: ".$exc->getMessage().", stack trace: ".PHP_EOL;
-			echo $exc->getTraceAsString();
-			echo PHP_EOL;
-			echo "Failed to log this line: ".PHP_EOL.$strErrorLine;
+				"""
+
+		except Exception as exc:
+			"""WARNING: Check __FILE__ """
+			"""WARNING: Check json.dumps """
+			print "Failed error logging at " + __FILE__ + "#" + __LINE__
+			print ", exception code " + json.dumps(exc.getCode()) + ", exception message: " + exc.getMessage() + ", stack trace: " + os.linesep
+			print exc.getTraceAsString()
+			print os.linesep
+			print "Failed to log this line: " + os.linesep + strErrorLine
 				
-			exit(1);
-		}
-	}
+			sys.exit(1)
 		
 		
-	const HTTP_200_OK=200;
-	const HTTP_204_NO_CONTENT=204;
-	const HTTP_401_UNAUTHORIZED=401;
-	const HTTP_403_FORBIDDEN=403;
-	const HTTP_429_TOO_MANY_REQUESTS=429;
-	const HTTP_500_INTERNAL_SERVER_ERROR=500;
+	HTTP_200_OK = 200
+	HTTP_204_NO_CONTENT = 204
+	HTTP_401_UNAUTHORIZED = 401
+	HTTP_403_FORBIDDEN = 403
+	HTTP_429_TOO_MANY_REQUESTS = 429
+	HTTP_500_INTERNAL_SERVER_ERROR = 500
 		
-	protected function _http_response_code($nHTTPResponseCode)
-	{
-		if(!$this->nHTTPResponseCode)
-			$this->nHTTPResponseCode=self::HTTP_500_INTERNAL_SERVER_ERROR;
+	def _http_response_code(self, nHTTPResponseCode):
+		if (self.nHTTPResponseCode == 0):
+			self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
 		
+		"""TODO: Static variables"""
+		"""
 		static $arrHTTPResponseCodesToText=array(
 			self::HTTP_200_OK=>"OK",
 			self::HTTP_204_NO_CONTENT=>"No Content",
@@ -676,207 +624,189 @@ class JSONRPC_Server(object):
 			self::HTTP_500_INTERNAL_SERVER_ERROR=>"Internal Server Error",
 		);
 		$this->_header("HTTP/1.1 ".(int)$nHTTPResponseCode." ".$arrHTTPResponseCodesToText[(int)$nHTTPResponseCode], /*$bReplace*/ true, $nHTTPResponseCode);
-	}
+		"""		
 		
-		
-	protected function _header($strHeader, $bReplace=true)
-	{
-		static $_bHTTPMode=null;
+	def _header(self, strHeader, bReplace = True):
+
+		"""TODO: Static variables"""
+		#static $_bHTTPMode=null;
 			
-		if(is_null($_bHTTPMode))
-		{
-			$_bHTTPMode=(
+		if (_bHTTPMode == None):
+			"""TODO: Workaround _SERVER"""
+			"""
+			_bHTTPMode = (
 				array_key_exists("REQUEST_METHOD", $_SERVER)
 				&& in_array(
 					$_SERVER["REQUEST_METHOD"], 
 					array("GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE", "CONNECT")
 				)
 			);
-		}
-			
-			
-		if($_bHTTPMode)
-		{
-			header($strHeader, $bReplace);
-		}
-	}
+			"""
+						
+		"""WARNING: header function"""
+		if (_bHTTPMode):
+			header(strHeader, bReplace)
 		
-	const JSONRPC_VERSION="2.0";
+
+	JSONRPC_VERSION = "2.0"
 
 
-	public function isAssociativeArray(array $array)
-	{
-		if(!is_array($array))
-			return false;
+	"""WARNING: Check if list"""
+	def isAssociativeArray(self, array):
+		if (not isinstance(array, list)):
+			return False
 
-		//http://stackoverflow.com/a/4254008/1852030
-		return (bool)count(array_filter(array_keys($array), "is_string"));
-	}
+		#http://stackoverflow.com/a/4254008/1852030
+		"""TODO: Wtf is this"""
+		#return (bool)count(array_filter(array_keys($array), "is_string"));
 
-	public function validateDataTypes(array $arrParamsDetails, array &$arrParams)
-	{
-		if(!$this->bValidateTypes)
-			return;
+	"""WARNING: Removed & reference"""
+	def validateDataTypes(self, arrParamsDetails, arrParams):
+		if (self.bValidateTypes == False):
+			return
 				
-		for ($i=0; $i < count($arrParamsDetails); $i++)
-		{
-			$strParamName = $arrParamsDetails[$i]["param_name"];
+		for (i=0; i < len(arrParamsDetails); i = i + 1):
+			strParamName = arrParamsDetails[i]["param_name"]
 
-			if(!array_key_exists($i, $arrParams))
-			{
-				if(strlen($arrParamsDetails[$i]["param_default_value_json"]) == 0)
-					throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "] is mandatory and doesn't have a default value.", \JSONRPC\Exception::INVALID_PARAMS);
-				else
-					return;
-			}
+			if (not i in arrParams):
+				if (len(arrParamsDetails[i]["param_default_value_json"]) == 0):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "] is mandatory and doesn't have a default value.", JSONRPC_Exception.INVALID_PARAMS)
+				else:
+					return
 
-			if(is_null($arrParams[$i]) && $arrParamsDetails[$i]["param_default_value_json"] !== "null")
-				throw new \JSONRPC\Exception("Parameter " . $strParamName . " cannot be NULL.", \JSONRPC\Exception::INVALID_PARAMS);
+			if ((arrParams[$i] == None) && (arrParamsDetails[i]["param_default_value_json"] != None)):
+				raise JSONRPC_Exception("Parameter " + strParamName + " cannot be NULL.", JSONRPC_Exception.INVALID_PARAMS)
 			
-			if (is_null($arrParams[$i]))
-				continue;
+			"""WARNING: Check if continue exists"""
+			if (arrParams[i] == None):
+				continue
 
-			switch ($arrParamsDetails[$i]["param_type"])
-			{
+			"""WARNING: Check switch synthax"""
+			"""TODO: switch"""
+			switch (arrParamsDetails[i]["param_type"]):
 				case "integer":
+					if (isinstance(arrParams[i], int)):
+						break
 
-					if(is_int($arrParams[$i]))
-						break;
-
-					if(
-						!is_string($arrParams[$i])
-						|| (string)(int)$arrParams[$i] !== (string)$arrParams[$i]
-					)
-					{
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be an integer (Number JSON type with no decimals), " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
-					}
-
-					$arrParams[$i] = (int) $arrParams[$i];
-
-					break;		
-
+					if (
+						"""WARNING: Check if casts are correct"""
+						not isinstance(arrParams[i], basestring)
+						|| (basestring)(int)arrParams[i] != (basestring)arrParams[i]
+					):
+						"""WARNING: CHeck json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + 
+							"], must be an integer (Number JSON type with no decimals), " + type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					
+					arrParams[i] = (int)arrParams[i]
+					break
 
 				case "float":
-
-					if(is_float($arrParams[$i]) || is_int($arrParams[$i]))
-						break; 
+					if (ininstance(arrParams[i], float) || isinstance(arrParams[i], int)):
+						break
 						
-					if(!is_string($arrParams[$i]) || (string)(float)$arrParams[$i] !== $arrParams[$i])
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be a Number., " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
+					"""WARNING: Check casts"""
+					if ((not isinstance(arrParams[i], basestring)) || ((basestring)(float)arrParams[i] != arrParams[i])):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a Number., " 
+												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					$arrParams[$i] = (float) $arrParams[$i];
-
-					break;					
+					arrParams[i] = (float)arrParams[i]
+					break					
 					
 				case "boolean":
+					if (isinstance(arrParams[i], bool)):
+						break
 
-					if(is_bool($arrParams[$i]))
-						break;
-
-					if(is_array($arrParams[$i]) || is_object($arrParams[$i]))
-					{
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be Boolean, " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
-					}
+					if (isinstance(arrParams[i], list) || isinstance(arrParams[i], object)):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " 
+												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 							
-					if((string)$arrParams[$i] === "0")
-						$arrParams[$i] = false;
-					else if((string)$arrParams[$i] === "1")
-						$arrParams[$i] = true;
-					else
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be Boolean, " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
+					if ((basestring)arrParams[i] == "0"):
+						arrParams[i] = False
+					else if ((basestring)arrParams[i] == "1"):
+						arrParams[i] = True
+					else:
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " 
+												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					break;
+					break
 
 
 				case "array":
+					if (not isinstance(arrParams[i], list)):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Array, " 
+												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					else if (self.isAssociativeArray(arrParams[i])):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + 
+												"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					if(!is_array($arrParams[$i]))
-					{
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be an Array, " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
-					}
-					else if($this->isAssociativeArray($arrParams[$i]))
-					{
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be an Array, Object (key:value collection) given.", \JSONRPC\Exception::INVALID_PARAMS);
-					}
-
-					break;
+					break
 
 
 				case "object":
-					if(!is_array($arrParams[$i]))
-					{
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be an Object, " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
-					}
-					else if(
-						!$this->isAssociativeArray($arrParams[$i]) 
-						&& !is_object($arrParams[$i]) 
-						&& !(
-							is_array($arrParams[$i]) 
-							&& !count($arrParams[$i])
-						)
-					)
-					{
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be an Object (key:value collection), " . gettype($arrParams[$i]) . " given.", \JSONRPC\Exception::INVALID_PARAMS);
-					}
+					if (not isinstance(arrParams[i], list)):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object, " 
+												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					else if (not self.isAssociativeArray(arrParams[i]) && (not isinstance(arrParams[i], object)) 
+							&& (not isinstance(arrParams[i], list)) && (len(arrParams[i]) == 0)):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
+												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					break;
+					break
 
 
 				case "string":
+					if (isinstance(arrParams[i], basestring)):
+						break
 
-					if(is_string($arrParams[$i]))
-						break;
+					if ((not isinstance(arrParams[i], basestring)) && (not isinstance(arrParams[i], int))):
+						"""WARNING: Check json.dumps"""
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a String, "
+												+ json.dumps(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					if (!is_string($arrParams[$i]) && !is_int($arrParams[$i]))
-						throw new \JSONRPC\Exception("Parameter at index " . $i . " [" . json_encode($strParamName) . "], must be a String, ".json_encode($arrParams[$i])." given.", \JSONRPC\Exception::INVALID_PARAMS);
-
-					$arrParams[$i] = (string) $arrParams[$i];
-
+					arrParams[i] = (basestring)arrParams[i]
 					break;
 
 				case "mixed":
-					break;
+					break
 
 
 				default:
-					throw new \JSONRPC\Exception("Unhandled type ".json_encode($arrParamsDetails[$i]["param_type"]).".", \JSONRPC\Exception::INVALID_PARAMS);
-			}
-		}
-	}
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Unhandled type " + json.dumps(arrParamsDetails[i]["param_type"]) + ".", JSONRPC_Exception.INVALID_PARAMS)
 
 
-	public function returnDataTypeValidation($strMethodName, $strExpectedDataType, &$mxResult)
-	{
-		if(!$this->bValidateTypes)
-			return;
+	"""WARNING: Removed & reference"""
+	def returnDataTypeValidation(self, strMethodName, strExpectedDataType, mxResult):
+		if (self.bValidateTypes == False):
+			return
 			
-		if($strExpectedDataType=="mixed")
-			return;
+		if (strExpectedDataType == "mixed"):
+			return
 			
-		if($strExpectedDataType=="unknown")
-			return;
+		if (strExpectedDataType == "unknown"):
+			return
 			
-		if(
-			is_array($mxResult) 
-			&& $strExpectedDataType=="object" 
-			&& (
-				$this->isAssociativeArray($mxResult) 
-				|| count($mxResult)==0
-			)
-		)
-		{
-			$mxResult=(object)$mxResult;
-		}
-		else if(is_int($mxResult) && $strExpectedDataType=="float")
-			$mxResult=(float)$mxResult;
+		if (isinstance(mxResult, list) && strExpectedDataType == "object" && 
+			(self.isAssociativeArray(mxResult) || len(mxResult) == 0)):
+			mxResult = (object)mxResult
+
+		else if (isinstance(mxResult, int) && strExpectedDataType == "float"):
+			mxResult = (float)mxResult
+						
+		strReturnType = type(mxResult)
 			
+		if (strReturnType == "double"):
+			strReturnType = "float"
 			
-		$strReturnType=gettype($mxResult);
-			
-		if($strReturnType=="double")
-			$strReturnType="float";
-			
-			
+		"""CONTINUE"""
 		if(strtolower($strReturnType) != strtolower($strExpectedDataType))
 			throw new \JSONRPC\Exception("Method ".json_encode($strMethodName)." declared return type is ".$strExpectedDataType.", and it attempted returning ".$strReturnType.". The function call may have succeeded as it attempted to return.", \JSONRPC\Exception::INVALID_RETURN_TYPE);
 	}
