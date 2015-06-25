@@ -174,7 +174,8 @@ class JSONRPC_Server(object):
 				raise JSONRPC_Exception("JSON-RPC batch requests are not supported by this server.", JSONRPC_Exception.INVALID_REQUEST);
 					
 
-			if ((dictRequest["method"] != None) && isinstance(dictRequest["method"], basestring) && (len(dictRequest["method"].strip()) != 0) && ("params" in dictRequest)):
+			if ((dictRequest["method"] != None) && isinstance(dictRequest["method"], basestring) && \
+							 (len(dictRequest["method"].strip()) != 0) && ("params" in dictRequest)):
 				self.arrFunctionReflection = None
 
 				try:
@@ -196,8 +197,8 @@ class JSONRPC_Server(object):
 			#Method names that begin with the word rpc followed by a period character (U+002E or ASCII 46)
 			#are reserved for rpc-internal methods and extensions and MUST NOT be used for anything else.
 			if (
-				(dictRequest["method"] != None) 
-				|| (not isintstance(dictRequest["method"], basestring)) 
+				(dictRequest["method"] != None) \
+				|| (not isintstance(dictRequest["method"], basestring)) \
 				|| (len(dictRequest["method"].strip()) != 0)
 			):
 				raise JSONRPC_Exception("The \"method\" key must be a string with a function name.", JSONRPC_Exception.INVALID_REQUEST)
@@ -478,8 +479,8 @@ class JSONRPC_Server(object):
 			if (strFunctionName in methodsMapper.arrAPIFunctionsNamesToMethodsNames()):
 				# Returning callable "type".
 				return [
-					/*Class instance*/ 0 : methodsMapper.instanceWithAPIMethods(),
-					/*Method name*/ 1 : methodsMapper.arrAPIFunctionsNamesToMethodsNames()[strFunctionName]
+					/*Class instance*/ 0 : methodsMapper.instanceWithAPIMethods(), \
+					/*Method name*/ 1 : methodsMapper.arrAPIFunctionsNamesToMethodsNames()[strFunctionName] \
 					]
 			
 		raise JSONRPC_Exception("The function " + strFunctionName + " is not defined or loaded.", JSONRPC_Exception.METHOD_NOT_FOUND)		
@@ -575,10 +576,10 @@ class JSONRPC_Server(object):
 
 				"""WARNING: Get exception functions"""
 				strError =
-					exception.getFile() + "#" + exception.getLine() + os.linesep +
-					"Exception type: " + exception.__class__.__name__ + os.linesep + 
-					"Message: " + exception.getMessage() + os.linesep +
-					"Code: " + exception.getCode() + os.linesep +
+					exception.getFile() + "#" + exception.getLine() + os.linesep + \
+					"Exception type: " + exception.__class__.__name__ + os.linesep + \
+					"Message: " + exception.getMessage() + os.linesep + \
+					"Code: " + exception.getCode() + os.linesep + \
 					strTrace + os.linesep
 
 				"""TODO: file_exists"""
@@ -671,7 +672,8 @@ class JSONRPC_Server(object):
 			if (not i in arrParams):
 				if (len(arrParamsDetails[i]["param_default_value_json"]) == 0):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "] is mandatory and doesn't have a default value.", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
+											"] is mandatory and doesn't have a default value.", JSONRPC_Exception.INVALID_PARAMS)
 				else:
 					return
 
@@ -695,7 +697,7 @@ class JSONRPC_Server(object):
 						|| (basestring)(int)arrParams[i] != (basestring)arrParams[i]
 					):
 						"""WARNING: CHeck json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
 							"], must be an integer (Number JSON type with no decimals), " + type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 					
 					arrParams[i] = (int)arrParams[i]
@@ -708,7 +710,7 @@ class JSONRPC_Server(object):
 					"""WARNING: Check casts"""
 					if ((not isinstance(arrParams[i], basestring)) || ((basestring)(float)arrParams[i] != arrParams[i])):
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a Number., " 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a Number., " \
 												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
 					arrParams[i] = (float)arrParams[i]
@@ -720,7 +722,7 @@ class JSONRPC_Server(object):
 
 					if (isinstance(arrParams[i], list) || isinstance(arrParams[i], object)):
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
 												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 							
 					if ((basestring)arrParams[i] == "0"):
@@ -729,7 +731,7 @@ class JSONRPC_Server(object):
 						arrParams[i] = True
 					else:
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
 												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
 					break
@@ -738,11 +740,11 @@ class JSONRPC_Server(object):
 				case "array":
 					if (not isinstance(arrParams[i], list)):
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Array, " 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Array, " \
 												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 					else if (self.isAssociativeArray(arrParams[i])):
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
 												"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
 
 					break
@@ -751,9 +753,9 @@ class JSONRPC_Server(object):
 				case "object":
 					if (not isinstance(arrParams[i], list)):
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object, " 
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object, " \
 												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-					else if (not self.isAssociativeArray(arrParams[i]) && (not isinstance(arrParams[i], object)) 
+					else if (not self.isAssociativeArray(arrParams[i]) && (not isinstance(arrParams[i], object)) \
 							&& (not isinstance(arrParams[i], list)) && (len(arrParams[i]) == 0)):
 						"""WARNING: Check json.dumps"""
 						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
@@ -768,7 +770,7 @@ class JSONRPC_Server(object):
 
 					if ((not isinstance(arrParams[i], basestring)) && (not isinstance(arrParams[i], int))):
 						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a String, "
+						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a String, " \
 												+ json.dumps(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
 					arrParams[i] = (basestring)arrParams[i]
@@ -794,7 +796,7 @@ class JSONRPC_Server(object):
 		if (strExpectedDataType == "unknown"):
 			return
 			
-		if (isinstance(mxResult, list) && strExpectedDataType == "object" && 
+		if (isinstance(mxResult, list) && strExpectedDataType == "object" && \
 			(self.isAssociativeArray(mxResult) || len(mxResult) == 0)):
 			mxResult = (object)mxResult
 
@@ -809,8 +811,8 @@ class JSONRPC_Server(object):
 		"""CONTINUE"""
 		if (strReturnType.lower() != strExpectedDataType.lower()):
 			"""WARNING: Check json.dumps"""
-			raise JSONRPC_Exception("Method " + json.dumps(strMethodName) + " declared return type is " + strExpectedDataType + 
-									", and it attempted returning " + strReturnType + ". The function call may have succeeded as it attempted to return.", 
+			raise JSONRPC_Exception("Method " + json.dumps(strMethodName) + " declared return type is " + strExpectedDataType + \
+									", and it attempted returning " + strReturnType + ". The function call may have succeeded as it attempted to return.", \
 									JSONRPC_Exception.INVALID_RETURN_TYPE)
 
 
@@ -837,7 +839,7 @@ class JSONRPC_Server(object):
 					arrNewParams.append(arrParamProperties["param_default_value_json"])
 				else:
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Missing mandatory method parameter " + json.dumps(arrParamProperties["param_name"]) + " for method " +
+					raise JSONRPC_Exception("Missing mandatory method parameter " + json.dumps(arrParamProperties["param_name"]) + " for method " + \
 											 json.dumps(strMethodName) + ".", JSONRPC_Exception.INVALID_PARAMS)
 				
 				"""WARNING: Check unset or deletion of value from array"""
@@ -845,7 +847,7 @@ class JSONRPC_Server(object):
 
 			if (len(arrParams) > 0):
 				"""WARNING: Check json.dumps"""
-				raise JSONRPC_Exception("Too many parameters given to method " + json.dumps(strMethodName) + ". Extra parameters: " +
+				raise JSONRPC_Exception("Too many parameters given to method " + json.dumps(strMethodName) + ". Extra parameters: " + \
 										 json.dumps(arrParams.keys()) + ".", JSONRPC_Exception.INVALID_PARAMS)
 					
 			arrParams = arrNewParams
@@ -853,12 +855,12 @@ class JSONRPC_Server(object):
 		else: 
 			#Unnamed params
 			if (len(arrParams) > len(arrParamsDetails)):
-				raise JSONRPC_Exception("Expected param(s): " + self.getParamNamesAsString(arrParamsDetails) + "." + 
+				raise JSONRPC_Exception("Expected param(s): " + self.getParamNamesAsString(arrParamsDetails) + "." + \
 										" Too many parameters for method " + strMethodName + ".", JSONRPC_Exception.INVALID_PARAMS)
 					
 			if (len(arrParams) < nMandatoryParams):
-				raise JSONRPC_Exception("Expected param(s): " + self.getParamNamesAsString(arrParamsDetails) + "." + 
-										" Missing " + (nMandatoryParams - len(arrParams)) + " required parameter(s) for method " +
+				raise JSONRPC_Exception("Expected param(s): " + self.getParamNamesAsString(arrParamsDetails) + "." + \
+										" Missing " + (nMandatoryParams - len(arrParams)) + " required parameter(s) for method " + \
 										strMethodName + ".", JSONRPC_Exception.INVALID_PARAMS)
 
 	def getParamNamesAsString(self, arrParamsDetails):
