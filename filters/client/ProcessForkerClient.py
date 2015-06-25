@@ -161,14 +161,18 @@ class ProcessForkerClient(ClientFilterBase):
 			raise Exception("STDIN file creation failed.")
 			
 		try:
-			hStdinTmpFile = fopen(strStdinTmpFile, "w");
-			if(!is_resource($hStdinTmpFile))
+			hStdinTmpFile = open(strStdinTmpFile, "w")
+
+			"""WARNING: I think this exception is thrown automatically"""
+			"""
+			if (!is_resource($hStdinTmpFile))
 			{
 				throw new \Exception("STDIN file open failed.");
 			}
+			"""
 
-			/* Set the file to unblocking in order to avoid the process to hang when writing. */
-			if(!stream_set_blocking($hStdinTmpFile, /*$blocking*/ (int)false))
+			# Set the file to unblocking in order to avoid the process to hang when writing. 
+			if (!stream_set_blocking($hStdinTmpFile, /*$blocking*/ (int)false))
 			{
 				throw new \Exception("Making the STDIN stream non-blocking failed.");
 			}
