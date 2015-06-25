@@ -807,133 +807,136 @@ class JSONRPC_Server(object):
 			strReturnType = "float"
 			
 		"""CONTINUE"""
-		if(strtolower($strReturnType) != strtolower($strExpectedDataType))
-			throw new \JSONRPC\Exception("Method ".json_encode($strMethodName)." declared return type is ".$strExpectedDataType.", and it attempted returning ".$strReturnType.". The function call may have succeeded as it attempted to return.", \JSONRPC\Exception::INVALID_RETURN_TYPE);
-	}
+		if (strReturnType.lower() != strExpectedDataType.lower()):
+			"""WARNING: Check json.dumps"""
+			raise JSONRPC_Exception("Method " + json.dumps(strMethodName) + " declared return type is " + strExpectedDataType + 
+									", and it attempted returning " + strReturnType + ". The function call may have succeeded as it attempted to return.", 
+									JSONRPC_Exception.INVALID_RETURN_TYPE)
 
 
-	public function namedParamsTranslationAndValidation(array $arrParamsDetails, array &$arrParams, $strMethodName)
-	{
-		//Count number of mandatory parameters
-		$nMandatoryParams = 0;
+	"""WARNING: Eliminated & reference"""
+	def namedParamsTranslationAndValidation(self, arrParamsDetails, arrParams, strMethodName):
+		#Count number of mandatory parameters
+		nMandatoryParams = 0
+		for arrParam in arrParamsDetails: 
+			if (len(arrParam["param_default_value_json"]) == 0):
+				nMandatoryParams = nMandatoryParams + 1
+			else:
+				break
 
-		foreach ($arrParamsDetails as $arrParam) 
-		{
-			if(strlen($arrParam["param_default_value_json"]) == 0)
-				$nMandatoryParams++;
-			else
-				break;
-		}
+		if ((len(arrParams) > 0) && self.isAssociativeArray(arrParams)):
+			#Named parameteres
+			arrNewParams = []
 
-		if(count($arrParams) > 0 && $this->isAssociativeArray($arrParams))
-		{
-			//Named parameteres
-			$arrNewParams = array();
-
-			foreach ($arrParamsDetails as $arrParamProperties) 
-			{
-				if(array_key_exists($arrParamProperties["param_name"], $arrParams))
-					$arrNewParams[] = $arrParams[$arrParamProperties["param_name"]];
-				else if(strlen($arrParamProperties["param_default_value_json"]) > 0)
-					$arrNewParams[] = $arrParamProperties["param_default_value_json"];
-				else
-					throw new \JSONRPC\Exception("Missing mandatory method parameter " . json_encode($arrParamProperties["param_name"]) . " for method " . json_encode($strMethodName) . ".", \JSONRPC\Exception::INVALID_PARAMS);
+			for arrParamProperties in arrParamsDetails:
+				"""WARNING: Check if array_key_exists""" 
+				if (arrParamProperties["param_name"] in arrParams):
+					"""WARNING: Error prone"""
+					arrNewParams.append(arrParams[arrParamProperties["param_name"]])
+				else if (len(arrParamProperties["param_default_value_json"]) > 0):
+					arrNewParams.append(arrParamProperties["param_default_value_json"])
+				else:
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Missing mandatory method parameter " + json.dumps(arrParamProperties["param_name"]) + " for method " +
+											 json.dumps(strMethodName) + ".", JSONRPC_Exception.INVALID_PARAMS)
 				
-				unset($arrParams[$arrParamProperties["param_name"]]);
-			}
+				"""WARNING: Check unset or deletion of value from array"""
+				del arrParams[arrParamProperties["param_name"]]
 
-
-			if(count($arrParams) > 0)
-				throw new \JSONRPC\Exception("Too many parameters given to method " . json_encode($strMethodName) . ". Extra parameters: " . json_encode(array_keys($arrParams)) . ".", \JSONRPC\Exception::INVALID_PARAMS);
+			if (len(arrParams) > 0):
+				"""WARNING: Check json.dumps"""
+				raise JSONRPC_Exception("Too many parameters given to method " + json.dumps(strMethodName) + ". Extra parameters: " +
+										 json.dumps(arrParams.keys()) + ".", JSONRPC_Exception.INVALID_PARAMS)
 					
-			$arrParams = $arrNewParams;
-		}
-		else 
-		{
-			//Unnamed params
+			arrParams = arrNewParams
 
-			if(count($arrParams) > count($arrParamsDetails))
-				throw new \JSONRPC\Exception("Expected param(s): ".$this->getParamNamesAsString($arrParamsDetails)."."." Too many parameters for method ".$strMethodName.".", \JSONRPC\Exception::INVALID_PARAMS);
+		else: 
+			#Unnamed params
+			if (len(arrParams) > len(arrParamsDetails)):
+				raise JSONRPC_Exception("Expected param(s): " + self.getParamNamesAsString(arrParamsDetails) + "." + 
+										" Too many parameters for method " + strMethodName + ".", JSONRPC_Exception.INVALID_PARAMS)
 					
-			if(count($arrParams) < $nMandatoryParams)
-				throw new \JSONRPC\Exception("Expected param(s): ".$this->getParamNamesAsString($arrParamsDetails)."."." Missing ".($nMandatoryParams-count($arrParams))." required parameter(s) for method ".$strMethodName.".", \JSONRPC\Exception::INVALID_PARAMS);
-		}
-	}
+			if (len(arrParams) < nMandatoryParams):
+				raise JSONRPC_Exception("Expected param(s): " + self.getParamNamesAsString(arrParamsDetails) + "." + 
+										" Missing " + (nMandatoryParams - len(arrParams)) + " required parameter(s) for method " +
+										strMethodName + ".", JSONRPC_Exception.INVALID_PARAMS)
 
-	public function getParamNamesAsString(array $arrParamsDetails)
-	{
-		$strParamNames = "";
+	def getParamNamesAsString(self, arrParamsDetails):
+		strParamNames = ""
 
-		foreach ($this->getParamNames($arrParamsDetails) as $param)
-			$strParamNames.= $param.", ";
+		for param in self.getParamNames(arrParamsDetails):
+			strParamNames = strParamNames + param + ", "
 			
-		$strParamNames = substr($strParamNames, 0, (strlen($strParamNames)-2));
-		return $strParamNames;
-	}
+		strParamNames = strParamNames[:len(strParamNames)-2]
+		return strParamNames
 
 
-	public function getParamNames(array $arrParamsDetails)
-	{
-		$arrParamsName = array();
+	def getParamNames(self, arrParamsDetails):
+		arrParamsName = []
 
-		if(count($arrParamsDetails) > 0)
-			foreach ($arrParamsDetails as $value) 
-				if(strlen($value["param_default_value_json"]) > 0)
-					$arrParamsName[] = $value["param_name"] . "=" . $value["param_default_value_json"];					
-				else
-					$arrParamsName[] = $value["param_name"];	
+		if (len(arrParamsDetails) > 0):
+			for value in arrParamsDetails: 
+				if (len(value["param_default_value_json"]) > 0):
+					arrParamsName[] = value["param_name"] + "=" + value["param_default_value_json"]					
+				else:
+					arrParamsName[] = value["param_name"]	
 
-		return $arrParamsName;
-	}
+		return arrParamsName
 		
 		
-	/**
+	"""
 	* Outputs HTTP cross site origin headers.
 	* This function never returns if during an HTTP OPTIONS request, as it will exit(0) at the end.
-	* @param array $arrAllowedDomains.
-	* @param array $arrAllowedHeaders=array(). Headers in addition to those allowed by default ["origin", "content-type", "accept"].
-	* @param bool $bAllowAllURLs=false.
-	* @return null.
-	*/
-	public function CORS_headers(array $arrAllowedDomains, array $arrAllowedHeaders=array(), $bAllowAllURLs=false)
-	{
-		// Note .htaccess trick: 
-		// SetEnvIf Origin "^http(s)?://(.+\.)?(localhost|stackoverflow.com|example1.com)(:[0-9]+)?$" origin_is=$0
-		// Header always set Access-Control-Allow-Origin %{origin_is}e env=origin_is
+	* @param array arrAllowedDomains.
+	* @param array arrAllowedHeaders = []. Headers in addition to those allowed by default ["origin", "content-type", "accept"].
+	* @param bool bAllowAllURLs = False.
+	* @return None.
+	"""
+	def CORS_headers(self, arrAllowedDomains, arrAllowedHeaders = [], bAllowAllURLs = False):
+		# Note .htaccess trick: 
+		# SetEnvIf Origin "^http(s)?://(.+\.)?(localhost|stackoverflow.com|example1.com)(:[0-9]+)?$" origin_is=$0
+		# Header always set Access-Control-Allow-Origin %{origin_is}e env=origin_is
 			
 			
-		$strAllowedOrigin=NULL;
+		strAllowedOrigin = None
 
 			
-		$arrAllowedHeaders=array_merge($arrAllowedHeaders, array("origin", "content-type", "accept", "authorization"));
+		arrAllowedHeaders = arrAllowedHeaders + ["origin", "content-type", "accept", "authorization"]
 		
-		if(isset($_SERVER["HTTP_ORIGIN"]))
+		"""TODO: Php _SERVER again"""
+		"""
+		if (isset($_SERVER["HTTP_ORIGIN"]))
 		{
 			$strHost=parse_url($_SERVER["HTTP_ORIGIN"], PHP_URL_HOST);
 				
 			if(in_array($strHost, $arrAllowedDomains))
 				$strAllowedOrigin=$_SERVER["HTTP_ORIGIN"];
 		}
+		"""
 
-		//if(is_null($strAllowedOrigin) && count($arrAllowedDomains))
-			//$strAllowedOrigin="https://".implode(", https://", $arrAllowedDomains).", http://".implode(", http://", $arrAllowedDomains);
+		#if(is_null($strAllowedOrigin) && count($arrAllowedDomains))
+			#$strAllowedOrigin="https://".implode(", https://", $arrAllowedDomains).", http://".implode(", http://", $arrAllowedDomains);
 			
-		if($bAllowAllURLs)
-			header("Access-Control-Allow-Origin: *", true);
-		else if(!is_null($strAllowedOrigin))
-			header("Access-Control-Allow-Origin: ".$strAllowedOrigin, true);
-		else if(isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"]=="OPTIONS")
-			exit(0);
-				
+		if (bAllowAllURLs):
+			"""TODO: Header"""
+			#header("Access-Control-Allow-Origin: *", true);
+		else if (strAllowedOrigin != None):
+			"""TODO: Header"""
+			#header("Access-Control-Allow-Origin: ".$strAllowedOrigin, true);
+		"""TODO: Php Server"""
+		#lse if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"]=="OPTIONS")
+		#exit(0);
+	
+		"""TODO: Header"""
+		"""
 		header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT", true);
 		header("Access-Control-Max-Age: 86400", true);
 		header("Access-Control-Allow-Headers: ".implode(", ", $arrAllowedHeaders), true);
 		header("Access-Control-Allow-Credentials: true", true);
-			
+		"""
+
+		"""TODO: Php Server"""
+		"""
 		if(isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"]=="OPTIONS")
 			exit(0);
-	}
-		
-	
-		
-}
+		"""
