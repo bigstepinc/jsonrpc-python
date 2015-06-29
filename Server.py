@@ -427,6 +427,7 @@ class JSONRPC_Server(object):
 		
 		
 	"""
+	TODO: Change description
 	plugin is of type JSONRPC_ServerFilterBase
 	"""
 	def addFilterPlugin(self, plugin):
@@ -439,23 +440,29 @@ class JSONRPC_Server(object):
 		
 		
 	"""
+	TODO: Change description
 	plugin is of type JSONRPC_ServerFilterBase
 	"""
 	def removeFilterPlugin(self, plugin):
 		nIndex = None
-		for nIndexExisting in self.arrFilterPlugins:
-			if (self.arrFilterPlugins[nIndexExisting].__class__ == plugin.__class__):
+		"""WARNING: Modified over the original"""
+		nIndexExisting = 0
+		for pluginExisting in self.arrFilterPlugins:
+			if (pluginExisting.__class__ == plugin.__class__):
 				nIndex = nIndexExisting
 				break
+			else:
+				nIndexExisting++
 
 		if (isinstance(nIndex, int) == False):
 			raise Exception("Failed to remove filter plugin object, maybe plugin is not registered.")
 			
-		"""WARNING: Splice attempt"""
-		self.arrFilterPlugins = self.arrFilterPlugins[:nIndex]
+		"""WARNING: Modified over the original"""
+		del self.arrFilterPlugins[nIndex]
 		
 		
 	"""
+	TODO: Change description
 	methodsMapper is of type JSONRPC_MethodsMapper
 	"""
 	def addMethodsMapper(self, methodsMapper):
@@ -463,13 +470,14 @@ class JSONRPC_Server(object):
 			if (methodsMapperExisting == methodsMapper):
 				return
 
-		self.dictMethodsMappers[methodsMapper.__class__.instanceWithAPIMethods()] = methodsMapper
+		self.dictMethodsMappers[methodsMapper.instanceWithAPIMethods().__class__] = methodsMapper
 		
 		
 	def removeMethodsMapper(self, methodsMapper):			
 		strInstanceAPIClassNameExisting = methodsMapper.instanceWithAPIMethods().__class__
 			
 		if (strInstanceAPIClassNameExisting in self.dictMethodsMappers):
+			"""WARNING: Not sure if thise should be None or deleted entirely"""
 			self.dictMethodsMappers[strInstanceAPIClassNameExisting] = None;
 		else:
 			raise Exception("Failed to remove methodsMapper object.")
@@ -482,16 +490,16 @@ class JSONRPC_Server(object):
 	"""
 	 * @param string strFunctionName
 	 * 
-	 * @return callable
+	 * @return tuple of instance and callable array ???
 	"""
 	def functionNameToCallableArray(self, strFunctionName):
 		for methodsMapper in self.methodsMappers():
 			if (strFunctionName in methodsMapper.arrAPIFunctionsNamesToMethodsNames()):
 				# Returning callable "type".
-				return [
+				return (
 					/*Class instance*/ 0 : methodsMapper.instanceWithAPIMethods(), \
 					/*Method name*/ 1 : methodsMapper.arrAPIFunctionsNamesToMethodsNames()[strFunctionName] \
-					]
+					)
 			
 		raise JSONRPC_Exception("The function " + strFunctionName + " is not defined or loaded.", JSONRPC_Exception.METHOD_NOT_FOUND)		
 		
@@ -506,10 +514,10 @@ class JSONRPC_Server(object):
 		bFunctionNameAllowed = False
 		for plugin in self.arrFilterPlugins:
 			bFunctionNameAllowed = plugin.isFunctionNameAllowed(strFunctionName)
-			if (bFunctionNameAllowed = True):
+			if (bFunctionNameAllowed == True):
 				break
 
-		if ((bFunctionNameAllowed == False) && (not strFunctionName in self.arrAllowedFunctionCalls)):
+		if ((bFunctionNameAllowed == False) && (strFunctionName not in self.arrAllowedFunctionCalls)):
 			self.nHTTPResponseCode = self.HTTP_403_FORBIDDEN
 			raise JSONRPC_Exception("The function \"" + $strFunctionName + "\" is not exported and/or does not exist.", JSONRPC_Exception.METHOD_NOT_FOUND)
 		
@@ -524,29 +532,22 @@ class JSONRPC_Server(object):
 	@staticmethod
 	def decodeJSONSafely(self, strJSON, bAssoc = True):
 		if (len(strJSON.strip()) == 0):
-			"""TODO"""
+			"""TODO: Ask Ionut about dependancy inconsistency"""
 			#raise PHorse\Utils\JSONException("Cannot run json_decode() on empty string.", \JSONRPC\Exception::PARSE_ERROR);
+		try:
+			if (bAssoc == True):
+				mxReturn = json.loads(strJSON)[0]
+			"""TODO: A decision needs to be made regarding mxReturn handling. It should always be treated as a dictionary imo."""
+			else:
+				mxReturn = json.loads(strJSON)
 			
-		if (bAssoc == True):
-			mxReturn = json.loads(strJSON)[0]
-		else:
-			mxReturn = json.loads(strJSON)
-			
-		"""TODO"""
-		"""Check for errors"""
-		"""
-		if (json_last_error()!=JSON_ERROR_NONE)
-		{
-			throw new \JSONRPC\Exception(
-				"JSON deserialization failed. Error message: ".json_last_error_msg().PHP_EOL." RAW input: ".$strJSON, 
-				\JSONRPC\Exception::PARSE_ERROR
-			);
-		}
-		"""
+		except Exception as exc:
+			raise JSONRPC_Exception("JSON deserialization failed. Error message: " + exc.message + " RAW input: " + strJSON, JSONRPC_Exception::PARSE_ERROR)
 
 		return mxReturn
 		
 	"""WARNING: Eliminated & reference"""
+	"""TODO: Check if this is needed. It shouldn't be in python."""
 	def array_make_references(self, arrSomething):
 		arrAllValuesReferencesToOriginalValues = []
 		for mxKey in arrSomething:
@@ -568,7 +569,7 @@ class JSONRPC_Server(object):
 					
 				"""WARNING: Get exception functions"""
 				try:
-					arrTrace = exception.getTrace()
+					excType, excValue, excTraceback = sys.exc_info()
 
 					"""TODO"""
 					"""
@@ -578,18 +579,19 @@ class JSONRPC_Server(object):
 
 					"""WARNING: Get exception functions"""
 					"""WARNING: Check var_export strTrace = arrTrace"""
-					strTrace = arrTrace
-					strTrace = strTrace + os.linesep + "Short trace: " + os.linesep + exception.getTraceAsString()
+					strTrace = excTraceback
+					"""WARNING: excTraceback has to be string"""
+					strTrace = strTrace + os.linesep + "Short trace: " + os.linesep + excTraceback
 	
 				except Exception as exc:
-					strTrace = exception.getTraceAsString()
+					excType, excValue, excTraceback = sys.exc_info()
+					strTrace = excTraceback
 
-				"""WARNING: Get exception functions"""
+				"""WARNING: Output is modified"""
 				strError =
-					exception.getFile() + "#" + exception.getLine() + os.linesep + \
 					"Exception type: " + exception.__class__.__name__ + os.linesep + \
-					"Message: " + exception.getMessage() + os.linesep + \
-					"Code: " + exception.getCode() + os.linesep + \
+					"Message: " + exc.message + os.linesep + \
+					"Code: " + excValue + os.linesep + \
 					strTrace + os.linesep
 
 				"""TODO: file_exists"""
@@ -602,12 +604,11 @@ class JSONRPC_Server(object):
 				"""
 
 		except Exception as exc:
-			"""WARNING: Check __FILE__ """
-			"""WARNING: Check json.dumps """
-			print "Failed error logging at " + __FILE__ + "#" + __LINE__
-			print ", exception code " + json.dumps(exc.getCode()) + ", exception message: " + exc.getMessage() + ", stack trace: " + os.linesep
-			print exc.getTraceAsString()
-			print os.linesep
+			"""WARNING: Check format """
+			excType, excValue, excTraceback = sys.exc_info()
+			print "Failed error logging at " + os.path.realpath(__file__)
+			print ", exception code " + excValue + ", exception message: " + exc.message + ", stack trace: " + os.linesep
+			print excTraceback + os.linesep
 			print "Failed to log this line: " + os.linesep + strErrorLine
 				
 			sys.exit(1)
@@ -619,28 +620,25 @@ class JSONRPC_Server(object):
 	HTTP_403_FORBIDDEN = 403
 	HTTP_429_TOO_MANY_REQUESTS = 429
 	HTTP_500_INTERNAL_SERVER_ERROR = 500
+
+	arrHTTPResponseCodesToText = {self.HTTP_200_OK : "OK",
+			self.HTTP_204_NO_CONTENT : "No Content",
+			self.HTTP_401_UNAUTHORIZED : "Unauthorized",
+			self.HTTP_403_FORBIDDEN : "Forbidden",
+			self.HTTP_429_TOO_MANY_REQUESTS : "Too Many Requests",
+			self.HTTP_500_INTERNAL_SERVER_ERROR : "Internal Server Error"}
 		
 	def _http_response_code(self, nHTTPResponseCode):
 		if (self.nHTTPResponseCode == 0):
 			self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
-		
-		"""TODO: Static variables"""
-		"""
-		static $arrHTTPResponseCodesToText=array(
-			self::HTTP_200_OK=>"OK",
-			self::HTTP_204_NO_CONTENT=>"No Content",
-			self::HTTP_401_UNAUTHORIZED=>"Unauthorized",
-			self::HTTP_403_FORBIDDEN=>"Forbidden",
-			self::HTTP_429_TOO_MANY_REQUESTS=>"Too Many Requests",
-			self::HTTP_500_INTERNAL_SERVER_ERROR=>"Internal Server Error",
-		);
-		$this->_header("HTTP/1.1 ".(int)$nHTTPResponseCode." ".$arrHTTPResponseCodesToText[(int)$nHTTPResponseCode], /*$bReplace*/ true, $nHTTPResponseCode);
-		"""		
+				
+		self._header("HTTP/1.1 " + int(nHTTPResponseCode) + " " + arrHTTPResponseCodesToText[int(nHTTPResponseCode)], """$bReplace""" true, nHTTPResponseCode)
+				
 		
 	def _header(self, strHeader, bReplace = True):
 
-		"""TODO: Static variables"""
-		#static $_bHTTPMode=null;
+		if not hasattr(_header, _bHTTPMode):
+			_bHTTPMode = None
 			
 		if (_bHTTPMode == None):
 			"""TODO: Workaround _SERVER"""
@@ -662,7 +660,8 @@ class JSONRPC_Server(object):
 	JSONRPC_VERSION = "2.0"
 
 
-	"""WARNING: Check if list"""
+	"""WARNING: Check if dictionary"""
+	"""WARNING: This should be useless in python"""
 	def isAssociativeArray(self, array):
 		if (not isinstance(array, list)):
 			return False
@@ -704,7 +703,7 @@ class JSONRPC_Server(object):
 					if (
 						"""WARNING: Check if casts are correct"""
 						not isinstance(arrParams[i], basestring)
-						|| (basestring)(int)arrParams[i] != (basestring)arrParams[i]
+						|| basestring(int(arrParams[i])) != basestring(arrParams[i])
 					):
 						"""WARNING: CHeck json.dumps"""
 						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
