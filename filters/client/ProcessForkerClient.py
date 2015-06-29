@@ -177,6 +177,7 @@ class ProcessForkerClient(ClientFilterBase):
 				throw new \Exception("Making the STDIN stream non-blocking failed.");
 			}
 
+			"""CONTINUE"""
 			/* Write to the STDIN file before creating a child process to avoid synchronization. */
 			if(!self::fwrite($hStdinTmpFile, $strJSONRequest))
 			{

@@ -1,7 +1,10 @@
 import request
 import os
 import json
+import traceback
 from JSONRPC_Exception import JSONRPC_Exception
+#from Exception import Exception as JSONRPC_Exception
+
 class JSONRPC_Server(object):
 	
 	def __init__(self):
@@ -48,6 +51,7 @@ class JSONRPC_Server(object):
 	* 
 	* @var array
 	"""
+	"""WARNING: ???"""
 	arrExceptionTypesForMessages = ["JSONRPC\\Exception"]
 		
 		
@@ -116,6 +120,7 @@ class JSONRPC_Server(object):
 	bValidateTypes = False
 		
 
+	"""WARNING: Correct coding style"""
 	"""
 	* As returned by \JSONRPC\Filters\Server\ReflectionPlugin::reflectionFunction().
 	* 
@@ -124,12 +129,13 @@ class JSONRPC_Server(object):
 	arrFunctionReflection = None
 		
 		
+	"""WARNING: Correct coding style"""
 	"""
-	* Associative array with class names as keys and \JSONRPC\MethodsMapper instances as values.
+	* Associative array with class names as keys and JSONRPC\MethodsMapper instances as values.
 	* 
 	* @var array
 	"""
-	arrMethodsMappers = []
+	dictMethodsMappers = []
 		
 		
 	def processRequest(self, strJSONRequest = None):
@@ -139,18 +145,18 @@ class JSONRPC_Server(object):
 		
 	def processRequestAndReturn(self, strJSONRequest = None):
 		objReflectionPlugin = ReflectionPlugin()
+		"""WARNING: careful at passing self"""
 		objReflectionPlugin.setServerInstance(self);
 
 		"""TODO"""
 		"""Check import.request"""
 		"""
-		if(isset($_SERVER["REQUEST_METHOD"]) && !in_array($_SERVER["REQUEST_METHOD"], array("GET", "POST", "PUT", "OPTIONS")))
-		{
-				echo "HTTP request method ".$_SERVER["REQUEST_METHOD"]." ignored.";
-				exit(0);
-		}
+		if(isset($_SERVER["REQUEST_METHOD"]) && !in_array($_SERVER["REQUEST_METHOD"], array("GET", "POST", "PUT", "OPTIONS"))):
+				print "HTTP request method " + $_SERVER["REQUEST_METHOD"] + " ignored."
+				sys.exit(0)
 		"""
 
+		"""WARNING: Check type of mxRequestID"""
 		mxRequestID = None
 		try:
 			"""TODO
@@ -163,19 +169,19 @@ class JSONRPC_Server(object):
 				plugin.beforeJSONDecode(strJSONRequest)
 
 				
-			if (len(strJSONRequest.strip()) != 0):
+			"""WARNING: Fix coding style"""
+			if (len(strJSONRequest.strip()) == 0):
 				raise JSONRPC_Exception("Invalid request. Empty input. Was expecting a POST request of a JSON.", JSONRPC_Exception.PARSE_ERROR);
 				
-			"""TODO"""
-			#dictRequest = static::decodeJSONSafely($strJSONRequest);
+			dictRequest = decodeJSONSafely(strJSONRequest)
 				
-			# May have a problem at indexation in dictionaries	
-			if (dictRequest[0] != None)
+			"""WARNING: May have a problem at indexation in dictionaries"""	
+			if ('0' in dictRequest.keys() && dictRequest[0] != None)
 				raise JSONRPC_Exception("JSON-RPC batch requests are not supported by this server.", JSONRPC_Exception.INVALID_REQUEST);
 					
 
-			if ((dictRequest["method"] != None) && isinstance(dictRequest["method"], basestring) && \
-							 (len(dictRequest["method"].strip()) != 0) && ("params" in dictRequest)):
+			if (("method" in dictRequest && dictRequest["method"] != None) && isinstance(dictRequest["method"], basestring) && \
+							 (len(dictRequest["method"].strip()) != 0) && ("params" in dictRequest.keys())):
 				self.arrFunctionReflection = None
 
 				try:
@@ -197,7 +203,7 @@ class JSONRPC_Server(object):
 			#Method names that begin with the word rpc followed by a period character (U+002E or ASCII 46)
 			#are reserved for rpc-internal methods and extensions and MUST NOT be used for anything else.
 			if (
-				(dictRequest["method"] != None) \
+				("method" in dictRequest && dictRequest["method"] != None) \
 				|| (not isintstance(dictRequest["method"], basestring)) \
 				|| (len(dictRequest["method"].strip()) != 0)
 			):
@@ -207,16 +213,15 @@ class JSONRPC_Server(object):
 				
 			#A Structured value that holds the parameter values to be used during the invocation of the method.
 			#This member MAY be omitted.
-			if (not "params" in dictRequest):
-				dictRequest["params"] = []
+			if ("params" not in dictRequest.keys()):
+				"""WARNING: Not sure if this is [] or None"""
+				dictRequest["params"] = None
 				
 			if (not isinstance(dictRequest["params"], list)):
 				raise JSONRPC_Exception("The \"params\" key must be an array.", JSONRPC_Exception.INVALID_REQUEST);
 
 
-				
-			#second if condition may be incorrect
-			if (hasattr(dictRequest["method"], '__call__') || (dictRequest["method"] != None)):
+			if (("method" in dictRequest && hasattr(dictRequest["method"], '__call__')) || ("method" in dictRequest && dictRequest["method"] != None)):
 				self.arrFunctionReflection = objReflectionPlugin.reflectionFunction(dictRequest["method"])
 				self.namedParamsTranslationAndValidation(self.arrFunctionReflection["function_params"], dictRequest["params"], dictRequest["method"])
 				self.validateDataTypes(self.arrFunctionReflection["function_params"], dictRequest["params"])
@@ -227,33 +232,33 @@ class JSONRPC_Server(object):
                 isset($_SERVER["REQUEST_METHOD"])
 				&& $_SERVER["REQUEST_METHOD"]==="OPTIONS" 
 				&& !in_array($arrRequest["method"], $this->arrAllowedFunctionCallsFor_HTTP_OPTIONS)
-			)
-			{
-				echo "HTTP request method ".$_SERVER["REQUEST_METHOD"]." ignored.";
-				exit(0);
-			}
+			):
+				print "HTTP request method " + $_SERVER["REQUEST_METHOD"] + " ignored."
+				sys.exit(0)
 			"""
 
 
 			#An identifier established by the Client that MUST contain a String, Number, or NULL value if included. 
 			#If it is not included it is assumed to be a notification. 
 			#The value SHOULD normally not be Null and Numbers SHOULD NOT contain fractional parts.
-			self.bNotificationMode = not "id" in dictRequest
+			self.bNotificationMode = "id" not in dictRequest
 				
-			if ((not self.bNotificationMode) && (not ininstance(dictRequest["id"], int)) && (not dictRequest["id"] != None)):
+			if ((not self.bNotificationMode) && (not ininstance(dictRequest["id"], int)) && ("id" in dictRequest && dictRequest["id"] != None)):
 				raise JSONRPC_Exception("The \"id\" key must be an integer, a null or be omitted for Notification requests.", JSONRPC_Exception::INVALID_REQUEST)
 				
 			if (not self.bNotificationMode):
+				"""WARNING: Check mxRequestID type"""
 				mxRequestID = dictRequest["id"]
 				
 				
 				
 			#A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
-			if ((not dictRequest["jsonrpc"] == None) || (dictRequest["jsonrpc"] != self.JSONRPC_VERSION)):
+			if (("jsonrpc" not in dictRequest || dictRequest["jsonrpc"] == None) || ("jsonrpc" not in dictRequest || dictRequest["jsonrpc"] != self.JSONRPC_VERSION)):
 				raise JSONRPC_Exception("The \"jsonrpc\" version must be equal to ".self.JSONRPC_VERSION, JSONRPC_Exception.INVALID_REQUEST)
 				
 				
 				
+			"""WARNING: Could throw exception on trying to access non-existant "method" key"""
 			self.assertFunctionNameAllowed(dictRequest["method"])
 				
 				
@@ -281,7 +286,7 @@ class JSONRPC_Server(object):
 			if (self.nHTTPResponseCode == 0):
 				if (self.bNotificationMode == True):
 					self.nHTTPResponseCode = self.HTTP_204_NO_CONTENT
-				else
+				else:
 					self.nHTTPResponseCode = self.HTTP_200_OK
 			
 		
@@ -306,11 +311,10 @@ class JSONRPC_Server(object):
     	try:
             for plugin in self.arrFilterPlugins:
        			plugin.response(dictResponse)
-
         except Exception as exc:
             this._log_exception(exc)
                 
-            if (dictResponse["error"] == None):
+            if ("error" not in dictResponse || dictResponse["error"] == None):
                 dictResponse = self._exceptionToJSONResponse(exc)
             
 			
@@ -321,8 +325,10 @@ class JSONRPC_Server(object):
 
     """
     * Will affect the HTTP status.
+    * @param JSONRPC_Exception exc
     """
-    def _exceptionToJSONResponse(self, Exception exc):
+    def _exceptionToJSONResponse(self, JSONRPC_Exception exc):
+    	"""WARNING: Not sure if __name__ wanted or just __class__"""
         strExceptionClass = exc.__class__.__name__
         """TODO"""
         """Trim the class name for slashes"""
@@ -333,22 +339,26 @@ class JSONRPC_Server(object):
 		}
 		"""	
     		
+		"""Get information about the current exception being caught"""
+		excType, excValue, excTraceback = sys.exc_info()
+
 		if (strExceptionClass in self.arrExceptionTypesForMessages):
-			strMessage = exc.getMessage()
+			strMessage = exc.message
 		
 		"""TODO"""
 		"""Check exception functions"""
 		else if (self.bDebugAllowAllExceptionMessages == True):
 			strMessage =
-				"[Internal error: " + strExceptionClass + "] " + exc.getMessage() + " "
-				+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
-				+ os.linesep + exc.getTraceAsString()
+				"[Internal error: " + strExceptionClass + "] " + exc.message + " " \
+				"""WARNING: Modified error message"""
+				#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
+				+ os.linesep + excTraceback
 		else:
 			strMessage = "Internal error."
 				
 		if (strExceptionClass in self.arrExceptionTypesForCodes):
-			nCode = (int)exc.getCode()
-		else
+			nCode = int(excValue)
+		else:
 			nCode = 0
 						
 		if (self.nHTTPResponseCode == 0):
@@ -378,7 +388,7 @@ class JSONRPC_Server(object):
 		* As such, the Client would not be aware of any errors (like e.g. "Invalid params","Internal error").
 		"""
 		if (self.bNotificationMode == False):
-			print json_encode(dictResponse)
+			print json.dumps(dictResponse)
 			
 		if (self.nHTTPResponseCode in [self.HTTP_200_OK, self.HTTP_204_NO_CONTENT]):
 			sys.exit(0)
@@ -404,7 +414,7 @@ class JSONRPC_Server(object):
 				break
 			
 		if (bCalled == False):
-			if(strFunctionName.__call__ != None):
+			if (not hasattr(strFunctionName, __call__):
 				fcallable = self.functionNameToCallableArray(strFunctionName)
 				"""TODO"""
 				"""Find equivalent for call_user_func_array in python"""
@@ -449,24 +459,24 @@ class JSONRPC_Server(object):
 	methodsMapper is of type JSONRPC_MethodsMapper
 	"""
 	def addMethodsMapper(self, methodsMapper):
-		for methodsMapperExisting in self.arrMethodsMappers:
+		for methodsMapperExisting in self.dictMethodsMappers:
 			if (methodsMapperExisting == methodsMapper):
 				return
 
-		self.arrMethodsMappers[methodsMapper.__class__.instanceWithAPIMethods()] = methodsMapper
+		self.dictMethodsMappers[methodsMapper.__class__.instanceWithAPIMethods()] = methodsMapper
 		
 		
 	def removeMethodsMapper(self, methodsMapper):			
 		strInstanceAPIClassNameExisting = methodsMapper.instanceWithAPIMethods().__class__
 			
-		if (strInstanceAPIClassNameExisting in self.arrMethodsMappers):
-			self.arrMethodsMappers[strInstanceAPIClassNameExisting] = None;
+		if (strInstanceAPIClassNameExisting in self.dictMethodsMappers):
+			self.dictMethodsMappers[strInstanceAPIClassNameExisting] = None;
 		else:
 			raise Exception("Failed to remove methodsMapper object.")
 
 		
 	def methodsMappers(self):
-		return self.arrMethodsMappers
+		return self.dictMethodsMappers
 		
 		
 	"""
