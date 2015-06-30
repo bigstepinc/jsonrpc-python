@@ -8,9 +8,7 @@ from JSONRPC_Exception import JSONRPC_Exception
 class JSONRPC_Server(object):
 	
 	def __init__(self):
-	{
-	}
-
+		
 	"""
 	* Exposed RPC function names.
 	* 
@@ -843,6 +841,7 @@ class JSONRPC_Server(object):
 
 			for arrParamProperties in arrParamsDetails:
 				"""WARNING: Check if array_key_exists""" 
+				"""WARNING: is arr really array? Or is it dict/tuple? """
 				if (arrParamProperties["param_name"] in arrParams):
 					"""WARNING: Error prone"""
 					arrNewParams.append(arrParams[arrParamProperties["param_name"]])
