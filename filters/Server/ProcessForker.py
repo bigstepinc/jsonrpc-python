@@ -32,7 +32,7 @@ class ProcessForker(ServerFilterBase):
 	 * @return None
 	"""
 	def __init__(self, nIOTimeout = self.IO_TIMEOUT_INFINITE):
-			self._nIOTimeout = nIOTimeout
+		self._nIOTimeout = nIOTimeout
 
 	"""TODO: Add data about parameters"""
 	"""
