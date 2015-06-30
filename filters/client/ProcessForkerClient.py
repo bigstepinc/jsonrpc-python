@@ -7,8 +7,9 @@
 * on child processes and to control these processes.
 """
 """TODO: imports"""
+import ...Server
 import tempfile
-import os.path
+import os.path, os.linesep
 
 class ProcessForkerClient(ClientFilterBase):
 	"""
@@ -92,7 +93,7 @@ class ProcessForkerClient(ClientFilterBase):
 
 		if (strTemporaryDirectoryPath == None):
 			strTemporaryDirectoryPath = tempfile.gettempdir() #Use system temporary directory.
-		else if (isinstance(strTemporaryDirectoryPath, basestring)):
+		elif (isinstance(strTemporaryDirectoryPath, basestring)):
 			raise Exception("Invalid temporary directory path. It must be a string.")
 		"""Observation: Directory creation is not recursive"""
 		else if (os.path.exists(strTemporaryDirectoryPath)):
@@ -161,6 +162,7 @@ class ProcessForkerClient(ClientFilterBase):
 			raise Exception("STDIN file creation failed.")
 			
 		try:
+			"""Observation: Use with when opening files in python"""
 			hStdinTmpFile = open(strStdinTmpFile, "w")
 
 			"""WARNING: I think this exception is thrown automatically"""
@@ -172,120 +174,104 @@ class ProcessForkerClient(ClientFilterBase):
 			"""
 
 			# Set the file to unblocking in order to avoid the process to hang when writing. 
+			"""TODO: Set blocking """
+			"""
 			if (!stream_set_blocking($hStdinTmpFile, /*$blocking*/ (int)false))
 			{
 				throw new \Exception("Making the STDIN stream non-blocking failed.");
 			}
+			"""
 
 			"""CONTINUE"""
-			/* Write to the STDIN file before creating a child process to avoid synchronization. */
-			if(!self::fwrite($hStdinTmpFile, $strJSONRequest))
-			{
-				throw new \Exception("STDIN file write failed. The JSON request couldn't be written.");
-			}
+			""" Write to the STDIN file before creating a child process to avoid synchronization. """
+			if (not self.fwrite(hStdinTmpFile, strJSONRequest)):
+				raise Exception("STDIN file write failed. The JSON request couldn't be written.")
 
-			/* Don't need the file any more. Ignore fclose failure. */
-			fclose($hStdinTmpFile);
+			"""Don't need the file any more. Ignore fclose failure. """
+			hStdinTmpFile.close()
 
-			$arrDescriptor = array(
-				self::STDIN => array("file", $strStdinTmpFile, "r"),
-				self::STDOUT => array("pipe", "w"),
-				self::STDERR => array("pipe", "w"),
-			);
+			dictDescriptor = {self.STDIN : ["file", strStdinTmpFile, "r"],
+							self.STDOUT : ["pipe", "w"],
+							self.STDERR : ["pipe", "w"]}
 
-			if($objNewProcess["config"]->runAsPrivilegedUser())
-			{
-				$strPrepend = "sudo -n -E ";
-			}
-			else
-			{
-				$strPrepend = "";
-			}
+			if (objNewProcess["config"].runAsPrivilegedUser()):
+				strPrepend = "sudo -n -E "
+			else:
+				strPrepend = ""
 
-			/* Change the behaviour of the proc_open function by using exec. Avoid the creation
-			of an additional shell process. */
-			$objNewProcess["handle"] = proc_open(
+			""" 
+			* Change the behaviour of the proc_open function by using exec. Avoid the creation
+			* of an additional shell process. 
+			"""
+			"""TODO"""
+			"""
+			objNewProcess["handle"] = proc_open(
 				"exec ".$strPrepend." ".$strEndpointFilePath,
 				$arrDescriptor,
 				$objNewProcess["pipes"],
 				NULL, /* default cwd path */
 				$this->_arrEnvironmentVariables
 			);
-			if(!is_resource($objNewProcess["handle"]))
-			{
-				throw new \Exception("Child process creation failed.");
-			}
+			"""
+			"""WARNING: Remove this. Just add try/except"""
+			if (not isinstance(objNewProcess["handle"], file)):
+				throw new Exception("Child process creation failed.")
 
-			$objNewProcess["buffers"] = array();
-			foreach(array_keys($objNewProcess["pipes"]) as $nProcessPipeIndex)
-			{
-				$objNewProcess["buffers"][$nProcessPipeIndex] = "";
-			}
+			objNewProcess["buffers"] = []
+			for nProcessPipeIndex in objNewProcess["pipes"].keys():
+				"""WARNING: Error prone"""
+				objNewProcess["buffers"][nProcessPipeIndex] = ""
 
-			$objNewProcess["start_timestamp"] = microtime(true);
-			$this->_arrRunningProcesses[$objNewProcess["call_id"]] = $objNewProcess;
+			"""TODO: Measure time"""
+			objNewProcess["start_timestamp"] = microtime(true)
+			self._arrRunningProcesses[objNewProcess["call_id"]] = objNewProcess
 
-			try
-			{
-				foreach($objNewProcess["pipes"] as $nProcessPipeIndex => $hProcessPipe)
-				{
-					if(!is_resource($hProcessPipe) || !stream_set_blocking($hProcessPipe, /*$blocking*/ (int)false))
-					{
-						$this->_killProcess($objNewProcess["call_id"]);
-						throw new \Exception("Process pipe is invalid.");
-					}
-				}
-			}
-			catch(\Exception $exc)
-			{
-				$this->_closeProcess($objNewProcess["call_id"]);
-
-				throw $exc;
-			}
-		}
-		finally
-		{
-			/* The file will be deleted when it won't be used by a process any more. The file is
-			opened by the current process. Unlink doesn't throw exceptions.*/
-			if(file_exists($strStdinTmpFile))
-			{
-				unlink($strStdinTmpFile);
-			}
-		}
+			try:
+				for (nProcessPipeIndex, hProcessPipe in objNewProcess["pipes"]):
+					"""WARNING: Encapsulate these in try/except"""
+					"""TODO: Set blocking"""
+					if (isinstance(hProcessPipe, file) || !stream_set_blocking(hProcessPipe, /*$blocking*/ int(False))):
+						self._killProcess(objNewProcess["call_id"])
+						raise Exception("Process pipe is invalid.")
+			except Exception as exc:
+				self._closeProcess(objNewProcess["call_id"])
+				raise exc
+		finally:
+			"""
+			* The file will be deleted when it won't be used by a process any more. The file is
+			* opened by the current process. Unlink doesn't throw exceptions.
+			"""
+			"""TODO: Check if file exists"""
+			"""TODO: Check unlink"""
+			if (file_exists(strStdinTmpFile)):
+				unlink($strStdinTmpFile)
 
 
-		$this->_log("Call #".$objNewProcess["call_id"]." initiated with request: ".$strJSONRequest.".");
+		self._log("Call #" + objNewProcess["call_id"] + " initiated with request: " + strJSONRequest + ".")
 
-		/* Synchronous behaviour if no callback has been specified. */
-		if(is_null($objNewProcess["callback"]))
-		{
-			$arrFinishedProcesses = $this->_waitRequests(self::SELECT_TIMEOUT_DEFAULT_USEC, array($objNewProcess["call_id"]));
-			assert(count($arrFinishedProcesses) == 1);
+		""" Synchronous behaviour if no callback has been specified. """
+		if (objNewProcess.get("callback") == None):
+			arrFinishedProcesses = self._waitRequests(self.SELECT_TIMEOUT_DEFAULT_USEC, [objNewProcess["call_id"]])
+			assert(len(arrFinishedProcesses) == 1)
 
-			$objFinishedProcess = array_shift($arrFinishedProcesses);
-			assert($objFinishedProcess["call_id"] == $objNewProcess["call_id"]);
+			objFinishedProcess = arrFinishedProcesses.pop()
+			assert(objFinishedProcess["call_id"] == objNewProcess["call_id"])
 
-			assert(array_key_exists("output", $objFinishedProcess));
-			if(is_object($objFinishedProcess["output"]))
-			{
-				assert($objFinishedProcess["output"] instanceof \Exception);
-				throw $objFinishedProcess["output"];
-			}
+			assert("output" in objFinishedProcess))
+			if (isinstance(objFinishedProcess["output"], object)):
+				assert(objFinishedProcess["output"] instanceof Exception)
+				raise objFinishedProcess["output"]
 
-			return $objFinishedProcess["buffers"][self::STDOUT];
-		}
+			"""WARNING: Error prone"""
+			return objFinishedProcess["buffers"][self.STDOUT]
 
-		$arrFakeSuccess = array(
-			"result" => NULL,
-			"id" => $objNewProcess["call_id"],
-			"jsonrpc" => Server::JSONRPC_VERSION
-		);
+		dictFakeSuccess = {"result" : None, "id" : objNewProcess["call_id"], "jsonrpc" : Server.JSONRPC_VERSION}
 
-		return json_encode($arrFakeSuccess);
-	}
+		"""WARNING: Check if it's dumps or loads"""
+		return json.dumps(arrFakeSuccess)
 		
 
-	/**
+	"""
 	 * Wait for some child processes to finish execution and execute the callbacks if any.
 	 * The infinite IO timeout may delay the processing of other calls and cause the processes
 	 * to be allowed to run more then their set timeout. Ignore timeouts when the processes
@@ -297,14 +283,12 @@ class ProcessForkerClient(ClientFilterBase):
 	 * (INFINITE).
 	 *
 	 * @return int
-	 */
-	public function selectRequests($nSelectTimeout = -1)
-	{
-		return count($this->_selectRequests($nSelectTimeout));
-	}
+	"""
+	def selectRequests(self, nSelectTimeout = -1):
+		return len(self._selectRequests(nSelectTimeout))
 
 		
-	/**
+	"""
 	 * Wait for all the processes to finish execution and execute the callbacks if any.
 	 * The infinite IO timeout may delay the processing of other calls and cause the processes
 	 * to be allowed to run more then their set timeout. Ignore timeouts when the processes
@@ -313,15 +297,14 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param int nSelectTimeout The select timeout in microseconds. Defaults to -1
 	 * (INFINITE).
 	 *
-	 * @return null
-	 */
-	public function waitRequests($nSelectTimeout = -1)
-	{
-		$this->_waitRequests($nSelectTimeout);
-	}
+	 * @return None
+	"""
+	def waitRequests(self, nSelectTimeout = -1):
+		self._waitRequests(nSelectTimeout)
+
 		
 
-	/**
+	"""
 	 * Wait for some child processes to finish execution and execute the callbacks if any.
 	 * The infinite IO timeout may delay the processing of other calls and cause the processes
 	 * to be allowed to run more then their set timeout. Ignore timeouts when the processes
@@ -334,116 +317,110 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param array arrCallIDs The calls to wait for.
 	 *
 	 * @return array
-	 */
-	protected function _selectRequests($nSelectTimeout, $arrCallIDs = NULL)
-	{
-		/* Lazy initialization. */
-		if(is_null(self::$_JSONRPCClient))
-		{
-			self::$_JSONRPCClient = new Client(NULL);
-		}
+	"""
+	def _selectRequests(self, nSelectTimeout, arrCallIDs = None):
+		""" Lazy initialization. """
+		if (self._JSONRPCClient == None):
+			self._JSONRPCClient = Client(None)
 
-		$nSelectTimeoutSec = 0;
+		nSelectTimeoutSec = 0
 
-		/* The select function uses NULL as a value for INFINITE. */
-		if($nSelectTimeout === -1)
-		{
-			$nSelectTimeout = NULL;
-			$nSelectTimeoutSec = NULL;
-		}
+		""" The select function uses None as a value for INFINITE. """
+		if (nSelectTimeout === -1):
+			nSelectTimeout = None
+			nSelectTimeoutSec = None
 
-		/* Create the select array. */
-		$arrStdoutAndStderrProcessPipes = array();
+		""" Create the select array. """
+		arrStdoutAndStderrProcessPipes = []
 
-		foreach($this->_arrRunningProcesses as $objProcess)
-		{
-			if(is_null($arrCallIDs) || in_array($objProcess["call_id"], $arrCallIDs))
-			{
-				$arrStdoutAndStderrProcessPipes []= $objProcess["pipes"][self::STDOUT];
-				$arrStdoutAndStderrProcessPipes []= $objProcess["pipes"][self::STDERR];
-			}
-		}
+		for (objProcess in _arrRunningProcesses):
+			if ((arrCallIDs == None) || objProcess["call_id"] in arrCallIDs):
+				arrStdoutAndStderrProcessPipes[]= objProcess["pipes"][self.STDOUT]
+				arrStdoutAndStderrProcessPipes[]= objProcess["pipes"][self.STDERR]
 
-		/* If there are no running processes return. */
-		if(!count($arrStdoutAndStderrProcessPipes))
-			return 0;
+		""" If there are no running processes return. """
+		if (len(arrStdoutAndStderrProcessPipes) == 0):
+			return 0
 
-		/* Avoid select error. */
-		$Null = NULL;
+		""" Avoid select error. """
+		Null = None
 
-		/* Select doesn't work on windows for pipes opened by proc_open function. If a process
-		dies before it could output anything the select function will consider the STDOUT and
-		STDERR pipes ready for reading. */
-		$nNoOfEvents = stream_select($arrStdoutAndStderrProcessPipes, $Null, $Null, $nSelectTimeoutSec, $nSelectTimeout);
-		if($nNoOfEvents === false)
-			throw new \Exception("Process pipes select failed.");
+		""" 
+		 * Select doesn't work on windows for pipes opened by proc_open function. If a process
+		 * dies before it could output anything the select function will consider the STDOUT and
+		 * STDERR pipes ready for reading. 
+		"""
+		nNoOfEvents = stream_select(arrStdoutAndStderrProcessPipes, Null, Null, nSelectTimeoutSec, nSelectTimeout)
+		if (nNoOfEvents == False):
+			rasie Exception("Process pipes select failed.")
 
-		$arrFinishedProcesses = array();
-		$fCurrentTimestamp = microtime(true);
+		arrFinishedProcesses = []
+		"""TODO: Measure time"""
+		fCurrentTimestamp = microtime(true);
 
-		foreach($this->_arrRunningProcesses as &$objRunningProcess)
-		{
-			try
-			{
-				foreach($objRunningProcess["pipes"] as $nProcessPipeIndex => $hProcessPipe)
-				{
-					/* Removed condition. Lead to timeouts. The pipe is set to non-blocking so the read should
-					be instantaneous even of there is no data to be read. The stream_select call is used more
-					like a sleep. */
-					$objRunningProcess["buffers"][$nProcessPipeIndex] .= self::fread($hProcessPipe);
-				}
+		"""WARNING: Removed & reference"""
+		for (objRunningProcess in self._arrRunningProcesses):
+			try:
+				for (nProcessPipeIndex, hProcessPipe in objRunningProcess["pipes"]):
+					"""
+					 * Removed condition. Lead to timeouts. The pipe is set to non-blocking so the read should
+					 * be instantaneous even of there is no data to be read. The stream_select call is used more
+					 * like a sleep. 
+					"""
+					objRunningProcess["buffers"][nProcessPipeIndex] += self.fread(hProcessPipe)				}
 					
-				$nProcessEndStatus = $this->_waitProcess($objRunningProcess["call_id"], 0);
-				if($nProcessEndStatus === false)
-				{
-					if(
-						empty($objRunningProcess["buffers"][self::STDOUT])
-						&& empty($objRunningProcess["buffers"][self::STDERR])
-					)
-					{
-						$fProcessTimeout = $objRunningProcess["config"]->getTimeout();
-						if($fProcessTimeout != -1 && ($fCurrentTimestamp - $objRunningProcess["start_timestamp"]) > $fProcessTimeout)
-							throw new \Exception("Process timed out.");
-					}
-				}
-
-				if(!empty($objRunningProcess["buffers"][self::STDERR]) && feof($objRunningProcess["pipes"][self::STDERR]))
-					throw new \Exception("Process encountered an error with the following message: ".$objRunningProcess["buffers"][self::STDERR].".");
+				nProcessEndStatus = self._waitProcess(objRunningProcess["call_id"], 0)
+				if (nProcessEndStatus == False):
+					"""WARNING: Error prone"""
+					if (objRunningProcess["buffers"].get(self.STDOUT) == None	&& \
+						objRunningProcess["buffers"].get(self.STDERR) == None):
 						
-				if(
-					$nProcessEndStatus === false
-					|| !feof($objRunningProcess["pipes"][self::STDOUT])
-					|| !feof($objRunningProcess["pipes"][self::STDERR])
-				)
-					continue;
-					
-				$mxProcessOutput = self::$_JSONRPCClient->processRAWResponse($objRunningProcess["buffers"][self::STDOUT], false);
-			}
-			catch(\Exception $e)
-			{
-				$this->_killProcess($objRunningProcess["call_id"]);
-				$mxProcessOutput = $e;
-			}
+						fProcessTimeout = objRunningProcess["config"].getTimeout()
+						"""TODO: Measure time"""
+						if (fProcessTimeout != -1 && (fCurrentTimestamp - objRunningProcess["start_timestamp"]) > fProcessTimeout):
+							raise Exception("Process timed out.")
+				
+				"""WARNING: Error prone"""
+				"""TODO: Find out what feof does"""
+				if (objRunningProcess["buffers"].get(self.STDERR) == None && feof(objRunningProcess["pipes"][self::STDERR])):
+					raise Exception("Process encountered an error with the following message: " + objRunningProcess["buffers"][self::STDERR] + ".")
+						
+				"""TODO: Find out what feof does"""
+				if (nProcessEndStatus == False || !feof($objRunningProcess["pipes"][self.STDOUT]) \
+					|| !feof($objRunningProcess["pipes"][self::STDERR])):
+					continue
+				
+				"""WARNING: May have to change mxProcessOutput. There is no mixed type in python"""	
+				mxProcessOutput = self._JSONRPCClient.processRAWResponse(objRunningProcess["buffers"][self.STDOUT], False)
 
-			$this->_log("Call #".$objRunningProcess["call_id"]." finished with output: ".var_export($mxProcessOutput, true).".");
+			raise Exception as e:
+				self._killProcess(objRunningProcess["call_id"])
+				mxProcessOutput = e
 
-			assert(class_exists("JSONRPC\\Filters\\Client\\ProcessForkerCallback"));
-			if(is_object($objRunningProcess["callback"]) && !strcasecmp(get_class($objRunningProcess["callback"]), "JSONRPC\\Filters\\Client\\ProcessForkerCallback"))
-				$objRunningProcess["callback"]->call($mxProcessOutput);
-			$objRunningProcess["output"] = $mxProcessOutput;
+			"""TODO: Check var_export"""
+			self._log("Call #" + objRunningProcess["call_id"] + " finished with output: " + var_export(mxProcessOutput, true) + ".")
 
-			$arrFinishedProcesses []= $objRunningProcess;
+			"""TODO: Check if class exists"""
+			assert(class_exists("JSONRPC\\Filters\\Client\\ProcessForkerCallback"))
 
-			$this->_closeProcess($objRunningProcess["call_id"]);
-		}
+
+			"""TODO: Solve this"""
+			if (isinstance(objRunningProcess["callback"], object) && !strcasecmp(get_class($objRunningProcess["callback"]), "JSONRPC\\Filters\\Client\\ProcessForkerCallback"))
+				objRunningProcess["callback"].call(mxProcessOutput)
+			objRunningProcess["output"] = mxProcessOutput
+
+			arrFinishedProcesses[] = objRunningProcess;
+
+			self._closeProcess(objRunningProcess["call_id"])
 			
-		unset($objRunningProcess);
+		"""TODO: Unset"""
+		unset(objRunningProcess)
 
-		return $arrFinishedProcesses;
-	}
+		return arrFinishedProcesses
 
 		
-	/**
+	"""TODO: Check documentation"""
+	"""
 	 * Wait for all the processes to finish execution and execute the callbacks if any.
 	 * The infinite IO timeout may delay the processing of other calls and cause the processes
 	 * to be allowed to run more then their set timeout. Ignore timeouts when the processes
@@ -456,39 +433,32 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param array arrCallIDs The calls to wait for.
 	 *
 	 * @return array
-	 */
-	protected function _waitRequests($nSelectTimeout = -1, $arrCallIDs = NULL)
-	{
-		$nRunningProcesses = count($this->_arrRunningProcesses);
+	"""
+	def _waitRequests(self, nSelectTimeout = -1, arrCallIDs = None):
+		nRunningProcesses = len(self._arrRunningProcesses)
 
-		if(!is_null($arrCallIDs))
-		{
-			assert(is_array($arrCallIDs));
+		if (arrCallIDs == None):
+			"""WARNING: Check if arrCallIDs is list/dict/tuple"""
+			assert(isinstance(arrCallIDs, list))
 
-			foreach($this->_arrRunningProcesses as $objRunningProcess)
-				if(!in_array($objRunningProcess["call_id"], $arrCallIDs))
-					$nRunningProcesses--;
+			for (objRunningProcess in self._arrRunningProcesses):
+				if (objRunningProcess["call_id"] not in arrCallIDs):
+					nRunningProcesses -= 1
 
-			assert(count($arrCallIDs) == $nRunningProcesses);
-		}
+			assert(len(arrCallIDs) == nRunningProcesses)
 
-		$arrFinishedProcesses = array();
+		arrFinishedProcesses = []
 
-		while($nRunningProcesses > 0)
-		{
-			$arrCurrentlyFinishedProcesses = $this->_selectRequests($nSelectTimeout, $arrCallIDs);
-			$nRunningProcesses -= count($arrCurrentlyFinishedProcesses);
+		while (nRunningProcesses > 0):
+			arrCurrentlyFinishedProcesses = self._selectRequests(nSelectTimeout, arrCallIDs)
+			nRunningProcesses -= len(arrCurrentlyFinishedProcesses)
 
-			$arrFinishedProcesses = array_merge(
-				$arrFinishedProcesses,
-				$arrCurrentlyFinishedProcesses
-			);
-		}
+			arrFinishedProcesses = arrFinishedProcesses + arrCurrentlyFinishedProcesses
+	
+		return arrFinishedProcesses
 
-		return $arrFinishedProcesses;
-	}
-
-	/**
+	"""TODO: Check documentation. Replace mixed"""
+	"""
 	 * Waits for a process to finish execution with a timeout.
 	 *
 	 * @TODO: Rewrite it to use select.
@@ -498,28 +468,26 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param int nCallID The ID of the call.
 	 * @param int nTimeout The timeout to use. It defaults to -1(INFINITE).
 	 *
-	 * @return mixed
-	 */
-	protected function _waitProcess($nCallID, $nTimeout = -1)
-	{
-		assert(array_key_exists($nCallID, $this->_arrRunningProcesses));
+	 * @return not mixed
+	"""
+	def _waitProcess(self, nCallID, nTimeout = -1):
+		assert(nCallID in self._arrRunningProcesses)
 
-		$nStartTime = microtime(true);
+		"""TODO: Measure time"""
+		nStartTime = microtime(true)
 
-		do
-		{
-			$arrProcessStatus = proc_get_status($this->_arrRunningProcesses[$nCallID]["handle"]);
-			if(!$arrProcessStatus["running"])
-			{
-				return $arrProcessStatus["exitcode"];
-			}
-		}
-		while($nTimeout === -1 || (microtime(true) - $nStartTime) <= $nTimeout);
+		"""Emulation of a do...while"""
+		while (True):
+			"""WARNING: Error prone"""
+			arrProcessStatus = proc_get_status(self._arrRunningProcesses[$nCallID]["handle"])
+			if(not arrProcessStatus["running"]):
+				return arrProcessStatus["exitcode"]
+			"""TODO: Measure time"""
+			if ((nTimeout == -1) || ((microtime(true) - nStartTime) <= nTimeout)):
+				break
+		return False
 
-		return false;
-	}
-
-	/**
+	"""
 	 * Closes a process. If the process is still running it blocks until it exits.
 	 *
 	 * Returns the process end status.
@@ -527,26 +495,23 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param int nCallID The ID of the call.
 	 *
 	 * @return int
-	 */
-	protected function _closeProcess($nCallID)
-	{
-		assert(array_key_exists($nCallID, $this->_arrRunningProcesses));
+	"""
+	def _closeProcess(self, nCallID):
+		assert(nCallID in self._arrRunningProcesses)
 
-		/* Close the pipes to avoid deadlock. */
-		foreach($this->_arrRunningProcesses[$nCallID]["pipes"] as $hProcessPipe)
-		{
-			fclose($hProcessPipe); /* Ignore it's output. */
-		}
+		""" Close the pipes to avoid deadlock. """
+		for (self._arrRunningProcesses[nCallID]["pipes"] as hProcessPipe):
+			hProcessPipe.close() """ Ignore its output."""
 
-		$nExitCode = proc_close($this->_arrRunningProcesses[$nCallID]["handle"]);
+		nExitCode = proc_close(self._arrRunningProcesses[nCallID]["handle"])
 
-		unset($this->_arrRunningProcesses[$nCallID]);
+		"""TODO: Unset. Not sure if set to None or delete"""
+		self._arrRunningProcesses[nCallID] == None
 
-		return $nExitCode;
-	}
+		return nExitCode
 
 		
-	/**
+	"""
 	 * Signals a process.
 	 *
 	 * Returns the process status.
@@ -555,45 +520,40 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param int nSignalCode The UNIX signal code.
 	 *
 	 * @return int
-	 */
-	protected function _signalProcess($nCallID, $nSignalCode)
-	{
-		assert(array_key_exists($nCallID, $this->_arrRunningProcesses));
+	"""
+	def _signalProcess(self, nCallID, nSignalCode):
+		assert(nCallID in self._arrRunningProcesses)
 
-		return (int)proc_terminate($this->_arrRunningProcesses[$nCallID]["handle"], $nSignalCode);
-	}
+		return int(proc_terminate(self._arrRunningProcesses[nCallID]["handle"], nSignalCode))
 
 		
-	/**
+	"""
 	 * Kills a process by sending the SIGKILL UNIX signal.
 	 *
 	 * @param int nCallID The ID of the call.
 	 *
 	 * @return int. The process end status.
-	 */
-	protected function _killProcess($nCallID)
-	{
-		return $this->_signalProcess($nCallID, self::SIGKILL);
-	}
+	"""
+	def _killProcess(self, nCallID):
+		return self._signalProcess(nCallID, self.SIGKILL)
 
 		
-	/**
+	"""
 	 * Logs a message to the the log file, in case the log file path is not null.
 	 *
 	 * @param string The message to log.
 	 *
-	 * @return null
-	 */
-	protected function _log($strMessage)
-	{
-		if(is_null($this->_strLogFilePath))
-			return;
+	 * @return None
+	"""
+	def _log(self, strMessage):
+		if (self._strLogFilePath == None):
+			return
 		
-		error_log($strMessage.PHP_EOL, 3, $this->_strLogFilePath);
-	}
+		error_log(strMessage + os.linesep, 3, self._strLogFilePath)
 
 		
-	/**
+	"""TODO: Read documentation"""
+	"""
 	 * Wrapper for the fwrite function that assures that the whole provided string has been
 	 * written with a specified timeout. The file/pipe must have the unblocking property set.
 	 *
@@ -604,33 +564,36 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param int nTimeout The timeout to use. It defaults to -1(INFINITE).
 	 *
 	 * @return bool True for success or false for failure.
-	 */
-	public static function fwrite($hFileHandle, $strToBeWritten, $nTimeout = -1)
-	{
-		assert(is_resource($hFileHandle));
-		assert(is_string($strToBeWritten));
+	"""
+	"""TODO: Make this static? """
+	def fwrite(self, hFileHandle, strToBeWritten, nTimeout = -1):
+		assert(isinstance(hFileHandle, file))
+		assert(isinstance(strToBeWritten, basestring))
 
-		$nBytesLeft = strlen($strToBeWritten);
-		$nStartTime = microtime(true);
+		nBytesLeft = len(strToBeWritten)
+		"""TODO: Measure time"""
+		nStartTime = microtime(True)
 
-		do
-		{
-			$nBytesWritten = fwrite($hFileHandle, $strToBeWritten, $nBytesLeft);
-			if($nBytesWritten !== false)
-			{
-					$nBytesLeft -= $nBytesWritten;
-				if($nBytesLeft <= 0) /* nByteLeft can't be lower than 0. */
-					return true;
-					$strToBeWritten = substr($strToBeWritten, $nBytesWritten);
-			}
-		}
-		while($nTimeout === -1 || (microtime(true) - $nStartTime) <= $nTimeout);
+		"""Observation: Emulation of do...while"""
+		while (True):
+			"""TODO: This is a built-in function and the above is a wrapper. Search for python equivalent of fwrite"""
+			nBytesWritten = fwrite(hFileHandle, strToBeWritten, nBytesLeft)
+			"""TODO: Adapt according to fwrite equivalent"""
+			if (nBytesWritten !== False):
+				nBytesLeft -= nBytesWritten
+				if (nBytesLeft <= 0) """ nByteLeft can't be lower than 0. """
+					return True
+					strToBeWritten = strToBeWritten[nBytesWritten:]
 
-		return false;
-	}
+			"""TODO: Measure time"""
+			if (nTimeout == -1 || (microtime(true) - nStartTime) <= $nTimeout):
+				break
+
+		return False
 		
 
-	/**
+	"""TODO: Check documentation"""
+	"""
 	 * Wrapper for the fread function that reads from a file untill it times out or it reads an empty
 	 * string. The file/pipe must have the unblocking property set.
 	 *
@@ -640,58 +603,56 @@ class ProcessForkerClient(ClientFilterBase):
 	 * @param int nTimeout The timeout to use. It defaults to -1(INFINITE).
 	 *
 	 * @return string The read string.
-	 */
-	public static function fread($hFileHandle, $nTimeout = -1)
-	{
-		assert(is_resource($hFileHandle));
+	"""
+	"""TODO: Make this static?"""
+	def fread(self, hFileHandle, nTimeout = -1):
+		assert(isinstance(hFileHandle, file))
 
-		$strReadString = "";
-		$nStartTime = microtime(true);
+		strReadString = ""
+		"""TODO: Measure time"""
+		nStartTime = microtime(true)
 
-		do
-		{
-			$strPartialReadString = fread($hFileHandle, 4096);
-			if($strPartialReadString !== false)
-			{
-				$strReadString .= $strPartialReadString;
-				if(!strlen($strPartialReadString))
-					break;
-			}
-		}
-		while($nTimeout === -1 || (microtime(true) - $nStartTime) <= $nTimeout);
+		"""Observation: Emulation of do...while"""
+		while (True):
+			strPartialReadString = fread(hFileHandle, 4096)
+			if (strPartialReadString != False):
+				strReadString += strPartialReadString
+				if (len(strPartialReadString) == 0):
+					break
+			"""TODO: Measure time"""
+			if (nTimeout == -1 || (microtime(true) - nStartTime) <= nTimeout):
+				break
 
-		return $strReadString;
-	}
+		return strReadString
 		
 		
-	/**
+	"""
 	 * STDIN pipe index.
-	 */
-	const STDIN = 0;
+	"""
+	STDIN = 0
 
-	/**
+	"""
 	 * STDOUT pipe index.
-	 */
-	const STDOUT = 1;
+	"""
+	STDOUT = 1
 
-	/**
+	"""
 	 * STDERR pipe index.
-	 */
-	const STDERR = 2;
+	"""
+	STDERR = 2
 
-	/**
+	"""
 	* The temporary files name prefix.
-	*/
-	const TEMPORARY_FILE_NAME_PREFIX = "PROCESS_FORKER_";
+	"""
+	TEMPORARY_FILE_NAME_PREFIX = "PROCESS_FORKER_"
 
-	/**
+	"""
 	 * Default select timeout.
-	 */
-	const SELECT_TIMEOUT_DEFAULT_USEC = 1000000;
+	"""
+	SELECT_TIMEOUT_DEFAULT_USEC = 1000000
 
-	/**
+	"""
 	 * Process termination signal.
-	 */
-	const SIGKILL = 9;
-}
+	"""
+	SIGKILL = 9
 

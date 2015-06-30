@@ -678,7 +678,7 @@ class JSONRPC_Server(object):
 		for (i=0; i < len(arrParamsDetails); i = i + 1):
 			strParamName = arrParamsDetails[i]["param_name"]
 
-			if (not i in arrParams):
+			if (i not in arrParams):
 				if (len(arrParamsDetails[i]["param_default_value_json"]) == 0):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
@@ -694,104 +694,105 @@ class JSONRPC_Server(object):
 				continue
 
 			"""WARNING: Check switch synthax"""
-			"""TODO: switch"""
-			switch (arrParamsDetails[i]["param_type"]):
-				case "integer":
-					if (isinstance(arrParams[i], int)):
-						break
+			"""WARNING: Check if param_type is string or actual type"""
+			if (arrParamsDetails[i]["param_type"] == "integer"):
+				if (isinstance(arrParams[i], int)):
+					#break
 
-					if (
-						"""WARNING: Check if casts are correct"""
-						not isinstance(arrParams[i], basestring)
-						|| basestring(int(arrParams[i])) != basestring(arrParams[i])
-					):
-						"""WARNING: CHeck json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
-							"], must be an integer (Number JSON type with no decimals), " + type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				if (
+					"""WARNING: Check if casts are correct"""
+					not isinstance(arrParams[i], basestring)
+					|| basestring(int(arrParams[i])) != basestring(arrParams[i])
+				):
+					"""WARNING: CHeck json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
+						"], must be an integer (Number JSON type with no decimals), " + type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 					
-					arrParams[i] = (int)arrParams[i]
-					break
+				arrParams[i] = (int)arrParams[i]
+				#break
 
-				case "float":
-					if (ininstance(arrParams[i], float) || isinstance(arrParams[i], int)):
-						break
+			elif (arrParamsDetails[i]["param_type"] == "float"):
+				if (ininstance(arrParams[i], float) || isinstance(arrParams[i], int)):
+					#break
 						
-					"""WARNING: Check casts"""
-					if ((not isinstance(arrParams[i], basestring)) || ((basestring)(float)arrParams[i] != arrParams[i])):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a Number., " \
-												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				"""WARNING: Check casts"""
+				if ((not isinstance(arrParams[i], basestring)) || ((basestring)(float)arrParams[i] != arrParams[i])):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a Number., " \
+											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					arrParams[i] = (float)arrParams[i]
-					break					
+				arrParams[i] = (float)arrParams[i]
+				#break					
 					
-				case "boolean":
-					if (isinstance(arrParams[i], bool)):
-						break
+			elif (arrParamsDetails[i]["param_type"] == "boolean"):
+				if (isinstance(arrParams[i], bool)):
+					#break
 
-					if (isinstance(arrParams[i], list) || isinstance(arrParams[i], object)):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
-												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				if (isinstance(arrParams[i], list) || isinstance(arrParams[i], object)):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
+											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 							
-					if ((basestring)arrParams[i] == "0"):
-						arrParams[i] = False
-					else if ((basestring)arrParams[i] == "1"):
-						arrParams[i] = True
-					else:
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
-												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				if ((basestring)arrParams[i] == "0"):
+					arrParams[i] = False
+				else if ((basestring)arrParams[i] == "1"):
+					arrParams[i] = True
+				else:
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
+											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					break
+				#break
 
 
-				case "array":
-					if (not isinstance(arrParams[i], list)):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Array, " \
-												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-					else if (self.isAssociativeArray(arrParams[i])):
+			"""TODO: Check for dictionaries, tuples, etc."""
+			elif (arrParamsDetails[i]["param_type"] == "array"):
+				if (not isinstance(arrParams[i], list)):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Array, " \
+											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					elif (self.isAssociativeArray(arrParams[i])):
 						"""WARNING: Check json.dumps"""
 						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
 												"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
 
-					break
+				#break
 
 
-				case "object":
-					if (not isinstance(arrParams[i], list)):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object, " \
-												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-					else if (not self.isAssociativeArray(arrParams[i]) && (not isinstance(arrParams[i], object)) \
-							&& (not isinstance(arrParams[i], list)) && (len(arrParams[i]) == 0)):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
-												+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-
-					break
-
-
-				case "string":
-					if (isinstance(arrParams[i], basestring)):
-						break
-
-					if ((not isinstance(arrParams[i], basestring)) && (not isinstance(arrParams[i], int))):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a String, " \
-												+ json.dumps(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-
-					arrParams[i] = (basestring)arrParams[i]
-					break;
-
-				case "mixed":
-					break
-
-
-				default:
+			elif (arrParamsDetails[i]["param_type"] == "object"):
+				if (not isinstance(arrParams[i], list)):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Unhandled type " + json.dumps(arrParamsDetails[i]["param_type"]) + ".", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object, " \
+											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				elif (not self.isAssociativeArray(arrParams[i]) && (not isinstance(arrParams[i], object)) \
+						&& (not isinstance(arrParams[i], list)) && (len(arrParams[i]) == 0)):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
+											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+
+				#break
+
+
+			elif (arrParamsDetails[i]["param_type"] == "string"):
+				if (isinstance(arrParams[i], basestring)):
+					#break
+
+				if ((not isinstance(arrParams[i], basestring)) && (not isinstance(arrParams[i], int))):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a String, " \
+											+ json.dumps(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+
+				arrParams[i] = (basestring)arrParams[i]
+				#break;
+
+			"""WARNING: Change this. There is no mixed type in python"""
+			elif (arrParamsDetails[i]["param_type"] == "mixed"):
+				#break
+
+
+			else:
+				"""WARNING: Check json.dumps"""
+				raise JSONRPC_Exception("Unhandled type " + json.dumps(arrParamsDetails[i]["param_type"]) + ".", JSONRPC_Exception.INVALID_PARAMS)
 
 
 	"""WARNING: Removed & reference"""
@@ -799,6 +800,7 @@ class JSONRPC_Server(object):
 		if (self.bValidateTypes == False):
 			return
 			
+		"""WARNING: Check mixed type. It does not exist in python"""
 		if (strExpectedDataType == "mixed"):
 			return
 			
@@ -807,10 +809,10 @@ class JSONRPC_Server(object):
 			
 		if (isinstance(mxResult, list) && strExpectedDataType == "object" && \
 			(self.isAssociativeArray(mxResult) || len(mxResult) == 0)):
-			mxResult = (object)mxResult
+			mxResult = object(mxResult)
 
 		else if (isinstance(mxResult, int) && strExpectedDataType == "float"):
-			mxResult = (float)mxResult
+			mxResult = float(mxResult)
 						
 		strReturnType = type(mxResult)
 			
