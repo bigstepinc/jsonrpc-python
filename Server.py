@@ -1,4 +1,3 @@
-import request
 import os
 import json
 import traceback
@@ -8,6 +7,7 @@ from JSONRPC_Exception import JSONRPC_Exception
 class JSONRPC_Server(object):
 	
 	def __init__(self):
+		pass
 		
 	"""
 	* Exposed RPC function names.
@@ -149,7 +149,7 @@ class JSONRPC_Server(object):
 		"""TODO"""
 		"""Check import.request"""
 		"""
-		if(isset($_SERVER["REQUEST_METHOD"]) && !in_array($_SERVER["REQUEST_METHOD"], array("GET", "POST", "PUT", "OPTIONS"))):
+		if(isset($_SERVER["REQUEST_METHOD"]) and !in_array($_SERVER["REQUEST_METHOD"], array("GET", "POST", "PUT", "OPTIONS"))):
 				print "HTTP request method " + $_SERVER["REQUEST_METHOD"] + " ignored."
 				sys.exit(0)
 		"""
@@ -159,7 +159,7 @@ class JSONRPC_Server(object):
 		try:
 			"""TODO
 			"//php://input must be read here only for normal HTTP POST JSON-RPC requests.
-			if (strJSONRequest == None && (!isset($_SERVER["REQUEST_METHOD"]) || $_SERVER["REQUEST_METHOD"]=="POST"))
+			if (strJSONRequest == None and (!isset($_SERVER["REQUEST_METHOD"]) or $_SERVER["REQUEST_METHOD"]=="POST"))
 					$strJSONRequest=file_get_contents("php://input");
 			"""
 				
@@ -174,22 +174,26 @@ class JSONRPC_Server(object):
 			dictRequest = decodeJSONSafely(strJSONRequest)
 				
 			"""WARNING: May have a problem at indexation in dictionaries"""	
-			if ('0' in dictRequest.keys() && dictRequest[0] != None)
+			if ('0' in dictRequest.keys() and dictRequest[0] != None):
 				raise JSONRPC_Exception("JSON-RPC batch requests are not supported by this server.", JSONRPC_Exception.INVALID_REQUEST);
 					
 
-			if (("method" in dictRequest && dictRequest["method"] != None) && isinstance(dictRequest["method"], basestring) && \
-							 (len(dictRequest["method"].strip()) != 0) && ("params" in dictRequest.keys())):
+			if (("method" in dictRequest and dictRequest["method"] != None) and isinstance(dictRequest["method"], basestring) and \
+							 (len(dictRequest["method"].strip()) != 0) and ("params" in dictRequest.keys())):
 				self.arrFunctionReflection = None
 
 				try:
 					self.arrFunctionReflection = objReflectionPlugin.reflectionFunction(dictRequest["method"])
-				except Exception as e: 
-				    #Ignoring because the reflection is expected to sometimes fail here.
-                    #The reflection will be retried later where it is not expected to fail.
-                    #One of these tries must succeed to obtain the functions reflection object.
-				
-				if(self.arrFunctionReflection != None):
+
+				except Exception:
+					"""
+					 * Ignoring because the reflection is expected to sometimes fail here.
+					 * The reflection will be retried later where it is not expected to fail.
+					 * One of these tries must succeed to obtain the functions reflection object.
+					"""
+					pass
+
+				if (self.arrFunctionReflection != None):
 					self.namedParamsTranslationAndValidation(self.arrFunctionReflection["function_params"], dictRequest["params"], dictRequest["method"])
 					self.validateDataTypes(self.arrFunctionReflection["function_params"], dictRequest["params"])
 				
@@ -201,9 +205,9 @@ class JSONRPC_Server(object):
 			#Method names that begin with the word rpc followed by a period character (U+002E or ASCII 46)
 			#are reserved for rpc-internal methods and extensions and MUST NOT be used for anything else.
 			if (
-				("method" in dictRequest && dictRequest["method"] != None) \
-				|| (not isintstance(dictRequest["method"], basestring)) \
-				|| (len(dictRequest["method"].strip()) != 0)
+				("method" in dictRequest and dictRequest["method"] != None) \
+				or (not isintstance(dictRequest["method"], basestring)) \
+				or (len(dictRequest["method"].strip()) != 0)
 			):
 				raise JSONRPC_Exception("The \"method\" key must be a string with a function name.", JSONRPC_Exception.INVALID_REQUEST)
 				
@@ -219,7 +223,7 @@ class JSONRPC_Server(object):
 				raise JSONRPC_Exception("The \"params\" key must be an array.", JSONRPC_Exception.INVALID_REQUEST);
 
 
-			if (("method" in dictRequest && hasattr(dictRequest["method"], '__call__')) || ("method" in dictRequest && dictRequest["method"] != None)):
+			if (("method" in dictRequest and hasattr(dictRequest["method"], '__call__')) or ("method" in dictRequest and dictRequest["method"] != None)):
 				self.arrFunctionReflection = objReflectionPlugin.reflectionFunction(dictRequest["method"])
 				self.namedParamsTranslationAndValidation(self.arrFunctionReflection["function_params"], dictRequest["params"], dictRequest["method"])
 				self.validateDataTypes(self.arrFunctionReflection["function_params"], dictRequest["params"])
@@ -228,8 +232,8 @@ class JSONRPC_Server(object):
 			"""TODO"""
 			"""if (
                 isset($_SERVER["REQUEST_METHOD"])
-				&& $_SERVER["REQUEST_METHOD"]==="OPTIONS" 
-				&& !in_array($arrRequest["method"], $this->arrAllowedFunctionCallsFor_HTTP_OPTIONS)
+				and $_SERVER["REQUEST_METHOD"]==="OPTIONS" 
+				and !in_array($arrRequest["method"], $this->arrAllowedFunctionCallsFor_HTTP_OPTIONS)
 			):
 				print "HTTP request method " + $_SERVER["REQUEST_METHOD"] + " ignored."
 				sys.exit(0)
@@ -241,8 +245,8 @@ class JSONRPC_Server(object):
 			#The value SHOULD normally not be Null and Numbers SHOULD NOT contain fractional parts.
 			self.bNotificationMode = "id" not in dictRequest
 				
-			if ((not self.bNotificationMode) && (not ininstance(dictRequest["id"], int)) && ("id" in dictRequest && dictRequest["id"] != None)):
-				raise JSONRPC_Exception("The \"id\" key must be an integer, a null or be omitted for Notification requests.", JSONRPC_Exception::INVALID_REQUEST)
+			if ((not self.bNotificationMode) and (not ininstance(dictRequest["id"], int)) and ("id" in dictRequest and dictRequest["id"] != None)):
+				raise JSONRPC_Exception("The \"id\" key must be an integer, a null or be omitted for Notification requests.", JSONRPC_Exception.ID_REQUEST)
 				
 			if (not self.bNotificationMode):
 				"""WARNING: Check mxRequestID type"""
@@ -251,7 +255,7 @@ class JSONRPC_Server(object):
 				
 				
 			#A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
-			if (("jsonrpc" not in dictRequest || dictRequest["jsonrpc"] == None) || ("jsonrpc" not in dictRequest || dictRequest["jsonrpc"] != self.JSONRPC_VERSION)):
+			if (("jsonrpc" not in dictRequest or dictRequest["jsonrpc"] == None) or ("jsonrpc" not in dictRequest or dictRequest["jsonrpc"] != self.JSONRPC_VERSION)):
 				raise JSONRPC_Exception("The \"jsonrpc\" version must be equal to ".self.JSONRPC_VERSION, JSONRPC_Exception.INVALID_REQUEST)
 				
 				
@@ -278,7 +282,7 @@ class JSONRPC_Server(object):
 			dictResponse = {"result" : None}
 			dictResponse["result"] = self.callFunction(dictRequest["method"], dictRequest["params"])
 				
-			if ((self.arrFunctionReflection != None) && count(self.arrFunctionReflection) != 0):
+			if ((self.arrFunctionReflection != None) and count(self.arrFunctionReflection) != 0):
 				self.returnDataTypeValidation(dictRequest["method"], self.arrFunctionReflection["function_return_type"], dictResponse["result"])
 
 			if (self.nHTTPResponseCode == 0):
@@ -304,53 +308,47 @@ class JSONRPC_Server(object):
 			
 		dictResponse["jsonrpc"] = self.JSONRPC_VERSION
 		if (not self.bNotificationMode):
-			dictResponse["id"] = mxRequestID			
-            
-    	try:
-            for plugin in self.arrFilterPlugins:
-       			plugin.response(dictResponse)
-        except Exception as exc:
-            this._log_exception(exc)
-                
-            if ("error" not in dictResponse || dictResponse["error"] == None):
-                dictResponse = self._exceptionToJSONResponse(exc)
-            
+			dictResponse["id"] = mxRequestID
+		try:
+			for plugin in self.arrFilterPlugins:
+				plugin.response(dictResponse)
+		except Exception as exc:
+			this._log_exception(exc)
+
+			if ("error" not in dictResponse or dictResponse["error"] == None):
+				dictResponse = self._exceptionToJSONResponse(exc)
 			
 		return dictResponse
-		
-        
 
-
-    """
-    * Will affect the HTTP status.
-    * @param JSONRPC_Exception exc
-    """
-    def _exceptionToJSONResponse(self, JSONRPC_Exception exc):
-    	"""WARNING: Not sure if __name__ wanted or just __class__"""
-        strExceptionClass = exc.__class__.__name__
-        """TODO"""
-        """Trim the class name for slashes"""
-        """
+	"""
+	 * Will affect the HTTP status.
+	 * @param JSONRPC_Exception exc
+	"""
+	def _exceptionToJSONResponse(self, exc):
+		"""WARNING: Not sure if __name__ wanted or just __class__"""
+		strExceptionClass = exc.__class__.__name__
+		"""TODO"""
+		"""Trim the class name for slashes"""
+		"""
 		while (substr(strExceptionClass, 0, 1)=="\\"):
 		{
 			$strExceptionClass=substr($strExceptionClass, 1);
 		}
-		"""	
-    		
+		"""
+		
 		"""Get information about the current exception being caught"""
 		excType, excValue, excTraceback = sys.exc_info()
 
 		if (strExceptionClass in self.arrExceptionTypesForMessages):
 			strMessage = exc.message
+		elif (self.bDebugAllowAllExceptionMessages == True):
+			"""TODO"""
+			"""Check exception functions"""
+			strMessage = ("[Internal error: " + strExceptionClass + "] " + exc.message + " " \
+						"""WARNING: Modified error message"""
+						#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
+						+ os.linesep + excTraceback)
 		
-		"""TODO"""
-		"""Check exception functions"""
-		else if (self.bDebugAllowAllExceptionMessages == True):
-			strMessage =
-				"[Internal error: " + strExceptionClass + "] " + exc.message + " " \
-				"""WARNING: Modified error message"""
-				#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
-				+ os.linesep + excTraceback
 		else:
 			strMessage = "Internal error."
 				
@@ -365,10 +363,10 @@ class JSONRPC_Server(object):
 			else:
 				self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
 			
-		dictResponse["error"] = ["message" : strMessage, "code" :$nCode]
-            
-    	return dictResponse
-        
+		dictResponse["error"] = {"message" : strMessage, "code" : nCode}
+
+		return dictResponse
+
 		
 	def _exitWithResponse(self, dictResponse):
 		self._http_response_code(self.nHTTPResponseCode)
@@ -412,7 +410,7 @@ class JSONRPC_Server(object):
 				break
 			
 		if (bCalled == False):
-			if (not hasattr(strFunctionName, __call__):
+			if (not hasattr(strFunctionName, __call__)):
 				fcallable = self.functionNameToCallableArray(strFunctionName)
 				"""TODO"""
 				"""Find equivalent for call_user_func_array in python"""
@@ -434,7 +432,7 @@ class JSONRPC_Server(object):
 				return
 		plugin.setServerInstance(self)
 		"""???"""
-		self.arrFilterPlugins[] = plugin
+		self.arrFilterPlugins.append(plugin)
 		
 		
 	"""
@@ -450,7 +448,7 @@ class JSONRPC_Server(object):
 				nIndex = nIndexExisting
 				break
 			else:
-				nIndexExisting++
+				nIndexExisting += 1
 
 		if (isinstance(nIndex, int) == False):
 			raise Exception("Failed to remove filter plugin object, maybe plugin is not registered.")
@@ -494,10 +492,8 @@ class JSONRPC_Server(object):
 		for methodsMapper in self.methodsMappers():
 			if (strFunctionName in methodsMapper.arrAPIFunctionsNamesToMethodsNames()):
 				# Returning callable "type".
-				return (
-					/*Class instance*/ 0 : methodsMapper.instanceWithAPIMethods(), \
-					/*Method name*/ 1 : methodsMapper.arrAPIFunctionsNamesToMethodsNames()[strFunctionName] \
-					)
+				return {0 : methodsMapper.instanceWithAPIMethods(), \
+						1 : methodsMapper.arrAPIFunctionsNamesToMethodsNames()[strFunctionName]}
 			
 		raise JSONRPC_Exception("The function " + strFunctionName + " is not defined or loaded.", JSONRPC_Exception.METHOD_NOT_FOUND)		
 		
@@ -515,9 +511,9 @@ class JSONRPC_Server(object):
 			if (bFunctionNameAllowed == True):
 				break
 
-		if ((bFunctionNameAllowed == False) && (strFunctionName not in self.arrAllowedFunctionCalls)):
+		if ((bFunctionNameAllowed == False) and (strFunctionName not in self.arrAllowedFunctionCalls)):
 			self.nHTTPResponseCode = self.HTTP_403_FORBIDDEN
-			raise JSONRPC_Exception("The function \"" + $strFunctionName + "\" is not exported and/or does not exist.", JSONRPC_Exception.METHOD_NOT_FOUND)
+			raise JSONRPC_Exception("The function \"" + strFunctionName + "\" is not exported and/or does not exist.", JSONRPC_Exception.METHOD_NOT_FOUND)
 		
 		
 	"""
@@ -535,12 +531,12 @@ class JSONRPC_Server(object):
 		try:
 			if (bAssoc == True):
 				mxReturn = json.loads(strJSON)[0]
-			"""TODO: A decision needs to be made regarding mxReturn handling. It should always be treated as a dictionary imo."""
+				"""TODO: A decision needs to be made regarding mxReturn handling. It should always be treated as a dictionary imo."""
 			else:
 				mxReturn = json.loads(strJSON)
 			
 		except Exception as exc:
-			raise JSONRPC_Exception("JSON deserialization failed. Error message: " + exc.message + " RAW input: " + strJSON, JSONRPC_Exception::PARSE_ERROR)
+			raise JSONRPC_Exception("JSON deserialization failed. Error message: " + exc.message + " RAW input: " + strJSON, JSONRPC_Exception.PARSE_ERROR)
 
 		return mxReturn
 		
@@ -586,11 +582,10 @@ class JSONRPC_Server(object):
 					strTrace = excTraceback
 
 				"""WARNING: Output is modified"""
-				strError =
-					"Exception type: " + exception.__class__.__name__ + os.linesep + \
-					"Message: " + exc.message + os.linesep + \
-					"Code: " + excValue + os.linesep + \
-					strTrace + os.linesep
+				strError = ("Exception type: " + exception.__class__.__name__ + os.linesep + \
+							"Message: " + exc.message + os.linesep + \
+							"Code: " + excValue + os.linesep + \
+							strTrace + os.linesep)
 
 				"""TODO: file_exists"""
 				"""
@@ -619,18 +614,18 @@ class JSONRPC_Server(object):
 	HTTP_429_TOO_MANY_REQUESTS = 429
 	HTTP_500_INTERNAL_SERVER_ERROR = 500
 
-	arrHTTPResponseCodesToText = {self.HTTP_200_OK : "OK",
-			self.HTTP_204_NO_CONTENT : "No Content",
-			self.HTTP_401_UNAUTHORIZED : "Unauthorized",
-			self.HTTP_403_FORBIDDEN : "Forbidden",
-			self.HTTP_429_TOO_MANY_REQUESTS : "Too Many Requests",
-			self.HTTP_500_INTERNAL_SERVER_ERROR : "Internal Server Error"}
+	arrHTTPResponseCodesToText = {HTTP_200_OK : "OK",
+			HTTP_204_NO_CONTENT : "No Content",
+			HTTP_401_UNAUTHORIZED : "Unauthorized",
+			HTTP_403_FORBIDDEN : "Forbidden",
+			HTTP_429_TOO_MANY_REQUESTS : "Too Many Requests",
+			HTTP_500_INTERNAL_SERVER_ERROR : "Internal Server Error"}
 		
 	def _http_response_code(self, nHTTPResponseCode):
 		if (self.nHTTPResponseCode == 0):
 			self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
 				
-		self._header("HTTP/1.1 " + int(nHTTPResponseCode) + " " + arrHTTPResponseCodesToText[int(nHTTPResponseCode)], """$bReplace""" true, nHTTPResponseCode)
+		self._header("HTTP/1.1 " + int(nHTTPResponseCode) + " " + arrHTTPResponseCodesToText[int(nHTTPResponseCode)], True, nHTTPResponseCode)
 				
 		
 	def _header(self, strHeader, bReplace = True):
@@ -643,7 +638,7 @@ class JSONRPC_Server(object):
 			"""
 			_bHTTPMode = (
 				array_key_exists("REQUEST_METHOD", $_SERVER)
-				&& in_array(
+				and in_array(
 					$_SERVER["REQUEST_METHOD"], 
 					array("GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE", "CONNECT")
 				)
@@ -672,120 +667,120 @@ class JSONRPC_Server(object):
 	def validateDataTypes(self, arrParamsDetails, arrParams):
 		if (self.bValidateTypes == False):
 			return
-				
-		for (i=0; i < len(arrParamsDetails); i = i + 1):
-			strParamName = arrParamsDetails[i]["param_name"]
+
+		idx = -1
+		for i in arrParamsDetails:
+			idx += 1
+			strParamName = i["param_name"]
 
 			if (i not in arrParams):
-				if (len(arrParamsDetails[i]["param_default_value_json"]) == 0):
+				if (len(i["param_default_value_json"]) == 0):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + \
 											"] is mandatory and doesn't have a default value.", JSONRPC_Exception.INVALID_PARAMS)
 				else:
 					return
 
-			if ((arrParams[$i] == None) && (arrParamsDetails[i]["param_default_value_json"] != None)):
+			if ((arrParams[idx] == None) and (i["param_default_value_json"] != None)):
 				raise JSONRPC_Exception("Parameter " + strParamName + " cannot be NULL.", JSONRPC_Exception.INVALID_PARAMS)
 			
 			"""WARNING: Check if continue exists"""
-			if (arrParams[i] == None):
+			if (arrParams[idx] == None):
 				continue
 
 			"""WARNING: Check switch synthax"""
 			"""WARNING: Check if param_type is string or actual type"""
-			if (arrParamsDetails[i]["param_type"] == "integer"):
-				if (isinstance(arrParams[i], int)):
-					#break
+			if (i["param_type"] == "integer"):
+				if (isinstance(arrParams[idx], int)):
+					"""WARNING: prolly not break here"""
+					break
 
-				if (
-					"""WARNING: Check if casts are correct"""
-					not isinstance(arrParams[i], basestring)
-					|| basestring(int(arrParams[i])) != basestring(arrParams[i])
-				):
+				"""WARNING: Check if casts are correct"""
+				if (not isinstance(arrParams[idx], basestring) or basestring(int(arrParams[idx])) != basestring(arrParams[idx])):
 					"""WARNING: CHeck json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
-						"], must be an integer (Number JSON type with no decimals), " + type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + \
+						"], must be an integer (Number JSON type with no decimals), " + type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 					
-				arrParams[i] = (int)arrParams[i]
+				arrParams[idx] = int(arrParams[idx])
 				#break
 
-			elif (arrParamsDetails[i]["param_type"] == "float"):
-				if (ininstance(arrParams[i], float) || isinstance(arrParams[i], int)):
-					#break
-						
+			elif (i["param_type"] == "float"):
+				if (ininstance(arrParams[idx], float) or isinstance(arrParams[idx], int)):
+					"""WARNING: prolly not break here"""
+					break
+				
 				"""WARNING: Check casts"""
-				if ((not isinstance(arrParams[i], basestring)) || ((basestring)(float)arrParams[i] != arrParams[i])):
+				if ((not isinstance(arrParams[idx], basestring)) or (basestring(float(arrParams[idx])) != arrParams[idx])):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a Number., " \
-											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be a Number., " \
+											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-				arrParams[i] = (float)arrParams[i]
+				arrParams[idx] = float(arrParams[idx])
 				#break					
 					
-			elif (arrParamsDetails[i]["param_type"] == "boolean"):
-				if (isinstance(arrParams[i], bool)):
-					#break
+			elif (i["param_type"] == "boolean"):
+				if (isinstance(arrParams[idx], bool)):
+					"""WARNING: prolly not a break here"""
+					break
 
-				if (isinstance(arrParams[i], list) || isinstance(arrParams[i], object)):
+				if (isinstance(arrParams[idx], list) or isinstance(arrParams[idx], object)):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
-											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-							
-				if ((basestring)arrParams[i] == "0"):
-					arrParams[i] = False
-				else if ((basestring)arrParams[i] == "1"):
-					arrParams[i] = True
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be Boolean, " \
+											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+
+				if (basestring(arrParams[idx]) == "0"):
+					arrParams[idx] = False
+				elif (basestring(arrParams[idx]) == "1"):
+					arrParams[idx] = True
 				else:
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be Boolean, " \
-											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be Boolean, " \
+											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				#break
+			elif (i["param_type"] == "array"):
+				"""TODO: Check for dictionaries, tuples, etc."""
+				if (not isinstance(arrParams[idx], list)):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Array, " \
+											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				elif (self.isAssociativeArray(arrParams[idx])):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + \
+											"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
 
 				#break
 
 
-			"""TODO: Check for dictionaries, tuples, etc."""
-			elif (arrParamsDetails[i]["param_type"] == "array"):
-				if (not isinstance(arrParams[i], list)):
+			elif (i["param_type"] == "object"):
+				if (not isinstance(arrParams[idx], list)):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Array, " \
-											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-					elif (self.isAssociativeArray(arrParams[i])):
-						"""WARNING: Check json.dumps"""
-						raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + \
-												"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Object, " \
+											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+				elif (not self.isAssociativeArray(arrParams[idx]) and (not isinstance(arrParams[idx], object)) \
+						and (not isinstance(arrParams[idx], list)) and (len(arrParams[idx]) == 0)):
+					"""WARNING: Check json.dumps"""
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
+											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
 				#break
 
 
-			elif (arrParamsDetails[i]["param_type"] == "object"):
-				if (not isinstance(arrParams[i], list)):
+			elif (i["param_type"] == "string"):
+				if (isinstance(arrParams[idx], basestring)):
+					"""WARNING: prolly shouldn't be a break here"""
+					break
+
+				if ((not isinstance(arrParams[idx], basestring)) and (not isinstance(arrParams[idx], int))):
 					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object, " \
-											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-				elif (not self.isAssociativeArray(arrParams[i]) && (not isinstance(arrParams[i], object)) \
-						&& (not isinstance(arrParams[i], list)) && (len(arrParams[i]) == 0)):
-					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
-											+ type(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
+					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be a String, " \
+											+ json.dumps(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-				#break
-
-
-			elif (arrParamsDetails[i]["param_type"] == "string"):
-				if (isinstance(arrParams[i], basestring)):
-					#break
-
-				if ((not isinstance(arrParams[i], basestring)) && (not isinstance(arrParams[i], int))):
-					"""WARNING: Check json.dumps"""
-					raise JSONRPC_Exception("Parameter at index " + i + " [" + json.dumps(strParamName) + "], must be a String, " \
-											+ json.dumps(arrParams[i]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-
-				arrParams[i] = (basestring)arrParams[i]
+				arrParams[idx] = basestring(arrParams[idx])
 				#break;
-
-			"""WARNING: Change this. There is no mixed type in python"""
-			elif (arrParamsDetails[i]["param_type"] == "mixed"):
-				#break
+			elif (i["param_type"] == "mixed"):
+				"""WARNING: Change this. There is no mixed type in python"""
+				"""WARNING: prolly shouldn't be a break here"""
+				break
 
 
 			else:
@@ -805,11 +800,10 @@ class JSONRPC_Server(object):
 		if (strExpectedDataType == "unknown"):
 			return
 			
-		if (isinstance(mxResult, list) && strExpectedDataType == "object" && \
-			(self.isAssociativeArray(mxResult) || len(mxResult) == 0)):
+		if (isinstance(mxResult, list) and strExpectedDataType == "object" and \
+			(self.isAssociativeArray(mxResult) or len(mxResult) == 0)):
 			mxResult = object(mxResult)
-
-		else if (isinstance(mxResult, int) && strExpectedDataType == "float"):
+		elif (isinstance(mxResult, int) and strExpectedDataType == "float"):
 			mxResult = float(mxResult)
 						
 		strReturnType = type(mxResult)
@@ -835,7 +829,7 @@ class JSONRPC_Server(object):
 			else:
 				break
 
-		if ((len(arrParams) > 0) && self.isAssociativeArray(arrParams)):
+		if ((len(arrParams) > 0) and self.isAssociativeArray(arrParams)):
 			#Named parameteres
 			arrNewParams = []
 
@@ -845,7 +839,7 @@ class JSONRPC_Server(object):
 				if (arrParamProperties["param_name"] in arrParams):
 					"""WARNING: Error prone"""
 					arrNewParams.append(arrParams[arrParamProperties["param_name"]])
-				else if (len(arrParamProperties["param_default_value_json"]) > 0):
+				elif (len(arrParamProperties["param_default_value_json"]) > 0):
 					arrNewParams.append(arrParamProperties["param_default_value_json"])
 				else:
 					"""WARNING: Check json.dumps"""
@@ -889,10 +883,9 @@ class JSONRPC_Server(object):
 		if (len(arrParamsDetails) > 0):
 			for value in arrParamsDetails: 
 				if (len(value["param_default_value_json"]) > 0):
-					arrParamsName[] = value["param_name"] + "=" + value["param_default_value_json"]					
+					arrParamsName.append(value["param_name"] + "=" + value["param_default_value_json"])
 				else:
-					arrParamsName[] = value["param_name"]	
-
+					arrParamsName.append(value["param_name"])
 		return arrParamsName
 		
 		
@@ -926,17 +919,17 @@ class JSONRPC_Server(object):
 		}
 		"""
 
-		#if(is_null($strAllowedOrigin) && count($arrAllowedDomains))
+		#if(is_null($strAllowedOrigin) and count($arrAllowedDomains))
 			#$strAllowedOrigin="https://".implode(", https://", $arrAllowedDomains).", http://".implode(", http://", $arrAllowedDomains);
 			
 		if (bAllowAllURLs):
 			"""TODO: Header"""
 			#header("Access-Control-Allow-Origin: *", true);
-		else if (strAllowedOrigin != None):
+		elif (strAllowedOrigin != None):
 			"""TODO: Header"""
 			#header("Access-Control-Allow-Origin: ".$strAllowedOrigin, true);
 		"""TODO: Php Server"""
-		#lse if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"]=="OPTIONS")
+		#lse if (isset($_SERVER["REQUEST_METHOD"]) and $_SERVER["REQUEST_METHOD"]=="OPTIONS")
 		#exit(0);
 	
 		"""TODO: Header"""
@@ -949,6 +942,6 @@ class JSONRPC_Server(object):
 
 		"""TODO: Php Server"""
 		"""
-		if(isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"]=="OPTIONS")
+		if(isset($_SERVER["REQUEST_METHOD"]) and $_SERVER["REQUEST_METHOD"]=="OPTIONS")
 			exit(0);
 		"""
