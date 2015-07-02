@@ -36,7 +36,7 @@ class DebugLogger(JSONRPC_ClientFilterBase):
 				self.hFile = open(strLogPath, "a")
 			else:
 				raise Exception("No log path specified")
-		else if (nLogType == LOG_TO_CONSOLE):
+		elif (nLogType == LOG_TO_CONSOLE):
 			self.strLogPath = "console"
 		else:
 			raise Exception("Log to browser not supported!")

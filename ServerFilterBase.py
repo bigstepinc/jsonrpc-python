@@ -1,9 +1,7 @@
 class JSONRPC_ServerFilterBase(object):
 	def __init__(self):
-	{
-	}		
-
-		
+		pass
+	
 	"""
 	* Should be used complementary to the authorization on JSONRPC_Server.arrAllowedFunctionCalls.
 	* This function is called before JSONRPC_ServerFilterBase.resolveFunctionName.

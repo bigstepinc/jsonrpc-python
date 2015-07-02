@@ -7,9 +7,9 @@
 * on child processes and to control these processes.
 """
 """TODO: imports"""
-import ...Server
 import tempfile
-import os.path, os.linesep
+import os.path
+import os.linesep
 
 class ProcessForkerClient(ClientFilterBase):
 	"""
@@ -95,8 +95,8 @@ class ProcessForkerClient(ClientFilterBase):
 			strTemporaryDirectoryPath = tempfile.gettempdir() #Use system temporary directory.
 		elif (isinstance(strTemporaryDirectoryPath, basestring)):
 			raise Exception("Invalid temporary directory path. It must be a string.")
-		"""Observation: Directory creation is not recursive"""
-		else if (os.path.exists(strTemporaryDirectoryPath)):
+		elif (os.path.exists(strTemporaryDirectoryPath)):
+			"""Observation: Directory creation is not recursive"""
 			os.mkdir(strTemporaryDirectoryPath, 0777, true)
 
 		self._strTemporaryDirectoryPath = strTemporaryDirectoryPath
@@ -110,22 +110,20 @@ class ProcessForkerClient(ClientFilterBase):
 	"""
 	"""WARNING: Removed & reference"""
 	def beforeJSONEncode(self, arrRequest):
-		assert ((isinstance(arrRequest["id"], int) == True) && (arrRequest["id"] > 0))
+		assert ((isinstance(arrRequest["id"], int) == True) and (arrRequest["id"] > 0))
 		assert (self._objNewProcess == None)
 		assert (not arrRequest["id"] in self._arrRunningProcesses)
 
-		if (arrRequest["params"][0] != None && isinstance(arrRequest["params"][0], object) \
-			"""WARNING: Check class instance"""
-			&& isinstance(arrRequest["params"][0], JSONRPC_Filters_Client_ProcessForkerConfig \
-		)
+		"""WARNING: Check class instance"""
+		if (arrRequest["params"][0] != None and isinstance(arrRequest["params"][0], object) \
+			and isinstance(arrRequest["params"][0], JSONRPC_Filters_Client_ProcessForkerConfig)):
 			"""WARNING: This should work, but not entirely sure"""
 			self._objNewProcess["config"] = arrRequest["params"].pop()
 		else:
 			self._objNewProcess["config"] = ProcessForkerConfig()
 
-		if((arrRequest["params"][0] != None) && isinstance(arrRequest["params"][0], object) \
-			&& isinstance(arrRequest["params"][0], JSONRPC_Filters_Client_ProcessForkerCallback \
-		):
+		if((arrRequest["params"][0] != None) and isinstance(arrRequest["params"][0], object) \
+			and isinstance(arrRequest["params"][0], JSONRPC_Filters_Client_ProcessForkerCallback)):
 			self._objNewProcess["callback"] = arrRequest["params"].pop()
 		else:
 			self._objNewProcess["callback"] = None
@@ -215,7 +213,7 @@ class ProcessForkerClient(ClientFilterBase):
 			"""
 			"""WARNING: Remove this. Just add try/except"""
 			if (not isinstance(objNewProcess["handle"], file)):
-				throw new Exception("Child process creation failed.")
+				raise Exception("Child process creation failed.")
 
 			objNewProcess["buffers"] = []
 			for nProcessPipeIndex in objNewProcess["pipes"].keys():
@@ -227,10 +225,10 @@ class ProcessForkerClient(ClientFilterBase):
 			self._arrRunningProcesses[objNewProcess["call_id"]] = objNewProcess
 
 			try:
-				for (nProcessPipeIndex, hProcessPipe in objNewProcess["pipes"]):
+				for nProcessPipeIndex, hProcessPipe in objNewProcess["pipes"]:
 					"""WARNING: Encapsulate these in try/except"""
 					"""TODO: Set blocking"""
-					if (isinstance(hProcessPipe, file) || !stream_set_blocking(hProcessPipe, /*$blocking*/ int(False))):
+					if (isinstance(hProcessPipe, file) or (not stream_set_blocking(hProcessPipe, int(False)))):
 						self._killProcess(objNewProcess["call_id"])
 						raise Exception("Process pipe is invalid.")
 			except Exception as exc:
@@ -244,7 +242,7 @@ class ProcessForkerClient(ClientFilterBase):
 			"""TODO: Check if file exists"""
 			"""TODO: Check unlink"""
 			if (file_exists(strStdinTmpFile)):
-				unlink($strStdinTmpFile)
+				unlink(strStdinTmpFile)
 
 
 		self._log("Call #" + objNewProcess["call_id"] + " initiated with request: " + strJSONRequest + ".")
@@ -257,9 +255,9 @@ class ProcessForkerClient(ClientFilterBase):
 			objFinishedProcess = arrFinishedProcesses.pop()
 			assert(objFinishedProcess["call_id"] == objNewProcess["call_id"])
 
-			assert("output" in objFinishedProcess))
+			assert("output" in objFinishedProcess)
 			if (isinstance(objFinishedProcess["output"], object)):
-				assert(objFinishedProcess["output"] instanceof Exception)
+				assert(isinstance(objFinishedProcess["output"], Exception))
 				raise objFinishedProcess["output"]
 
 			"""WARNING: Error prone"""
@@ -326,17 +324,17 @@ class ProcessForkerClient(ClientFilterBase):
 		nSelectTimeoutSec = 0
 
 		""" The select function uses None as a value for INFINITE. """
-		if (nSelectTimeout === -1):
+		if (nSelectTimeout == -1):
 			nSelectTimeout = None
 			nSelectTimeoutSec = None
 
 		""" Create the select array. """
 		arrStdoutAndStderrProcessPipes = []
 
-		for (objProcess in _arrRunningProcesses):
-			if ((arrCallIDs == None) || objProcess["call_id"] in arrCallIDs):
-				arrStdoutAndStderrProcessPipes[]= objProcess["pipes"][self.STDOUT]
-				arrStdoutAndStderrProcessPipes[]= objProcess["pipes"][self.STDERR]
+		for objProcess in _arrRunningProcesses:
+			if ((arrCallIDs == None) or objProcess["call_id"] in arrCallIDs):
+				arrStdoutAndStderrProcessPipes.append(objProcess["pipes"][self.STDOUT])
+				arrStdoutAndStderrProcessPipes.append(objProcess["pipes"][self.STDERR])
 
 		""" If there are no running processes return. """
 		if (len(arrStdoutAndStderrProcessPipes) == 0):
@@ -352,48 +350,48 @@ class ProcessForkerClient(ClientFilterBase):
 		"""
 		nNoOfEvents = stream_select(arrStdoutAndStderrProcessPipes, Null, Null, nSelectTimeoutSec, nSelectTimeout)
 		if (nNoOfEvents == False):
-			rasie Exception("Process pipes select failed.")
+			raise Exception("Process pipes select failed.")
 
 		arrFinishedProcesses = []
 		"""TODO: Measure time"""
 		fCurrentTimestamp = microtime(true);
 
 		"""WARNING: Removed & reference"""
-		for (objRunningProcess in self._arrRunningProcesses):
+		for objRunningProcess in self._arrRunningProcesses:
 			try:
-				for (nProcessPipeIndex, hProcessPipe in objRunningProcess["pipes"]):
+				for nProcessPipeIndex, hProcessPipe in objRunningProcess["pipes"]:
 					"""
 					 * Removed condition. Lead to timeouts. The pipe is set to non-blocking so the read should
 					 * be instantaneous even of there is no data to be read. The stream_select call is used more
 					 * like a sleep. 
 					"""
-					objRunningProcess["buffers"][nProcessPipeIndex] += self.fread(hProcessPipe)				}
+					objRunningProcess["buffers"][nProcessPipeIndex] += self.fread(hProcessPipe)
 					
 				nProcessEndStatus = self._waitProcess(objRunningProcess["call_id"], 0)
 				if (nProcessEndStatus == False):
 					"""WARNING: Error prone"""
-					if (objRunningProcess["buffers"].get(self.STDOUT) == None	&& \
+					if (objRunningProcess["buffers"].get(self.STDOUT) == None	and \
 						objRunningProcess["buffers"].get(self.STDERR) == None):
 						
 						fProcessTimeout = objRunningProcess["config"].getTimeout()
 						"""TODO: Measure time"""
-						if (fProcessTimeout != -1 && (fCurrentTimestamp - objRunningProcess["start_timestamp"]) > fProcessTimeout):
+						if (fProcessTimeout != -1 and (fCurrentTimestamp - objRunningProcess["start_timestamp"]) > fProcessTimeout):
 							raise Exception("Process timed out.")
 				
 				"""WARNING: Error prone"""
 				"""TODO: Find out what feof does"""
-				if (objRunningProcess["buffers"].get(self.STDERR) == None && feof(objRunningProcess["pipes"][self::STDERR])):
+				if (objRunningProcess["buffers"].get(self.STDERR) == None and feof(objRunningProcess["pipes"][self::STDERR])):
 					raise Exception("Process encountered an error with the following message: " + objRunningProcess["buffers"][self::STDERR] + ".")
 						
 				"""TODO: Find out what feof does"""
-				if (nProcessEndStatus == False || !feof($objRunningProcess["pipes"][self.STDOUT]) \
-					|| !feof($objRunningProcess["pipes"][self::STDERR])):
+				if (nProcessEndStatus == False or not feof(objRunningProcess["pipes"][self.STDOUT]) \
+					or not feof(objRunningProcess["pipes"][self.STDERR])):
 					continue
 				
 				"""WARNING: May have to change mxProcessOutput. There is no mixed type in python"""	
 				mxProcessOutput = self._JSONRPCClient.processRAWResponse(objRunningProcess["buffers"][self.STDOUT], False)
 
-			raise Exception as e:
+			except Exception as e:
 				self._killProcess(objRunningProcess["call_id"])
 				mxProcessOutput = e
 
@@ -405,11 +403,11 @@ class ProcessForkerClient(ClientFilterBase):
 
 
 			"""TODO: Solve this"""
-			if (isinstance(objRunningProcess["callback"], object) && !strcasecmp(get_class($objRunningProcess["callback"]), "JSONRPC\\Filters\\Client\\ProcessForkerCallback"))
+			if (isinstance(objRunningProcess["callback"], object) and not strcasecmp(get_class(objRunningProcess["callback"]), "JSONRPC\\Filters\\Client\\ProcessForkerCallback")):
 				objRunningProcess["callback"].call(mxProcessOutput)
-			objRunningProcess["output"] = mxProcessOutput
+				objRunningProcess["output"] = mxProcessOutput
 
-			arrFinishedProcesses[] = objRunningProcess;
+			arrFinishedProcesses.append(objRunningProcess)
 
 			self._closeProcess(objRunningProcess["call_id"])
 			
@@ -441,7 +439,7 @@ class ProcessForkerClient(ClientFilterBase):
 			"""WARNING: Check if arrCallIDs is list/dict/tuple"""
 			assert(isinstance(arrCallIDs, list))
 
-			for (objRunningProcess in self._arrRunningProcesses):
+			for objRunningProcess in self._arrRunningProcesses:
 				if (objRunningProcess["call_id"] not in arrCallIDs):
 					nRunningProcesses -= 1
 
@@ -479,11 +477,11 @@ class ProcessForkerClient(ClientFilterBase):
 		"""Emulation of a do...while"""
 		while (True):
 			"""WARNING: Error prone"""
-			arrProcessStatus = proc_get_status(self._arrRunningProcesses[$nCallID]["handle"])
+			arrProcessStatus = proc_get_status(self._arrRunningProcesses[nCallID]["handle"])
 			if(not arrProcessStatus["running"]):
 				return arrProcessStatus["exitcode"]
 			"""TODO: Measure time"""
-			if ((nTimeout == -1) || ((microtime(true) - nStartTime) <= nTimeout)):
+			if ((nTimeout == -1) or ((microtime(true) - nStartTime) <= nTimeout)):
 				break
 		return False
 
@@ -500,8 +498,9 @@ class ProcessForkerClient(ClientFilterBase):
 		assert(nCallID in self._arrRunningProcesses)
 
 		""" Close the pipes to avoid deadlock. """
-		for (self._arrRunningProcesses[nCallID]["pipes"] as hProcessPipe):
-			hProcessPipe.close() """ Ignore its output."""
+		for hProcessPipe in self._arrRunningProcesses[nCallID]["pipes"]:
+			hProcessPipe.close()
+			""" Ignore its output."""
 
 		nExitCode = proc_close(self._arrRunningProcesses[nCallID]["handle"])
 
@@ -579,14 +578,15 @@ class ProcessForkerClient(ClientFilterBase):
 			"""TODO: This is a built-in function and the above is a wrapper. Search for python equivalent of fwrite"""
 			nBytesWritten = fwrite(hFileHandle, strToBeWritten, nBytesLeft)
 			"""TODO: Adapt according to fwrite equivalent"""
-			if (nBytesWritten !== False):
+			if (nBytesWritten != False):
 				nBytesLeft -= nBytesWritten
-				if (nBytesLeft <= 0) """ nByteLeft can't be lower than 0. """
+				if (nBytesLeft <= 0):
+					""" nByteLeft can't be lower than 0. """
 					return True
 					strToBeWritten = strToBeWritten[nBytesWritten:]
 
 			"""TODO: Measure time"""
-			if (nTimeout == -1 || (microtime(true) - nStartTime) <= $nTimeout):
+			if (nTimeout == -1 or (microtime(true) - nStartTime) <= nTimeout):
 				break
 
 		return False
@@ -620,7 +620,7 @@ class ProcessForkerClient(ClientFilterBase):
 				if (len(strPartialReadString) == 0):
 					break
 			"""TODO: Measure time"""
-			if (nTimeout == -1 || (microtime(true) - nStartTime) <= nTimeout):
+			if (nTimeout == -1 or (microtime(true) - nStartTime) <= nTimeout):
 				break
 
 		return strReadString

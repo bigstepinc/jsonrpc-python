@@ -1,4 +1,5 @@
 """TODO: imports"""
+from ...ClientFilterBase import JSONRPC_ClientFilterBase
 #use JSONRPC\Server;
 #use JSONRPC\ClientFilterBase;
 
@@ -53,7 +54,7 @@ class CacheAPC(ClientFilterBase):
 		
 	def __init__(self, arrFunctionToCacheSeconds, strIsolationKeyAppend = ""):
 		self._arrFunctionToCacheSeconds = arrFunctionToCacheSeconds
-           self._strIsolationKeyAppend = strIsolationKeyAppend
+		self._strIsolationKeyAppend = strIsolationKeyAppend
 		
 	"""WARNING: Removed & reference"""
 	def beforeJSONEncode(self, arrRequest):
@@ -63,8 +64,8 @@ class CacheAPC(ClientFilterBase):
 			if ("lang" in dictRequest):
 				self._strCacheKey_temporary += "_" + dictRequest["lang"]
 			"""TODO: _SERVER"""
-			if (isset($_SERVER["SERVER_NAME"])):
-				self._strCacheKey_temporary += $_SERVER["SERVER_NAME"]
+			if (isset(_SERVER["SERVER_NAME"])):
+				self._strCacheKey_temporary += _SERVER["SERVER_NAME"]
    			self._strCacheKey_temporary += self._strIsolationKeyAppend
 			
 			self._strCachedJSONResponse = apc_fetch(self._strCacheKey_temporary, self._bServingCache)
@@ -89,10 +90,10 @@ class CacheAPC(ClientFilterBase):
 	"""TODO: This looks ugly. Change the aspect"""
 	def afterJSONDecode(self, dictResponse):
 		if (not self._bServingCache \
-				&& isinstance(self._strCacheKey_temporary, basestring) \
-				&& isinstance(dictResponse, dict) \
-				&& "result" in dictResponse
-				&& "error" not in dictResponse):
+				and isinstance(self._strCacheKey_temporary, basestring) \
+				and isinstance(dictResponse, dict) \
+				and "result" in dictResponse
+				and "error" not in dictResponse):
 
 			assert(dictResponse["jsonrpc"] == Server.JSONRPC_VERSION)
 			"""WARNING: Not sure if this should be set to None or deleted completely"""

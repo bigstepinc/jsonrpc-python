@@ -1,5 +1,6 @@
 class MethodsMapper(object):
 	def __init___(self):
+		pass
 
 	"""
 	 * @var object
@@ -22,10 +23,10 @@ class MethodsMapper(object):
 	 * @param object instanceWithAPIMethods 
 	 * @param array arrAPIFunctionsNamesToMethodsNames = None
 	"""
-	def __construct(self, instanceWithAPIMethods, arrAPIFunctionsNamesToMethodsNames = None):
+	def __init__(self, instanceWithAPIMethods, arrAPIFunctionsNamesToMethodsNames = None):
 		if (arrAPIFunctionsNamesToMethodsNames == None):
-			"""TODO: get_class_methods"""
 			for (strMethodName in get_class_methods(type(instanceWithAPIMethods))):
+				"""TODO: get_class_methods"""
 				self._arrAPIFunctionsNamesToMethodsNames[strMethodName] = strMethodName
 		else:
 			"""TODO: array_values"""
