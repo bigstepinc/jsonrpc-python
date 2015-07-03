@@ -1,5 +1,5 @@
 """TODO: imports"""
-from ...ClientFilterBase import JSONRPC_ClientFilterBase
+import JSONRPC.ClientFilterBase
 #use JSONRPC\Server;
 #use JSONRPC\ClientFilterBase;
 

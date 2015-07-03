@@ -12,10 +12,10 @@ sys.path.append("../..")
 import urllib
 import hashlib
 import time
-from ...ClientFilterBase import JSONRPC_ClientFilterBase
+import ClientFilterBase
 from pprint import pprint
 
-class JSONRPC_filter_signature_add(JSONRPC_ClientFilterBase):
+class JSONRPC_filter_signature_add(ClientFilterBase.JSONRPC_ClientFilterBase):
 
 
 	"""
