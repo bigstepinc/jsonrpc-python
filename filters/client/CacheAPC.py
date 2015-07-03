@@ -1,5 +1,5 @@
 """TODO: imports"""
-import JSONRPC.ClientFilterBase
+import ClientFilterBase
 #use JSONRPC\Server;
 #use JSONRPC\ClientFilterBase;
 
@@ -8,7 +8,7 @@ import JSONRPC.ClientFilterBase
 * Adds APC caching.
 * APC cache complete clearing can be accomplished with ::clearEntireCache(), if needed.
 """
-class CacheAPC(ClientFilterBase):
+class CacheAPC(JSONRPC.ClientFilterBase):
 	"""
 	* String function names as keys, integer seconds as values.
 	* Zero seconds means infinite.

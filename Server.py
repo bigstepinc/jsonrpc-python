@@ -1,6 +1,8 @@
 import os
 import json
 import traceback
+import urlparse
+import httplib
 from JSONRPC_Exception import JSONRPC_Exception
 #from Exception import Exception as JSONRPC_Exception
 
@@ -143,26 +145,19 @@ class JSONRPC_Server(object):
 		
 	def processRequestAndReturn(self, strJSONRequest = None):
 		objReflectionPlugin = ReflectionPlugin()
-		"""WARNING: careful at passing self"""
 		objReflectionPlugin.setServerInstance(self);
 
-		"""TODO"""
-		"""Check import.request"""
-		"""
-		if(isset($_SERVER["REQUEST_METHOD"]) and !in_array($_SERVER["REQUEST_METHOD"], array("GET", "POST", "PUT", "OPTIONS"))):
-				print "HTTP request method " + $_SERVER["REQUEST_METHOD"] + " ignored."
+		if os.environ["REQUEST_METHOD"] != None and os.environ["REQUEST_METHOD"] not in ("GET", "POST", "PUT", "OPTIONS"):
+				print "HTTP request method " + os.environ["REQUEST_METHOD"] + " ignored."
 				sys.exit(0)
-		"""
 
 		"""WARNING: Check type of mxRequestID"""
 		mxRequestID = None
 		try:
-			"""TODO
-			"//php://input must be read here only for normal HTTP POST JSON-RPC requests.
-			if (strJSONRequest == None and (!isset($_SERVER["REQUEST_METHOD"]) or $_SERVER["REQUEST_METHOD"]=="POST"))
-					$strJSONRequest=file_get_contents("php://input");
-			"""
-				
+			"""//php://input must be read here only for normal HTTP POST JSON-RPC requests."""
+			if (strJSONRequest == None and (os.environ["REQUEST_METHOD"] == None) or os.environ["REQUEST_METHOD"] == "POST")):
+					strJSONRequest = raw_input()
+			
 			for plugin in self.arrFilterPlugins: 
 				plugin.beforeJSONDecode(strJSONRequest)
 
@@ -230,14 +225,10 @@ class JSONRPC_Server(object):
 			
 
 			"""TODO"""
-			"""if (
-                isset($_SERVER["REQUEST_METHOD"])
-				and $_SERVER["REQUEST_METHOD"]==="OPTIONS" 
-				and !in_array($arrRequest["method"], $this->arrAllowedFunctionCallsFor_HTTP_OPTIONS)
-			):
-				print "HTTP request method " + $_SERVER["REQUEST_METHOD"] + " ignored."
+			if (os.environ["REQUEST_METHOD"] != None and os.environ["REQUEST_METHOD"] == "OPTIONS" \
+				and dictRequest["method"] not in self.arrAllowedFunctionCallsFor_HTTP_OPTIONS):
+				print "HTTP request method " + os.environ["REQUEST_METHOD"] + " ignored."
 				sys.exit(0)
-			"""
 
 
 			#An identifier established by the Client that MUST contain a String, Number, or NULL value if included. 
@@ -261,7 +252,7 @@ class JSONRPC_Server(object):
 				
 				
 			"""WARNING: Could throw exception on trying to access non-existant "method" key"""
-			self.assertFunctionNameAllowed(dictRequest["method"])
+			self.assertFunctionNameAllowed(dictRequest.get("method"))
 				
 				
 				
@@ -469,7 +460,7 @@ class JSONRPC_Server(object):
 		self.dictMethodsMappers[methodsMapper.instanceWithAPIMethods().__class__] = methodsMapper
 		
 		
-	def removeMethodsMapper(self, methodsMapper):			
+	def removeMethodsMapper(self, methodsMapper):
 		strInstanceAPIClassNameExisting = methodsMapper.instanceWithAPIMethods().__class__
 			
 		if (strInstanceAPIClassNameExisting in self.dictMethodsMappers):
@@ -554,12 +545,10 @@ class JSONRPC_Server(object):
 			if (len(self.strErrorLogFilePath) != 0):
 				strClientInfo = ""
 				"""TODO"""
-				"""
-				if (array_key_exists("REMOTE_ADDR", $_SERVER))
-					strClientInfo = strClientInfo + " " + $_SERVER["REMOTE_ADDR"]
-				if(array_key_exists("HTTP_USER_AGENT", $_SERVER))
-					strClientInfo = strClientInfo + " " + $_SERVER["HTTP_USER_AGENT"]
-				"""
+				if ("REMOTE_ADDR" in os.environ):
+					strClientInfo = strClientInfo + " " + os.environ["REMOTE_ADDR"]
+				if("HTTP_USER_AGENT" in os.environ):
+					strClientInfo = strClientInfo + " " + os.environ["HTTP_USER_AGENT"]
 					
 				"""WARNING: Get exception functions"""
 				try:
@@ -634,17 +623,10 @@ class JSONRPC_Server(object):
 			_bHTTPMode = None
 			
 		if (_bHTTPMode == None):
-			"""TODO: Workaround _SERVER"""
-			"""
-			_bHTTPMode = (
-				array_key_exists("REQUEST_METHOD", $_SERVER)
-				and in_array(
-					$_SERVER["REQUEST_METHOD"], 
-					array("GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE", "CONNECT")
-				)
-			);
-			"""
-						
+			_bHTTPMode = "REQUEST_METHOD" in os.environ and \
+						os.environ["REQUEST_METHOD"] in ("GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE", "CONNECT")
+
+
 		"""WARNING: header function"""
 		if (_bHTTPMode):
 			header(strHeader, bReplace)
@@ -811,7 +793,6 @@ class JSONRPC_Server(object):
 		if (strReturnType == "double"):
 			strReturnType = "float"
 			
-		"""CONTINUE"""
 		if (strReturnType.lower() != strExpectedDataType.lower()):
 			"""WARNING: Check json.dumps"""
 			raise JSONRPC_Exception("Method " + json.dumps(strMethodName) + " declared return type is " + strExpectedDataType + \
@@ -898,6 +879,7 @@ class JSONRPC_Server(object):
 	* @return None.
 	"""
 	def CORS_headers(self, arrAllowedDomains, arrAllowedHeaders = [], bAllowAllURLs = False):
+		"""This sends the headers back to the origin. It may not be correct."""
 		# Note .htaccess trick: 
 		# SetEnvIf Origin "^http(s)?://(.+\.)?(localhost|stackoverflow.com|example1.com)(:[0-9]+)?$" origin_is=$0
 		# Header always set Access-Control-Allow-Origin %{origin_is}e env=origin_is
@@ -908,40 +890,27 @@ class JSONRPC_Server(object):
 			
 		arrAllowedHeaders = arrAllowedHeaders + ["origin", "content-type", "accept", "authorization"]
 		
-		"""TODO: Php _SERVER again"""
-		"""
-		if (isset($_SERVER["HTTP_ORIGIN"]))
-		{
-			$strHost=parse_url($_SERVER["HTTP_ORIGIN"], PHP_URL_HOST);
-				
-			if(in_array($strHost, $arrAllowedDomains))
-				$strAllowedOrigin=$_SERVER["HTTP_ORIGIN"];
-		}
-		"""
+		if (os.environ["HTTP_ORIGIN"] != None):
+			strHost = urlparse(os.environ["HTTP_ORIGIN"]).hostname
+
+			if (strHost in arrAllowedDomains):
+				strAllowedOrigin = os.environ["HTTP_ORIGIN"]
 
 		#if(is_null($strAllowedOrigin) and count($arrAllowedDomains))
 			#$strAllowedOrigin="https://".implode(", https://", $arrAllowedDomains).", http://".implode(", http://", $arrAllowedDomains);
 			
 		if (bAllowAllURLs):
-			"""TODO: Header"""
 			#header("Access-Control-Allow-Origin: *", true);
 		elif (strAllowedOrigin != None):
-			"""TODO: Header"""
-			#header("Access-Control-Allow-Origin: ".$strAllowedOrigin, true);
-		"""TODO: Php Server"""
-		#lse if (isset($_SERVER["REQUEST_METHOD"]) and $_SERVER["REQUEST_METHOD"]=="OPTIONS")
-		#exit(0);
-	
-		"""TODO: Header"""
-		"""
-		header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT", true);
-		header("Access-Control-Max-Age: 86400", true);
-		header("Access-Control-Allow-Headers: ".implode(", ", $arrAllowedHeaders), true);
-		header("Access-Control-Allow-Credentials: true", true);
-		"""
+			conn = httplib.HTTPConnection(strAllowedOrigin)
+			conn.putHeader("Access-Control-Allow-Origin", strAllowedOrigin)
+		elif os.environ["REQUEST_METHOD"] != None and os.environ["REQUEST_METHOD"] == "OPTIONS":
+			exit(0)
 
-		"""TODO: Php Server"""
-		"""
-		if(isset($_SERVER["REQUEST_METHOD"]) and $_SERVER["REQUEST_METHOD"]=="OPTIONS")
-			exit(0);
-		"""
+		conn.putHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT")
+		conn.putHeader("Access-Control-Max-Age", 86400)
+		conn.putHeader("Access-Control-Allow-Headers", ", ".join(arrAllowedHeaders)
+		con..putHeader("Access-Control-Allow-Credentials", True)
+
+		if os.environ["REQUEST_METHOD"] != None and os.environ["REQUEST_METHOD"] == "OPTIONS":
+			exit(0)
