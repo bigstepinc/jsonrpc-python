@@ -53,12 +53,14 @@ class ProcessForker(ServerFilterBase):
 	"""WARNING: Removed & reference"""
 	def beforeJSONDecode(self, strJSONRequest):
 		"""WARNING: This serves non-CLI SAPIs also"""
+		"""
 		if (strcasecmp(php_sapi_name(), "cli")):
 			raise Exception("Invalid SAPI. The process forker requires CLI SAPI.")
-		
+		"""
+
 		arrStreams = [STDIN, STDOUT, STDERR]
 		
-		for (hStreamHandle in arrStreams):
+		for hStreamHandle in arrStreams:
 			"""TODO: Check this out"""
 			if (!stream_is_local(hStreamHandle)):
 				raise Exception("The STDIN, STDOUT and STDERR streams must be local.")
@@ -90,10 +92,10 @@ class ProcessForker(ServerFilterBase):
 	"""
 	"""TODO: Check indentation. It could have some errors."""
 	def _saveStreamStates(self):
-			arrStreams = [ProcessForkerClient.STDIN : STDIN, ProcessForkerClient.STDOUT : STDOUT, ProcessForkerClient.STDERR : STDERR]
+			dictStreams = {ProcessForkerClient.STDIN : STDIN, ProcessForkerClient.STDOUT : STDOUT, ProcessForkerClient.STDERR : STDERR}
 		
 			"""TODO: CHeck arrStreams for naming consistency"""
-			for (nStreamIndex, hStreamHandle in arrStreams):
+			for (nStreamIndex, hStreamHandle in dictStreams):
 				"""TODO: stream_get_meta_data"""
 				self._arrStreamStates[nStreamIndex] = stream_get_meta_data(hStreamHandle)
 		

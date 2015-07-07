@@ -79,7 +79,7 @@ class ClientFilterBase(object):
 	* @param dictionary dictResponse.
 	"""
 	def afterJSONDecode(self, dictResponse):
-		return dictFilterParams
+		return dictResponse
 	
 
 

@@ -49,7 +49,7 @@ class JSONRPC_ServerFilterBase(object):
 	* @param string strFunctionName.
 	"""
 	"""WARNING: Removed & reference"""
-	def resolveFunctionName(strFunctionName):
+	def resolveFunctionName(self, strFunctionName):
 		pass		
 		
 	"""
@@ -89,5 +89,5 @@ class JSONRPC_ServerFilterBase(object):
 	* This should be used to assign the server object
 	* @param JSONRPC_Server server.
 	"""
-	def setServerInstance(server): 
+	def setServerInstance(self, server): 
 		pass

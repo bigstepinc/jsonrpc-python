@@ -85,8 +85,10 @@ class JSONRPC_Client(object):
 			"jsonrpc" : "2.0",
 			"method" : strFunctionName,
 			"params" : arrParams,
-			"id" : ++self._nCallID
+			"id" : self._nCallID + 1
 		}
+
+		self._nCallID += 1
 		
 		dictFilterParams = {
 			"dictRequest" : dictRequest
@@ -302,4 +304,4 @@ class JSONRPC_Client(object):
 	* @param array arrFunctionNames. 
 	"""
 	def rpcReflectionFunctions(self, arrFunctionNames):
-		return _rpc("rpc.reflectionFunctions", [arrFunctionNames])
+		return self._rpc("rpc.reflectionFunctions", [arrFunctionNames])

@@ -1,3 +1,7 @@
+import inspect
+import json
+from JSONRPC_Exception import JSONRPC_Exception
+
 class MethodsMapper(object):
 	def __init___(self):
 		pass
@@ -13,25 +17,27 @@ class MethodsMapper(object):
 	 * 
 	 * @var array
 	"""
-	_arrAPIFunctionsNamesToMethodsNames = []
+	_dictAPIFunctionsNamesToMethodsNames = []
 		
 		
 	"""
-	 * arrAPIFunctionsNamesToMethodsNames can be a dictionary or null.
+	 * dictAPIFunctionsNamesToMethodsNames can be a dictionary or null.
 	 * If null, then all class methods names are mapped to themselves.
 	 * 
 	 * @param object instanceWithAPIMethods 
-	 * @param array arrAPIFunctionsNamesToMethodsNames = None
+	 * @param array dictAPIFunctionsNamesToMethodsNames = None
 	"""
-	def __init__(self, instanceWithAPIMethods, arrAPIFunctionsNamesToMethodsNames = None):
-		if (arrAPIFunctionsNamesToMethodsNames == None):
-			for (strMethodName in get_class_methods(type(instanceWithAPIMethods))):
-				"""TODO: get_class_methods"""
-				self._arrAPIFunctionsNamesToMethodsNames[strMethodName] = strMethodName
+	def __init__(self, instanceWithAPIMethods, dictAPIFunctionsNamesToMethodsNames = None):
+		if (dictAPIFunctionsNamesToMethodsNames == None):
+			for strMethodName in inspect.getmembers(instanceWithAPIMethods.__class__.__name__):
+				"""
+				 * inspect.getmembers returns a list of 2-tuples with the name of the class
+				 * method in the first part of the tuple
+				"""
+				self._dictAPIFunctionsNamesToMethodsNames[strMethodName[0]] = strMethodName[0]
 		else:
-			"""TODO: array_values"""
-			self._validateInstanceHasMethods(instanceWithAPIMethods, array_values(arrAPIFunctionsNamesToMethodsNames))
-			self._arrAPIFunctionsNamesToMethodsNames = arrAPIFunctionsNamesToMethodsNames
+			self._validateInstanceHasMethods(instanceWithAPIMethods, dictAPIFunctionsNamesToMethodsNames.values())
+			self._dictAPIFunctionsNamesToMethodsNames = dictAPIFunctionsNamesToMethodsNames
 		
 		self._instanceWithAPIMethods = instanceWithAPIMethods
 		
@@ -43,12 +49,11 @@ class MethodsMapper(object):
 		return self._instanceWithAPIMethods
 		
 		
-	"""TODO: CHeck if it's indeed an array at return"""
 	"""
 	 * @return array
 	"""
 	def arrAPIFunctionsNamesToMethodsNames(self):
-		return self._arrAPIFunctionsNamesToMethodsNames
+		return self._dictAPIFunctionsNamesToMethodsNames
 		
 		
 	"""TODO: Check documentation"""
@@ -62,14 +67,14 @@ class MethodsMapper(object):
 	 * @return None
 	"""
 	def _validateInstanceHasMethods(self, instanceWithAPIMethods, arrMethodNames):
-		"""TODO: Find out get_class_methods"""
-		arrClassMethodNames = get_class_methods(type(instanceWithAPIMethods))
+		arrClassMethodNames = [methodName[0] for methodName in inspect.getmembers(instanceWithAPIMethods.__class__.__name__)]
 		
-		"""TODO: array_diff. Guess it's a minus or something"""
-		arrFunctionsNotFoundInClass = array_diff(arrMethodNames, arrClassMethodNames)
+		"""This computes the difference between the arrMethodNames and the arrClassMethodNames"""
+		setClassMethodNames = set(arrClassMethodNames)
+		arrFunctionsNotFoundInClass = [notInClass for notInClass in arrMethodNames if notInClass not in arrClassMethodNames]
 		
 		if (len(arrFunctionsNotFoundInClass) != 0):
-			"""Check if it's json.dumps or loads"""
+			"""WARNING: Check if it's json.dumps or loads"""
 			raise JSONRPC_Exception("Methods " + json.dumps(arrFunctionsNotFoundInClass) + \
 									" are not defined in the " + type(instanceWithAPIMethods) + \
 									" class.", JSONRPC_Exception.METHOD_NOT_FOUND)
