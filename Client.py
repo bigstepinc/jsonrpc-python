@@ -156,7 +156,7 @@ class JSONRPC_Client(object):
 	* @param boolean bErrorMode. Whether or not the received JSON 
 	* contains errors.
 	* 
-	* @return mixed mxResponse["result"]. This is the sever response result. 
+	* @return mixed mxResponse["result"]. This is the server response result. 
 	"""
 	def processRAWResponse(self, strResult, bErrorMode = False):
 

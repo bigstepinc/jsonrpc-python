@@ -1,10 +1,10 @@
 import os
+import sys
 import json
 import traceback
 import urlparse
 import httplib
 from JSONRPC_Exception import JSONRPC_Exception
-#from Exception import Exception as JSONRPC_Exception
 
 class JSONRPC_Server(object):
 	
@@ -224,7 +224,6 @@ class JSONRPC_Server(object):
 				self.validateDataTypes(self.arrFunctionReflection["function_params"], dictRequest["params"])
 			
 
-			"""TODO"""
 			if (os.environ["REQUEST_METHOD"] != None and os.environ["REQUEST_METHOD"] == "OPTIONS" \
 				and dictRequest["method"] not in self.arrAllowedFunctionCallsFor_HTTP_OPTIONS):
 				print "HTTP request method " + os.environ["REQUEST_METHOD"] + " ignored."
@@ -318,23 +317,15 @@ class JSONRPC_Server(object):
 	def _exceptionToJSONResponse(self, exc):
 		"""WARNING: Not sure if __name__ wanted or just __class__"""
 		strExceptionClass = exc.__class__.__name__
-		"""TODO"""
-		"""Trim the class name for slashes"""
-		"""
-		while (substr(strExceptionClass, 0, 1)=="\\"):
-		{
-			$strExceptionClass=substr($strExceptionClass, 1);
-		}
-		"""
-		
+		strExceptionClass = strExceptionClass.lstrip('\\')
+
 		"""Get information about the current exception being caught"""
 		excType, excValue, excTraceback = sys.exc_info()
 
 		if (strExceptionClass in self.arrExceptionTypesForMessages):
 			strMessage = exc.message
 		elif (self.bDebugAllowAllExceptionMessages == True):
-			"""TODO"""
-			"""Check exception functions"""
+			"""WARNING: Check exception functions"""
 			strMessage = ("[Internal error: " + strExceptionClass + "] " + exc.message + " " \
 						"""WARNING: Modified error message"""
 						#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
@@ -384,38 +375,35 @@ class JSONRPC_Server(object):
 
 		
 	def callFunction(self, strFunctionName, dictParams):
-		"""TODO"""
-		"""Find similar function for python"""
-		#ignore_user_abort(true);
+		"""WARNING: Not sure if this ignores user abort. It shouldn't ignore it."""
+		try:
+			self.assertFunctionNameAllowed(strFunctionName)
 			
-		self.assertFunctionNameAllowed(strFunctionName)
-			
-		for plugin in self.arrFilterPlugins:
-			plugin.resolveFunctionName(strFunctionName)
+			for plugin in self.arrFilterPlugins:
+				plugin.resolveFunctionName(strFunctionName)
 					
-		"""WARNING: Double check/Error prone"""	
-		bCalled = False
-		for pluginExisting in self.arrFilterPlugins:
-			mxResult = pluginExisting.callFunction(strFunctionName, dictParams, bCalled)
-			if (bCalled == True):
-				break
+			"""WARNING: Double check/Error prone"""	
+			bCalled = False
+			for pluginExisting in self.arrFilterPlugins:
+				mxResult = pluginExisting.callFunction(strFunctionName, dictParams, bCalled)
+				if (bCalled == True):
+					break
 			
-		if (bCalled == False):
-			if (not hasattr(strFunctionName, __call__)):
-				fcallable = self.functionNameToCallableArray(strFunctionName)
-				"""TODO"""
-				"""Find equivalent for call_user_func_array in python"""
-				mxResult = call_user_func_array(fcallable, self.array_make_references(dictParams))
-			else:
-				mxResult = call_user_func_array(strFunctionName, self.array_make_references(dictParams))
-				"""END_TODO"""
+			if (bCalled == False):
+				"""WARNING: This can be done better."""
+				if (not hasattr(strFunctionName, __call__)):
+					fcallable = self.functionNameToCallableArray(strFunctionName)
+					mxResult = fcallable(self.array_make_references(dictParams))
+				else:
+					mxResult = strFunctionName(self.array_make_references(dictParams)))
 				
-		return mxResult
+			return mxResult
+		except Exception as e:
+			pass
 		
 		
 	"""
-	TODO: Change description
-	plugin is of type JSONRPC_ServerFilterBase
+	@var plugin is of type JSONRPC_ServerFilterBase
 	"""
 	def addFilterPlugin(self, plugin):
 		for pluginExisting in self.arrFilterPlugins:
@@ -427,8 +415,7 @@ class JSONRPC_Server(object):
 		
 		
 	"""
-	TODO: Change description
-	plugin is of type JSONRPC_ServerFilterBase
+	@var plugin is of type JSONRPC_ServerFilterBase
 	"""
 	def removeFilterPlugin(self, plugin):
 		nIndex = None
@@ -517,19 +504,19 @@ class JSONRPC_Server(object):
 	@staticmethod
 	def decodeJSONSafely(self, strJSON, bAssoc = True):
 		if (len(strJSON.strip()) == 0):
-			"""TODO: Ask Ionut about dependancy inconsistency"""
+			"""WARNING: Ask Ionut about dependancy inconsistency"""
 			#raise PHorse\Utils\JSONException("Cannot run json_decode() on empty string.", \JSONRPC\Exception::PARSE_ERROR);
+			raise Exception("Cannot decode empty json string")
 		try:
 			if (bAssoc == True):
-				mxReturn = json.loads(strJSON)[0]
-				"""TODO: A decision needs to be made regarding mxReturn handling. It should always be treated as a dictionary imo."""
+				dictReturn = json.loads(strJSON)[0]
 			else:
-				mxReturn = json.loads(strJSON)
+				dictReturn = json.loads(strJSON)
 			
 		except Exception as exc:
 			raise JSONRPC_Exception("JSON deserialization failed. Error message: " + exc.message + " RAW input: " + strJSON, JSONRPC_Exception.PARSE_ERROR)
 
-		return mxReturn
+		return dictReturn
 		
 	"""WARNING: Eliminated & reference"""
 	"""TODO: Check if this is needed. It shouldn't be in python."""
@@ -544,7 +531,6 @@ class JSONRPC_Server(object):
 		try:
 			if (len(self.strErrorLogFilePath) != 0):
 				strClientInfo = ""
-				"""TODO"""
 				if ("REMOTE_ADDR" in os.environ):
 					strClientInfo = strClientInfo + " " + os.environ["REMOTE_ADDR"]
 				if("HTTP_USER_AGENT" in os.environ):
@@ -554,11 +540,9 @@ class JSONRPC_Server(object):
 				try:
 					excType, excValue, excTraceback = sys.exc_info()
 
-					"""TODO"""
-					"""
-					if (preg_match_all('@*RECURSION*@', print_r($arrTrace, true), $arrMatches))
-						throw new \Exception("Recursive stack trace.");
-					"""
+					"""WARNING: Modified regex"""
+					if ('RECURSION' in excTraceback):
+						raise Exception("Recursive stack trace.")
 
 					"""WARNING: Get exception functions"""
 					"""WARNING: Check var_export strTrace = arrTrace"""
@@ -577,13 +561,11 @@ class JSONRPC_Server(object):
 							strTrace + os.linesep)
 
 				"""TODO: file_exists"""
-				"""
-				if(!file_exists(dirname($this->strErrorLogFilePath)))
-				{
-					mkdir(dirname($this->strErrorLogFilePath), 0777, true);
-				}
-				error_log($strError, 3, $this->strErrorLogFilePath);
-				"""
+				if (not os.path.isfile(os.path.dirname(self.strErrorLogFilePath))):
+					os.mkdir(os.path.dirname(self.strErrorLogFilePath), 0777)
+				"""WARNING: Modified error log to append to file."""
+				with open(self.strErrorLogFilePath, "a") as errorLogFile:
+					errorLogFile.write(strError)
 
 		except Exception as exc:
 			"""WARNING: Check format """
@@ -634,16 +616,6 @@ class JSONRPC_Server(object):
 
 	JSONRPC_VERSION = "2.0"
 
-
-	"""WARNING: Check if dictionary"""
-	"""WARNING: This should be useless in python"""
-	def isAssociativeArray(self, array):
-		if (not isinstance(array, list)):
-			return False
-
-		#http://stackoverflow.com/a/4254008/1852030
-		"""TODO: Wtf is this"""
-		#return (bool)count(array_filter(array_keys($array), "is_string"));
 
 	"""WARNING: Removed & reference"""
 	def validateDataTypes(self, arrParamsDetails, arrParams):
@@ -725,7 +697,7 @@ class JSONRPC_Server(object):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Array, " \
 											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-				elif (self.isAssociativeArray(arrParams[idx])):
+				elif (isinstance(arrParams[idx], dict)):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + \
 											"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
@@ -738,7 +710,7 @@ class JSONRPC_Server(object):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Object, " \
 											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-				elif (not self.isAssociativeArray(arrParams[idx]) and (not isinstance(arrParams[idx], object)) \
+				elif (not isinstance(arrParams[idx], dict) and (not isinstance(arrParams[idx], object)) \
 						and (not isinstance(arrParams[idx], list)) and (len(arrParams[idx]) == 0)):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
@@ -783,7 +755,7 @@ class JSONRPC_Server(object):
 			return
 			
 		if (isinstance(mxResult, list) and strExpectedDataType == "object" and \
-			(self.isAssociativeArray(mxResult) or len(mxResult) == 0)):
+			(isinstance(mxResult, dict) or len(mxResult) == 0)):
 			mxResult = object(mxResult)
 		elif (isinstance(mxResult, int) and strExpectedDataType == "float"):
 			mxResult = float(mxResult)
@@ -810,7 +782,7 @@ class JSONRPC_Server(object):
 			else:
 				break
 
-		if ((len(arrParams) > 0) and self.isAssociativeArray(arrParams)):
+		if ((len(arrParams) > 0) and isinstance(arrParams, dict)):
 			#Named parameteres
 			arrNewParams = []
 

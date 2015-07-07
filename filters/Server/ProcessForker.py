@@ -52,11 +52,11 @@ class ProcessForker(ServerFilterBase):
 	"""
 	"""WARNING: Removed & reference"""
 	def beforeJSONDecode(self, strJSONRequest):
-		"""TODO: wtf is this?"""
+		"""WARNING: This serves non-CLI SAPIs also"""
 		if (strcasecmp(php_sapi_name(), "cli")):
 			raise Exception("Invalid SAPI. The process forker requires CLI SAPI.")
 		
-			arrStreams = [STDIN, STDOUT, STDERR]
+		arrStreams = [STDIN, STDOUT, STDERR]
 		
 		for (hStreamHandle in arrStreams):
 			"""TODO: Check this out"""
@@ -110,15 +110,12 @@ class ProcessForker(ServerFilterBase):
 			"""Observation: Switch emulation"""
 			if (nStreamIndex == ProcessForkerClient.STDIN):
 				hStreamHandle = STDIN
-				#break
 						
 			elif (nStreamIndex == ProcessForkerClient.STDOUT):
 				hStreamHandle = STDOUT
-				#break
 						
 			elif (nStreamIndex == ProcessForkerClient.STDERR):
 				hStreamHandle = STDERR
-				#break
 					
 			else:
 				raise Exception("Invalid saved stream index. You've reached unreachable code.")

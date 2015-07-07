@@ -8,8 +8,8 @@
 """
 """TODO: imports"""
 import tempfile
-import os.path
-import os.linesep
+import os
+from ClientFilterBase import ClientFilterBase
 
 class ProcessForkerClient(ClientFilterBase):
 	"""
@@ -31,13 +31,13 @@ class ProcessForkerClient(ClientFilterBase):
 	 *	{
 	 * 		"callback" : JSONRPC_proces_forker_callback,
 	 *		"config" : JSONRPC_proces_forker_config,
-	 * 		"handle" : $hProcessHandle,
+	 * 		"handle" : hProcessHandle,
 	 * 		"pipes" : {
 	 * 			1 : hStdout,
 	 * 			2 : hStderr
 	 * 		},
 	 *		"start_timestamp" : microtime(true)?,
-	 *		"call_id" : $nCallID,
+	 *		"call_id" : nCallID,
 	 *		"buffers" : {
 	 * 			1 : "",
 	 * 			2 : ""
@@ -220,8 +220,7 @@ class ProcessForkerClient(ClientFilterBase):
 				"""WARNING: Error prone"""
 				objNewProcess["buffers"][nProcessPipeIndex] = ""
 
-			"""TODO: Measure time"""
-			objNewProcess["start_timestamp"] = microtime(true)
+			objNewProcess["start_timestamp"] = time.clock()
 			self._arrRunningProcesses[objNewProcess["call_id"]] = objNewProcess
 
 			try:
@@ -239,10 +238,8 @@ class ProcessForkerClient(ClientFilterBase):
 			* The file will be deleted when it won't be used by a process any more. The file is
 			* opened by the current process. Unlink doesn't throw exceptions.
 			"""
-			"""TODO: Check if file exists"""
-			"""TODO: Check unlink"""
-			if (file_exists(strStdinTmpFile)):
-				unlink(strStdinTmpFile)
+			if (os.path.isfile(strStdinTmpFile)):
+				os.remove(strStdinTmpFile)
 
 
 		self._log("Call #" + objNewProcess["call_id"] + " initiated with request: " + strJSONRequest + ".")
@@ -353,8 +350,7 @@ class ProcessForkerClient(ClientFilterBase):
 			raise Exception("Process pipes select failed.")
 
 		arrFinishedProcesses = []
-		"""TODO: Measure time"""
-		fCurrentTimestamp = microtime(true);
+		fCurrentTimestamp = time.clock()
 
 		"""WARNING: Removed & reference"""
 		for objRunningProcess in self._arrRunningProcesses:
@@ -374,7 +370,6 @@ class ProcessForkerClient(ClientFilterBase):
 						objRunningProcess["buffers"].get(self.STDERR) == None):
 						
 						fProcessTimeout = objRunningProcess["config"].getTimeout()
-						"""TODO: Measure time"""
 						if (fProcessTimeout != -1 and (fCurrentTimestamp - objRunningProcess["start_timestamp"]) > fProcessTimeout):
 							raise Exception("Process timed out.")
 				
@@ -411,8 +406,8 @@ class ProcessForkerClient(ClientFilterBase):
 
 			self._closeProcess(objRunningProcess["call_id"])
 			
-		"""TODO: Unset"""
-		unset(objRunningProcess)
+		"""WARNING: Not sure if this should be deleted or set to None"""
+		objRunningProcess = None
 
 		return arrFinishedProcesses
 
@@ -471,8 +466,7 @@ class ProcessForkerClient(ClientFilterBase):
 	def _waitProcess(self, nCallID, nTimeout = -1):
 		assert(nCallID in self._arrRunningProcesses)
 
-		"""TODO: Measure time"""
-		nStartTime = microtime(true)
+		nStartTime = time.clock()
 
 		"""Emulation of a do...while"""
 		while (True):
@@ -480,8 +474,7 @@ class ProcessForkerClient(ClientFilterBase):
 			arrProcessStatus = proc_get_status(self._arrRunningProcesses[nCallID]["handle"])
 			if(not arrProcessStatus["running"]):
 				return arrProcessStatus["exitcode"]
-			"""TODO: Measure time"""
-			if ((nTimeout == -1) or ((microtime(true) - nStartTime) <= nTimeout)):
+			if ((nTimeout == -1) or ((time.clock() - nStartTime) <= nTimeout)):
 				break
 		return False
 
@@ -504,8 +497,8 @@ class ProcessForkerClient(ClientFilterBase):
 
 		nExitCode = proc_close(self._arrRunningProcesses[nCallID]["handle"])
 
-		"""TODO: Unset. Not sure if set to None or delete"""
-		self._arrRunningProcesses[nCallID] == None
+		"""WARNING: Unset. Not sure if set to None or delete"""
+		self._arrRunningProcesses[nCallID] = None
 
 		return nExitCode
 
@@ -570,8 +563,7 @@ class ProcessForkerClient(ClientFilterBase):
 		assert(isinstance(strToBeWritten, basestring))
 
 		nBytesLeft = len(strToBeWritten)
-		"""TODO: Measure time"""
-		nStartTime = microtime(True)
+		nStartTime = time.clock()
 
 		"""Observation: Emulation of do...while"""
 		while (True):
@@ -585,8 +577,7 @@ class ProcessForkerClient(ClientFilterBase):
 					return True
 					strToBeWritten = strToBeWritten[nBytesWritten:]
 
-			"""TODO: Measure time"""
-			if (nTimeout == -1 or (microtime(true) - nStartTime) <= nTimeout):
+			if (nTimeout == -1 or (time.clock() - nStartTime) <= nTimeout):
 				break
 
 		return False
@@ -609,18 +600,16 @@ class ProcessForkerClient(ClientFilterBase):
 		assert(isinstance(hFileHandle, file))
 
 		strReadString = ""
-		"""TODO: Measure time"""
-		nStartTime = microtime(true)
+		nStartTime = time.clock()
 
 		"""Observation: Emulation of do...while"""
 		while (True):
-			strPartialReadString = fread(hFileHandle, 4096)
+			strPartialReadString = hFileHandle.read(4096)
 			if (strPartialReadString != False):
 				strReadString += strPartialReadString
 				if (len(strPartialReadString) == 0):
 					break
-			"""TODO: Measure time"""
-			if (nTimeout == -1 or (microtime(true) - nStartTime) <= nTimeout):
+			if (nTimeout == -1 or (time.clock() - nStartTime) <= nTimeout):
 				break
 
 		return strReadString

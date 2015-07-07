@@ -3,10 +3,10 @@
 * This is the class every other client filter plugin class should extend.
 """
 
-class JSONRPC_ClientFilterBase(object):
+class ClientFilterBase(object):
 
 
-	def __construct(self):
+	def __init__(self):
 		return
 		
 	

@@ -1,3 +1,7 @@
 *.pyc
 *.dll
 *.pyc
+LOG/*
+*.dll
+LOG/*
+index.html
