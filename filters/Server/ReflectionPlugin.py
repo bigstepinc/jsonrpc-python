@@ -2,7 +2,10 @@
  * When using multiple plugins, it is preferable for the Reflection plugin to be added first to make necessary translations in time.
 """
 """TODO: Imports"""
-class ReflectionPlugin(ServerFilterBase):
+import inspect
+from ServerFilterBase import JSONRPC_ServerFilterBase
+
+class ReflectionPlugin(JSONRPC_ServerFilterBase):
 	
 	"""
 	 * @var array
@@ -88,7 +91,7 @@ class ReflectionPlugin(ServerFilterBase):
 	"""
 	"""WARNING: Removed & reference"""
 	def beforeJSONDecode(self, strJSONRequest):
-		if (not self._server.bAuthenticated || not self._server.bAuthorized):
+		if (not self._server.bAuthenticated or not self._server.bAuthorized):
 			"""TODO: Fix namespaces"""
 			arrRequest = Server.decodeJSONSafely(strJSONRequest)
 			if (self.isFunctionNameAllowed(arrRequest["method"])):
@@ -100,7 +103,7 @@ class ReflectionPlugin(ServerFilterBase):
 	"""
 	"""WARNING: Removed & reference"""
 	def afterJSONDecode(self, arrRequest):
-		if (not self._server.bAuthenticated || not self._server.bAuthorized):
+		if (not self._server.bAuthenticated or not self._server.bAuthorized):
 			if (self.isFunctionNameAllowed(arrRequest["method"])):
 				self._server.bAuthenticated = True
 				self._server.bAuthorized = self._server.bAuthenticated
@@ -114,7 +117,7 @@ class ReflectionPlugin(ServerFilterBase):
 			bCalled = True
 			"""WARNING: Check mxResult"""
 			"""TODO: call_user_func_array"""
-			mxResult = call_user_func_array(array($this, static::$_arrJSONRPCReflectionFunctions[$strFunctionName]), $arrParams);
+			mxResult = _dictJSONRPCReflectionFunctions[strFunctionName](arrParams)
 		else:
 			mxResult = None
 
@@ -150,21 +153,23 @@ class ReflectionPlugin(ServerFilterBase):
 		self._server.assertFunctionNameAllowed(strFunctionName)
 
 
-		for (objFilterPlugin in self._server.arrFilterPlugins):
+		for objFilterPlugin in self._server.arrFilterPlugins:
 			objFilterPlugin.resolveFunctionName(strFunctionName)
 
 		"""TODO: Check if this works"""
 		if (function_exists(strFunctionName)):
 			reflector = ReflectionFunction(strFunctionName)
 
-		elif (hasattr(strFunctionName, __call__) && isinstance(strFunctionName, basestring) /* Skipping callable array with instance and method */):
+		elif (hasattr(strFunctionName, __call__) and isinstance(strFunctionName, basestring)): 
+			"""Skipping callable array with instance and method"""
 			"""TODO: Find out what explode does"""
-			arrClassAndStaticMethod = explode("::", $strFunctionName)
+			arrClassAndStaticMethod = strFunctionName.split("::")
 			reflector = ReflectionMethod(arrClassAndStaticMethod[0], arrClassAndStaticMethod[1])
 		else:
 			"""Replaced callable because it is a keyword"""
 			fCallable = self._server.functionNameToCallableArray(strFunctionName)
-			reflector = ReflectionMethod(type("""Class instance""" fCallable[0]), """Method name""" fCallable[1])
+			"""TODO"""
+			#reflector = ReflectionMethod(type("""Class instance""" fCallable[0]), """Method name""" fCallable[1])
 
 
 		dictFunctionReflection = {"function_name" : strFunctionName, "function_return_type" : "unknown", \
@@ -176,17 +181,19 @@ class ReflectionPlugin(ServerFilterBase):
 									"b" : "boolean", "obj" : "object", "mx" : "mixed"}
 
 		arrReflectionParameters = reflector.getParameters()
-		for (reflectionParameter in arrReflectionParameters):
+		for reflectionParameter in arrReflectionParameters:
 			"""TODO: Replace str_replace"""
 			dictParam = {"param_name" : str_replace(array("\$", "&"), array("", ""), reflectionParameter.getName()),
 						"param_is_passed_by_reference" : reflectionParameter.isPassedByReference()}
 
 			dictParam["param_type"] = "unknown"
-			for (strMnemonic, strType in dictTypeMnemonicsToTypes):
-				if (dictParam["param_name"][:len(strMnemonic)] == strMnemonic && 
+			for strMnemonic, strType in dictTypeMnemonicsToTypes:
+				if (dictParam["param_name"][:len(strMnemonic)] == strMnemonic):
 					"""TODO: ctype"""
-					ctype_upper(substr($arrParam["param_name"], strlen($strMnemonic), 1))):
-					
+					"""
+					and ctype_upper(substr(dictParam["param_name"], len(strMnemonic), 1))):
+					"""
+
 					dictParam["param_type"] = strType
 					break
 
@@ -199,11 +206,10 @@ class ReflectionPlugin(ServerFilterBase):
 				dictParam["param_default_value_json"] = ""
 				dictParam["param_default_value_constant_name"] = ""
 
-			dictFunctionReflection["function_params"][] = dictParam
+			dictFunctionReflection["function_params"].append(dictParam)
 
-		for (strTag, fnParser in self._arrTagsParsers):
-			"""TODO: call_user_func_array"""
-			call_user_func_array(array($this, $fnParser), array(&$arrFunctionReflection, $strTag));
+		for strTag, fnParser in self._arrTagsParsers:
+			fnParser(arrFunctionReflection, strTag)
 
 		if (not _bCodeComments):
 			"""WARNING: Not sure if value needs to be deleted or set to None"""
@@ -319,7 +325,7 @@ class ReflectionPlugin(ServerFilterBase):
 	def reflectionFunctions(self, arrFunctionNames):
 		dictReflectionFunctions = []
 
-		for (strFunctionName in arrFunctionNames):
+		for strFunctionName in arrFunctionNames:
 			dictReflectionFunctions[strFunctionName] = self.reflectionFunction(strFunctionName)
 		return dictReflectionFunctions
 
@@ -339,7 +345,7 @@ class ReflectionPlugin(ServerFilterBase):
 	def reflectionConstantName(self, strReflectionParameterName, strDocComment):
 		arrDocCommentLines = strDocComment.split('\n')
 			
-		for (strDocCommentLine in arrDocCommentLines):
+		for strDocCommentLine in arrDocCommentLines:
 			arrRegexMatches = []
 
 			"""TODO: preg_match"""

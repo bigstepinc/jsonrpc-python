@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import traceback
+import re
 from urlparse import urlparse
 import httplib
 from JSONRPC_Exception import JSONRPC_Exception
@@ -62,7 +63,7 @@ class JSONRPC_Server(object):
 	* Should not be used on production servers.
 	* @var bool
 	"""
-	bDebugAllowAllExceptionMessages = False
+	bDebugAllowAllExceptionMessages = True
 		
 		
 	"""
@@ -94,7 +95,7 @@ class JSONRPC_Server(object):
 	* 
 	* @var string
 	"""
-	strErrorLogFilePath = ""
+	strErrorLogFilePath = "C:\ExportVHosts\jsonrpc-python\logger.txt"
 		
 		
 	"""
@@ -148,8 +149,8 @@ class JSONRPC_Server(object):
 		objReflectionPlugin = ReflectionPlugin()
 		objReflectionPlugin.setServerInstance(self);
 
-		if os.environ["REQUEST_METHOD"] != None and os.environ["REQUEST_METHOD"] not in ("GET", "POST", "PUT", "OPTIONS"):
-				print "HTTP request method " + os.environ["REQUEST_METHOD"] + " ignored."
+		if os.environ.get("REQUEST_METHOD") != None and os.environ.get("REQUEST_METHOD") not in ("GET", "POST", "PUT", "OPTIONS"):
+				print "HTTP request method " + os.environ.get("REQUEST_METHOD") + " ignored."
 				sys.exit(0)
 
 		"""WARNING: Check type of mxRequestID"""
@@ -327,10 +328,10 @@ class JSONRPC_Server(object):
 			strMessage = exc.message
 		elif (self.bDebugAllowAllExceptionMessages == True):
 			"""WARNING: Check exception functions"""
+			"""WARNING: Modified error message"""
 			strMessage = ("[Internal error: " + strExceptionClass + "] " + exc.message + " " \
-						"""WARNING: Modified error message"""
 						#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
-						+ os.linesep + excTraceback)
+						+ os.linesep + " ".join(traceback.format_tb(excTraceback)))
 		
 		else:
 			strMessage = "Internal error."
@@ -346,6 +347,7 @@ class JSONRPC_Server(object):
 			else:
 				self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
 			
+		dictResponse = {}
 		dictResponse["error"] = {"message" : strMessage, "code" : nCode}
 
 		return dictResponse
@@ -531,6 +533,7 @@ class JSONRPC_Server(object):
 		try:
 			if (len(self.strErrorLogFilePath) != 0):
 				strClientInfo = ""
+				strError = ""
 				if ("REMOTE_ADDR" in os.environ):
 					strClientInfo = strClientInfo + " " + os.environ["REMOTE_ADDR"]
 				if("HTTP_USER_AGENT" in os.environ):
@@ -541,39 +544,20 @@ class JSONRPC_Server(object):
 					excType, excValue, excTraceback = sys.exc_info()
 
 					"""WARNING: Modified regex"""
-					if ('RECURSION' in excTraceback):
+					if (re.search('@*RECURSION*@', " ".join(str(traceback.extract_tb(excTraceback)))) != None):
 						raise Exception("Recursive stack trace.")
 
-					"""WARNING: Get exception functions"""
-					"""WARNING: Check var_export strTrace = arrTrace"""
-					strTrace = excTraceback
-					"""WARNING: excTraceback has to be string"""
-					strTrace = strTrace + os.linesep + "Short trace: " + os.linesep + excTraceback
-	
 				except Exception as exc:
 					excType, excValue, excTraceback = sys.exc_info()
-					strTrace = excTraceback
+					strError = " ".join(traceback.format_exception(excType, excValue, excTraceback)) + os.linesep + os.linesep
 
-				"""WARNING: Output is modified"""
-				strError = ("Exception type: " + exception.__class__.__name__ + os.linesep + \
-							"Message: " + exc.message + os.linesep + \
-							"Code: " + excValue + os.linesep + \
-							strTrace + os.linesep)
-
-				if (not os.path.isfile(os.path.dirname(self.strErrorLogFilePath))):
-					os.mkdir(os.path.dirname(self.strErrorLogFilePath), 0777)
-				"""WARNING: Modified error log to append to file."""
-				with open(self.strErrorLogFilePath, "a") as errorLogFile:
+				with open(self.strErrorLogFilePath, "a+") as errorLogFile:
 					errorLogFile.write(strError)
 
 		except Exception as exc:
 			"""WARNING: Check format """
 			excType, excValue, excTraceback = sys.exc_info()
-			print "Failed error logging at " + os.path.realpath(__file__)
-			print ", exception code " + excValue + ", exception message: " + exc.message + ", stack trace: " + os.linesep
-			print excTraceback + os.linesep
-			print "Failed to log this line: " + os.linesep + strErrorLine
-				
+			traceback.print_exception(excType, excValue, excTraceback)
 			sys.exit(1)
 		
 		
@@ -595,17 +579,13 @@ class JSONRPC_Server(object):
 		if (self.nHTTPResponseCode == 0):
 			self.nHTTPResponseCode = self.HTTP_500_INTERNAL_SERVER_ERROR
 				
-		self._header("HTTP/1.1 " + int(nHTTPResponseCode) + " " + arrHTTPResponseCodesToText[int(nHTTPResponseCode)], True, nHTTPResponseCode)
+		self._header("HTTP/1.1 " + str(int(nHTTPResponseCode)) + " " + self.arrHTTPResponseCodesToText[int(nHTTPResponseCode)], True)
 				
 		
 	def _header(self, strHeader, bReplace = True):
-
-		if not hasattr(_header, _bHTTPMode):
-			_bHTTPMode = None
-			
-		if (_bHTTPMode == None):
-			_bHTTPMode = "REQUEST_METHOD" in os.environ and \
-						os.environ["REQUEST_METHOD"] in ("GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE", "CONNECT")
+		"""WARNING: Changed this part"""
+		_bHTTPMode = "REQUEST_METHOD" in os.environ and \
+					os.environ["REQUEST_METHOD"] in ("GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE", "CONNECT")
 
 
 		"""WARNING: header function"""
@@ -637,7 +617,6 @@ class JSONRPC_Server(object):
 			if ((arrParams[idx] == None) and (i["param_default_value_json"] != None)):
 				raise JSONRPC_Exception("Parameter " + strParamName + " cannot be NULL.", JSONRPC_Exception.INVALID_PARAMS)
 			
-			"""WARNING: Check if continue exists"""
 			if (arrParams[idx] == None):
 				continue
 
@@ -646,7 +625,7 @@ class JSONRPC_Server(object):
 			if (i["param_type"] == "integer"):
 				if (isinstance(arrParams[idx], int)):
 					"""WARNING: prolly not break here"""
-					break
+					continue
 
 				"""WARNING: Check if casts are correct"""
 				if (not isinstance(arrParams[idx], basestring) or basestring(int(arrParams[idx])) != basestring(arrParams[idx])):
@@ -655,12 +634,12 @@ class JSONRPC_Server(object):
 						"], must be an integer (Number JSON type with no decimals), " + type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 					
 				arrParams[idx] = int(arrParams[idx])
-				#break
+				continue
 
 			elif (i["param_type"] == "float"):
 				if (isinstance(arrParams[idx], float) or isinstance(arrParams[idx], int)):
 					"""WARNING: prolly not break here"""
-					break
+					continue
 				
 				"""WARNING: Check casts"""
 				if ((not isinstance(arrParams[idx], basestring)) or (basestring(float(arrParams[idx])) != arrParams[idx])):
@@ -669,12 +648,12 @@ class JSONRPC_Server(object):
 											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
 				arrParams[idx] = float(arrParams[idx])
-				#break					
-					
+				continue
+				
 			elif (i["param_type"] == "boolean"):
 				if (isinstance(arrParams[idx], bool)):
 					"""WARNING: prolly not a break here"""
-					break
+					continue
 
 				if (isinstance(arrParams[idx], list) or isinstance(arrParams[idx], object)):
 					"""WARNING: Check json.dumps"""
@@ -689,7 +668,7 @@ class JSONRPC_Server(object):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be Boolean, " \
 											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-				#break
+				continue
 			elif (i["param_type"] == "array"):
 				if (not isinstance(arrParams[idx], list)):
 					"""WARNING: Check json.dumps"""
@@ -700,7 +679,7 @@ class JSONRPC_Server(object):
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + \
 											"], must be an Array, Object (key:value collection) given.", JSONRPC_Exception.INVALID_PARAMS)
 
-				#break
+				continue
 
 
 			elif (i["param_type"] == "object"):
@@ -714,29 +693,24 @@ class JSONRPC_Server(object):
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be an Object (key:value collection), " 
 											+ type(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
 
-				#break
+				continue
 
 
 			elif (i["param_type"] == "string"):
 				if (isinstance(arrParams[idx], basestring)):
 					"""WARNING: prolly shouldn't be a break here"""
-					#break
 					continue
 
 				if ((not isinstance(arrParams[idx], basestring)) and (not isinstance(arrParams[idx], int))):
 					"""WARNING: Check json.dumps"""
 					raise JSONRPC_Exception("Parameter at index " + idx + " [" + json.dumps(strParamName) + "], must be a String, " \
 											+ json.dumps(arrParams[idx]) + " given.", JSONRPC_Exception.INVALID_PARAMS)
-
 				arrParams[idx] = basestring(arrParams[idx])
-				#break;
+				continue
 			elif (i["param_type"] == "mixed"):
 				"""WARNING: Change this. There is no mixed type in python"""
 				"""WARNING: prolly shouldn't be a break here"""
-				#break
 				continue
-
-
 			else:
 				"""WARNING: Check json.dumps"""
 				raise JSONRPC_Exception("Unhandled type " + json.dumps(arrParamsDetails[i]["param_type"]) + ".", JSONRPC_Exception.INVALID_PARAMS)
@@ -783,11 +757,10 @@ class JSONRPC_Server(object):
 				break
 
 		if ((len(arrParams) > 0) and isinstance(arrParams, dict)):
-			#Named parameteres
+			#Named parameters
 			arrNewParams = []
 
 			for arrParamProperties in arrParamsDetails:
-				"""WARNING: Check if array_key_exists""" 
 				"""WARNING: is arr really array? Or is it dict/tuple? """
 				if (arrParamProperties["param_name"] in arrParams):
 					"""WARNING: Error prone"""

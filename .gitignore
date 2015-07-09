@@ -5,3 +5,4 @@ LOG/*
 *.dll
 LOG/*
 index.html
+logger.txt
