@@ -157,7 +157,7 @@ class JSONRPC_Server(object):
 		mxRequestID = None
 		try:
 			"""//php://input must be read here only for normal HTTP POST JSON-RPC requests."""
-			if (strJSONRequest == None and (os.environ["REQUEST_METHOD"] == None) or os.environ["REQUEST_METHOD"] == "POST"):
+			if (strJSONRequest == None and (os.environ.get("REQUEST_METHOD") == None) or os.environ.get("REQUEST_METHOD") == "POST"):
 				strJSONRequest = raw_input()
 			
 			for plugin in self.arrFilterPlugins: 
@@ -167,8 +167,10 @@ class JSONRPC_Server(object):
 			"""WARNING: Fix coding style"""
 			if (len(strJSONRequest.strip()) == 0):
 				raise JSONRPC_Exception("Invalid request. Empty input. Was expecting a POST request of a JSON.", JSONRPC_Exception.PARSE_ERROR);
+
+			print "From Server with love " + strJSONRequest
 				
-			dictRequest = self.decodeJSONSafely(strJSONRequest)
+			dictRequest = self.decodeJSONSafely(strJSONRequest, True)
 				
 			"""WARNING: May have a problem at indexation in dictionaries"""	
 			if ('0' in dictRequest.keys() and dictRequest[0] != None):
@@ -292,7 +294,9 @@ class JSONRPC_Server(object):
 				#If nothing is thrown inside exceptionCatch, this catch block will rethrow the original Exception anyway.
 				for plugin in self.arrFilterPlugins:
 					plugin.exceptionCatch(exc)
-				raise exc
+				"""TODO"""
+				#raise exc
+				dictResponse = self._exceptionToJSONResponse(exc)
 
 			except Exception as exc:
 				dictResponse = self._exceptionToJSONResponse(exc)
@@ -331,7 +335,7 @@ class JSONRPC_Server(object):
 			"""WARNING: Modified error message"""
 			strMessage = ("[Internal error: " + strExceptionClass + "] " + exc.message + " " \
 						#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
-						+ os.linesep + " ".join(traceback.format_tb(excTraceback)))
+						+ os.linesep + " ".join(traceback.format_exception(excType, excValue, excTraceback)))
 		
 		else:
 			strMessage = "Internal error."
@@ -500,11 +504,13 @@ class JSONRPC_Server(object):
 	* Safely decode JSON strings, because json_decode() does not throw errors.
 	* @param string strJSON.
 	* @param bool bAssoc.
-	* @return mixed.
+	* @return dictionary.
 	* @throws JSONRPC_Exception.
 	"""
 	@staticmethod
 	def decodeJSONSafely(self, strJSON, bAssoc = True):
+		print strJSON
+		print bAssoc
 		if (len(strJSON.strip()) == 0):
 			"""WARNING: Ask Ionut about dependancy inconsistency"""
 			#raise PHorse\Utils\JSONException("Cannot run json_decode() on empty string.", \JSONRPC\Exception::PARSE_ERROR);

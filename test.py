@@ -1,6 +1,6 @@
 import Server
 from Filters.Server.ReflectionPlugin import ReflectionPlugin
-from Filters.Server.ProcessForker import ProcessForker
+#from Filters.Server.ProcessForker import ProcessForker
 
 def test():
 	#create a Server
@@ -21,6 +21,7 @@ def test():
 	assert a.dictMethodsMappers == []
 
 	#also print them	
+	"""
 	print a.arrAllowedFunctionCalls
 	print a.arrAllowedFunctionCallsFor_HTTP_OPTIONS
 	print a.arrExceptionTypesForCodes
@@ -35,18 +36,21 @@ def test():
 	print a.bValidateTypes
 	print a.arrFunctionReflection
 	print a.dictMethodsMappers
+	"""
 
 	#null request
-	print a.processRequestAndReturn()
+	#print a.processRequestAndReturn()
 
 	#valid request before configuration of server
-	strJSONRequest = {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}
+	strJSONRequest = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'
 	print a.processRequestAndReturn(strJSONRequest)
 
 	#add plugins and test them
-	reflectionPlugin = ReflectionPlugin()
-	processForker = ProcessForker()
-	a.addFilterPlugin(reflectionPlugin)
-	a.addFilterPlugin(processForker)
+	#reflectionPlugin = ReflectionPlugin()
+	#processForker = ProcessForker()
+	#a.addFilterPlugin(reflectionPlugin)
+	#a.addFilterPlugin(processForker)
+
+	#print a.processRequestAndReturn(strJSONRequest)
 
 test()

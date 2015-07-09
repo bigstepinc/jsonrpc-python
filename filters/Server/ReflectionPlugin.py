@@ -4,6 +4,7 @@
 """TODO: Imports"""
 import inspect
 from ServerFilterBase import JSONRPC_ServerFilterBase
+import Server
 
 class ReflectionPlugin(JSONRPC_ServerFilterBase):
 	
@@ -93,7 +94,8 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 	def beforeJSONDecode(self, strJSONRequest):
 		if (not self._server.bAuthenticated or not self._server.bAuthorized):
 			"""TODO: Fix namespaces"""
-			arrRequest = Server.decodeJSONSafely(strJSONRequest)
+			print "From reflection with love " + strJSONRequest
+			arrRequest = Server.JSONRPC_Server.decodeJSONSafely(strJSONRequest, True)
 			if (self.isFunctionNameAllowed(arrRequest["method"])):
 				self._server.bAuthenticated = True
 				self._server.bAuthorized = self._server.bAuthenticated

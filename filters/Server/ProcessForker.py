@@ -41,6 +41,12 @@ class ProcessForker(ServerFilterBase):
 	def setServerInstance(self, server): 
 		self._objServer = server
 
+	def stream_is_local(self, handle):
+		return True
+
+	def stream_set_blocking(self, handle, state):
+		pass
+
 		
 	"""
 	 * Reads the request from STDIN and updates the strJSONRequest to the read value.
@@ -62,13 +68,13 @@ class ProcessForker(ServerFilterBase):
 		
 		for hStreamHandle in arrStreams:
 			"""TODO: Check this out"""
-			if (!stream_is_local(hStreamHandle)):
+			if (not stream_is_local(hStreamHandle)):
 				raise Exception("The STDIN, STDOUT and STDERR streams must be local.")
 				
 		self._saveStreamStates()
 		
 		"""TODO: Set blocking"""	
-		stream_set_blocking(STDIN, /*$blocking*/ (int)false)
+		stream_set_blocking(STDIN, False)
 			
 		"""
 		 * No synchronization needed. The data is already in the STDIN file. 
