@@ -166,15 +166,21 @@ class JSONRPC_Server(object):
 				
 			"""WARNING: Fix coding style"""
 			if (len(strJSONRequest.strip()) == 0):
-				raise JSONRPC_Exception("Invalid request. Empty input. Was expecting a POST request of a JSON.", JSONRPC_Exception.PARSE_ERROR);
+				raise JSONRPC_Exception("Invalid request. Empty input. Was expecting a POST request of a JSON.", JSONRPC_Exception.PARSE_ERROR)
 
 			print "From Server with love " + strJSONRequest
-				
-			dictRequest = self.decodeJSONSafely(strJSONRequest, True)
-				
+
+			"""TODO: Add a hook to change unicode to ascii"""
+			dictRequest = json.loads(strJSONRequest, object_hook = self._decode_dict)
+			print str(dictRequest)
+			"""
+			for k, v in dictRequest:
+				print k + '[' + v + ']'
+			"""
+
 			"""WARNING: May have a problem at indexation in dictionaries"""	
 			if ('0' in dictRequest.keys() and dictRequest[0] != None):
-				raise JSONRPC_Exception("JSON-RPC batch requests are not supported by this server.", JSONRPC_Exception.INVALID_REQUEST);
+				raise JSONRPC_Exception("JSON-RPC batch requests are not supported by this server.", JSONRPC_Exception.INVALID_REQUEST)
 					
 
 			if (("method" in dictRequest and dictRequest["method"] != None) and isinstance(dictRequest["method"], basestring) and \
@@ -204,9 +210,9 @@ class JSONRPC_Server(object):
 			#Method names that begin with the word rpc followed by a period character (U+002E or ASCII 46)
 			#are reserved for rpc-internal methods and extensions and MUST NOT be used for anything else.
 			if (
-				("method" in dictRequest and dictRequest["method"] != None) \
+				("method" in dictRequest and dictRequest["method"] == None) \
 				or (not isinstance(dictRequest["method"], basestring)) \
-				or (len(dictRequest["method"].strip()) != 0)
+				or (len(dictRequest["method"].strip()) == 0)
 			):
 				raise JSONRPC_Exception("The \"method\" key must be a string with a function name.", JSONRPC_Exception.INVALID_REQUEST)
 				
@@ -316,6 +322,33 @@ class JSONRPC_Server(object):
 			
 		return dictResponse
 
+
+	def _decode_list(self, data):
+		rv = []
+		for item in data:
+			if isinstance(item, unicode):
+				item = item.encode('utf-8')
+			elif isinstance(item, list):
+				item = _decode_list(item)
+			elif isinstance(item, dict):
+				item = _decode_dict(item)
+			rv.append(item)
+		return rv
+
+	def _decode_dict(self, data):
+		rv = {}
+		for key, value in data.iteritems():
+			if isinstance(key, unicode):
+				key = key.encode('utf-8')
+			if isinstance(value, unicode):
+				value = value.encode('utf-8')
+			elif isinstance(value, list):
+				value = self._decode_list(value)
+			elif isinstance(value, dict):
+				value = self._decode_dict(value)
+			rv[key] = value
+		return rv
+
 	"""
 	 * Will affect the HTTP status.
 	 * @param JSONRPC_Exception exc
@@ -333,9 +366,7 @@ class JSONRPC_Server(object):
 		elif (self.bDebugAllowAllExceptionMessages == True):
 			"""WARNING: Check exception functions"""
 			"""WARNING: Modified error message"""
-			strMessage = ("[Internal error: " + strExceptionClass + "] " + exc.message + " " \
-						#+ os.linesep + exc.getFile() + "#" + exc.getLine() + " "
-						+ os.linesep + " ".join(traceback.format_exception(excType, excValue, excTraceback)))
+			strMessage = ("[Internal error: " + " ".join(traceback.format_exception(excType, excValue, excTraceback)))
 		
 		else:
 			strMessage = "Internal error."
@@ -500,31 +531,6 @@ class JSONRPC_Server(object):
 			raise JSONRPC_Exception("The function \"" + strFunctionName + "\" is not exported and/or does not exist.", JSONRPC_Exception.METHOD_NOT_FOUND)
 		
 		
-	"""
-	* Safely decode JSON strings, because json_decode() does not throw errors.
-	* @param string strJSON.
-	* @param bool bAssoc.
-	* @return dictionary.
-	* @throws JSONRPC_Exception.
-	"""
-	@staticmethod
-	def decodeJSONSafely(self, strJSON, bAssoc = True):
-		print strJSON
-		print bAssoc
-		if (len(strJSON.strip()) == 0):
-			"""WARNING: Ask Ionut about dependancy inconsistency"""
-			#raise PHorse\Utils\JSONException("Cannot run json_decode() on empty string.", \JSONRPC\Exception::PARSE_ERROR);
-			raise Exception("Cannot decode empty json string")
-		try:
-			if (bAssoc == True):
-				dictReturn = json.loads(strJSON)[0]
-			else:
-				dictReturn = json.loads(strJSON)
-			
-		except Exception as exc:
-			raise JSONRPC_Exception("JSON deserialization failed. Error message: " + exc.message + " RAW input: " + strJSON, JSONRPC_Exception.PARSE_ERROR)
-
-		return dictReturn
 		
 	"""WARNING: Eliminated & reference"""
 	"""TODO: Check if this is needed. It shouldn't be in python."""
