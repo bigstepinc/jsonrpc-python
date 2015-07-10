@@ -93,8 +93,6 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 	"""WARNING: Removed & reference"""
 	def beforeJSONDecode(self, strJSONRequest):
 		if (not self._server.bAuthenticated or not self._server.bAuthorized):
-			"""TODO: Fix namespaces"""
-			print "From reflection with love " + strJSONRequest
 			arrRequest = Server.JSONRPC_Server.decodeJSONSafely(strJSONRequest, True)
 			if (self.isFunctionNameAllowed(arrRequest["method"])):
 				self._server.bAuthenticated = True
@@ -104,9 +102,9 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 	 * @override
 	"""
 	"""WARNING: Removed & reference"""
-	def afterJSONDecode(self, arrRequest):
+	def afterJSONDecode(self, dictRequest):
 		if (not self._server.bAuthenticated or not self._server.bAuthorized):
-			if (self.isFunctionNameAllowed(arrRequest["method"])):
+			if (self.isFunctionNameAllowed(dictRequest["method"])):
 				self._server.bAuthenticated = True
 				self._server.bAuthorized = self._server.bAuthenticated
 
@@ -118,7 +116,6 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 		if (self.isFunctionNameAllowed(strFunctionName)):
 			bCalled = True
 			"""WARNING: Check mxResult"""
-			"""TODO: call_user_func_array"""
 			mxResult = _dictJSONRPCReflectionFunctions[strFunctionName](arrParams)
 		else:
 			mxResult = None
@@ -151,20 +148,17 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
      * @return array
 	"""
 	def reflectionFunction(self, strFunctionName):
-		"""TODO: Check if this is correct"""
 		self._server.assertFunctionNameAllowed(strFunctionName)
 
 
 		for objFilterPlugin in self._server.arrFilterPlugins:
 			objFilterPlugin.resolveFunctionName(strFunctionName)
 
-		"""TODO: Check if this works"""
-		if (function_exists(strFunctionName)):
+		"""TODO: ReflectionFunction/Method"""
+		if inspect.isfunction(strFunctionName):
 			reflector = ReflectionFunction(strFunctionName)
-
 		elif (hasattr(strFunctionName, __call__) and isinstance(strFunctionName, basestring)): 
 			"""Skipping callable array with instance and method"""
-			"""TODO: Find out what explode does"""
 			arrClassAndStaticMethod = strFunctionName.split("::")
 			reflector = ReflectionMethod(arrClassAndStaticMethod[0], arrClassAndStaticMethod[1])
 		else:
@@ -200,7 +194,6 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 					break
 
 			if (reflectionParameter.isDefaultValueAvailable()):
-				"""TODO: check if it's json dumps or loads"""
 				dictParam["param_default_value_json"] = json.dumps(reflectionParameter.getDefaultValue())
 				dictParam["param_default_value_constant_name"] = self.reflectionConstantName(reflectionParameter.getName(), \
 																							dictFunctionReflection["function_documentation_comment"])
@@ -303,14 +296,11 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 	"""
 	"""WARNING: parameters may be not needed"""
 	def _reflectionFunctionErrors(self, dictFunctionReflection, strTag):
-		"""TODO: strpos"""
-		nErrorsPosition = strpos(dictFunctionReflection["function_documentation_comment"], strTag)
+		nErrorsPosition = dictFunctionReflection["function_documentation_comment"].find(strTag)
 		if (nErrorsPosition != False):
-			"""TODO: preg_split"""
-			arrParts = preg_split("/[\.\r\n]+/", dictFunctionReflection["function_documentation_comment"][nErrorsPosition+len("@errors ")])
+			listParts = re.split("/[\.\r\n]+/", dictFunctionReflection["function_documentation_comment"][nErrorsPosition+len("@errors ")])
 			if (len(arrParts[0])):
-				"""TODO: preg_split"""
-				dictFunctionReflection["function_error_constants"] = preg_split("/[\s,]+/", arrParts[0])
+				dictFunctionReflection["function_error_constants"] = re.split("/[\s,]+/", listParts[0])
 			else:
 				raise JSONRPC_Exception("@errors property from " + dictFunctionReflection["function_name"] + " should be removed because it contains no errors.")
 		else:
@@ -350,13 +340,14 @@ class ReflectionPlugin(JSONRPC_ServerFilterBase):
 		for strDocCommentLine in arrDocCommentLines:
 			arrRegexMatches = []
 
-			"""TODO: preg_match"""
-			if (preg_match("/^[\w\W]*@param[\w\W]*" + strReflectionParameterName  + "=/", strDocCommentLine, arrRegexMatches)):
+			listRegexMatches = re.match("/^[\w\W]*@param[\w\W]*" + strReflectionParameterName  + "=/", strDocCommentLine)
+			if listRegexMatches:
 				nOffset = len(arrRegexMatches[0])
-				"""TODO: preg_match"""
-				if (preg_match("/[A-Z]{1,1}[A-Z0-9_]+/", strDocCommentLine, arrRegexMatches, 0, nOffset)):
-					if (arrRegexMatches[0] != "NULL"):
-						return arrRegexMatches[0]
+				listRegexMatches = re.match("/[A-Z]{1,1}[A-Z0-9_]+/", strDocCommentLine[nOffset:])
+				if listRegexMatches:
+					"""WARNING: Check this equality"""
+					if (listRegexMatches[0] != "NULL"):
+						return listRegexMatches[0]
 
 				return ""
 			

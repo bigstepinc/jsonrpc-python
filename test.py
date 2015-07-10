@@ -46,11 +46,11 @@ def test():
 	print a.processRequestAndReturn(strJSONRequest)
 
 	#add plugins and test them
-	#reflectionPlugin = ReflectionPlugin()
+	reflectionPlugin = ReflectionPlugin()
 	#processForker = ProcessForker()
-	#a.addFilterPlugin(reflectionPlugin)
+	a.addFilterPlugin(reflectionPlugin)
 	#a.addFilterPlugin(processForker)
 
-	#print a.processRequestAndReturn(strJSONRequest)
+	print a.processRequestAndReturn(strJSONRequest)
 
 test()

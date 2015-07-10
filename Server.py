@@ -170,13 +170,7 @@ class JSONRPC_Server(object):
 
 			print "From Server with love " + strJSONRequest
 
-			"""TODO: Add a hook to change unicode to ascii"""
 			dictRequest = json.loads(strJSONRequest, object_hook = self._decode_dict)
-			print str(dictRequest)
-			"""
-			for k, v in dictRequest:
-				print k + '[' + v + ']'
-			"""
 
 			"""WARNING: May have a problem at indexation in dictionaries"""	
 			if ('0' in dictRequest.keys() and dictRequest[0] != None):
