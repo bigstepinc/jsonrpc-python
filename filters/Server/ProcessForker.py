@@ -98,12 +98,12 @@ class ProcessForker(ServerFilterBase):
 	"""
 	"""TODO: Check indentation. It could have some errors."""
 	def _saveStreamStates(self):
-			dictStreams = {ProcessForkerClient.STDIN : STDIN, ProcessForkerClient.STDOUT : STDOUT, ProcessForkerClient.STDERR : STDERR}
+		dictStreams = {ProcessForkerClient.STDIN : STDIN, ProcessForkerClient.STDOUT : STDOUT, ProcessForkerClient.STDERR : STDERR}
 		
-			"""TODO: CHeck arrStreams for naming consistency"""
-			for (nStreamIndex, hStreamHandle in dictStreams):
-				"""TODO: stream_get_meta_data"""
-				self._arrStreamStates[nStreamIndex] = stream_get_meta_data(hStreamHandle)
+		"""TODO: CHeck arrStreams for naming consistency"""
+		for (nStreamIndex, hStreamHandle in dictStreams):
+			"""TODO: stream_get_meta_data"""
+			self._arrStreamStates[nStreamIndex] = stream_get_meta_data(hStreamHandle)
 		
 	"""
 	 * Restores the following streams to their previously saved states: STDIN, STDOUT and

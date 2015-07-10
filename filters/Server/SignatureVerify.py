@@ -19,14 +19,14 @@ class SignatureVerify(ServerFilterBase):
 		
 	def beforeJSONDecode(self, strJSONRequest):
 		if (not self._server.bAuthenticated || not self._server.bAuthorized):
-            """TODO: $_GET equivalent in python"""
-            if ("verify" in $_GET && $_GET["verify"].find(":") != -1):
+			"""TODO: $_GET equivalent in python"""
+			if ("verify" in $_GET && $_GET["verify"].find(":") != -1):
 				arrSplit = $_GET["verify"].split(":", 2)
 				"""WARNING: Error prone"""	
 				if (len(arrSplit) < 2):
 					$_GET["verify"] = arrSplit[1]
-                
-            self._validateSignatureURLParams()
+
+			self._validateSignatureURLParams()
 				
 			"""TODO: $_GET"""
 			_GET["verify"] = $_GET["verify"].strip().lower()

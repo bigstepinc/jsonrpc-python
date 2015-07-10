@@ -48,20 +48,21 @@ class RemoteAPIDocumentor(ServerFilterBase):
 	"""WARNING: Removed & reference"""
 	def beforeJSONDecode(self, strJSONRequest):
 		"""TODO: Server thing"""
-		"""
-		if ((len(strJSONRequest) == 0) && isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"]=="GET"):
+		if ((len(strJSONRequest) == 0) and os.environ.get("REQUEST_METHOD") != None and os.environ.get("REQUEST_METHOD") == "GET"):
 			rapidClient = Client(self._strPublishEndpointURL)
 						
-			bSSLMode = isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]=="on"
-			strFullURL = (bSSLMode ? "https://":"http://") + $_SERVER["HTTP_HOST"]
+			bSSLMode = os.environ.get("HTTPS") != None and os.environ.get("HTTPS") == "on"
+			if bSSLMode:
+				strFullURL = "https://" + os.environ.get("HTTP_HOST")
+			else:
+				strFullURL = "http://" + os.environ.get("HTTP_HOST")
 			
 			if(
-				($bSSLMode && (int)$_SERVER["SERVER_PORT"]!=443)
-				|| (!$bSSLMode && (int)$_SERVER["SERVER_PORT"]!=80)
-			)
-				$strFullURL.=":".(int)$_SERVER["SERVER_PORT"];
-				$strFullURL.=$_SERVER["REQUEST_URI"];
-		"""
+				(bSSLMode and int(os.environ.get("SERVER_PORT")) != 443) \
+				or (not bSSLMode and int(os.environ.get("SERVER_PORT")) !=80 )
+			):
+				strFullURL += ":" + str(int(os.environ.get("SERVER_PORT")))
+				strFullURL += os.environ.get("REQUEST_URI")
 				
 			strHTMLDocumentation = rapidClient.published_html_interface(
 				self._nProjectVersionID,

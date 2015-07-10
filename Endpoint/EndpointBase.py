@@ -1,4 +1,5 @@
 """TODO: Imports"""
+import Server
 class EndpointBase(object):
 	"""
 	* @type JSONRPC\Server
@@ -29,8 +30,7 @@ class EndpointBase(object):
 	"""
 	def _instantiateServer(self):
 		if (self._server == None):
-			"""TODO: Keep naming consistency"""
-			self._server = JSONRPC_Server()
+			self._server = Server.JSONRPC_Server()
 		
 		
 	"""

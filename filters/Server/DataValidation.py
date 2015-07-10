@@ -13,10 +13,8 @@ class DataValidation(ServerFilterBase):
 	def __init__(self, arrSchemas, objReflectionPlugin = None):
 		self._schemaManager = SchemaManager(arrSchemas)
 		SchemaManager.arrGlobalFlags[SchemaManager.STRICT_MODE] = SchemaManager.STRICT_MODE
-		"""TODO: encapsulate this in try...except"""
-		#if (!file_exists(BASE_PATH."/LOG/validation/")):
-			"""TODO: mkdir"""
-			mkdir(BASE_PATH."/LOG/validation/", 0777, true);
+		if (not os.path.isdir(os.path.dirname(os.path.abspath(__file__)) + "/LOG/validation/")):
+			os.mkdir(os.path.dirname(os.path.abspath(__file__)) + "/LOG/validation/", 0777)
 
 		if (objReflectionPlugin == None):
 			self._reflectionPlugin = ReflectionPlugin()
@@ -81,12 +79,11 @@ class DataValidation(ServerFilterBase):
 				if (((strXreturn.find("{") != -1) && (strXreturn.find("}") != -1)) \
 						|| ((strXreturn.find("[") != -1) && (strXreturn.find("]") != -1)))
 
-					"""TODO: str_replace"""
-					strXreturn = strStripReturnSchema.replace("{", "[")					
+					strXreturn = strStripReturnSchema.replace("{", "[")
 					strXreturn = strStripReturnSchema.replace("}", "]")
 					strSchema = self._strFunctionNamei + "." + strStripReturnSchema
-					"""TODO: wtf is this"""
-					tupResult = (array)$mxResult
+					"""WARNING: Types may be inconsistent"""
+					tupResult = tuple(mxResult)
 
 					strErrorMessage = ""
 
@@ -120,15 +117,12 @@ class DataValidation(ServerFilterBase):
 							list(arrInitialResponse),
 							"""tupResponse""" None,
 							"""exception""" exception,
-							"""mxExtraInfo""" list("Schema" : strSchema)
+							"""mxExtraInfo""" dict{"Schema" : strSchema}
 						)
 
 						"""TODO """
-						file_put_contents(
-							BASE_PATH."/LOG/validation/".$this->_strFunctionName,
-							"Schema ".$strSchema.": ".PHP_EOL.$exception->getMessage().PHP_EOL.var_export($mxResult, true),
-							FILE_APPEND
-						)
+						with open(os.path.dirname(os.path.abspath(__file__) + "/LOG/validation/" + self._strFunctionName, 'a+') as f:
+							f.write("Schema " + strSchema + ": " + os.linesep + exception.message + os.linesep + str(mxResult))
 					else:
 						raise BSI_Exception(os.linesep + "Function (out) " + self._strFunctionName + ": " + os.linesep + exception.message, \
 											BSI_Exception.GENERIC_PRIVATE_ERROR)
