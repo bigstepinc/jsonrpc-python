@@ -16,7 +16,7 @@ class JSONRPCBaseException(Exception):
         """
         * Class constructor. Initializes the exception message and code.
         """
-        super(Exception, self).__init__(strMessage);
+        super(JSONRPCBaseException, self).__init__(strMessage);
 
         self.__nCode = nCode;
 
