@@ -9,7 +9,6 @@ from MethodMapper import MethodMapper;
 from JSONRPCException import JSONRPCException;
 from JSONRPCBaseException import JSONRPCBaseException;
 
-import Test;
 
 
 class Server(object):
