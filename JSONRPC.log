@@ -1,0 +1,752 @@
+2015-09-21 09:29:01,112 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 122, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 217, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:30:29,625 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 129, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:30:43,867 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 129, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:31:11,099 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:31:51,591 Message: "The request must be a string." Code: -32700
+Traceback (most recent call last):
+  File "Server.py", line 92, in processRequest
+    "The request must be a string.", JSONRPCException.PARSE_ERROR
+JSONRPCException: The request must be a string.
+2015-09-21 09:32:07,071 Message: "The request must be a string." Code: -32700
+Traceback (most recent call last):
+  File "Server.py", line 94, in processRequest
+    "The request must be a string.", JSONRPCException.PARSE_ERROR
+JSONRPCException: The request must be a string.
+2015-09-21 09:34:50,229 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:38:27,665 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:38:50,686 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:41:38,803 Message: "test2() takes no arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    mxResult = fnCallable(*arrParams);
+TypeError: test2() takes no arguments (1 given)
+2015-09-21 09:41:59,834 Message: "The function "functions" does not exist or is not exported." Code: -32601
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 221, in __callFunction
+    JSONRPCException.METHOD_NOT_FOUND
+JSONRPCException: The function "functions" does not exist or is not exported.
+2015-09-21 09:42:13,139 Message: "'ReflectionPlugin' object has no attribute '_ReflectionPlugin__objServer'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 114, in processRequest
+    dictRequest = objPlugin.afterJSONDecode(dictRequest);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 30, in afterJSONDecode
+    self.__objServer.bAuthenticated = True;
+AttributeError: 'ReflectionPlugin' object has no attribute '_ReflectionPlugin__objServer'
+2015-09-21 09:42:57,251 Message: "'ReflectionPlugin' object has no attribute 'getattr'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 212, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 43, in callFunction
+    mxResult = self.getattr(
+AttributeError: 'ReflectionPlugin' object has no attribute 'getattr'
+2015-09-21 09:43:16,482 Message: "'Server' object has no attribute '_ReflectionPlugin__objMethodMapper'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 130, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 212, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 45, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 54, in functions
+    return self._objServer.__objMethodMapper.methods();
+AttributeError: 'Server' object has no attribute '_ReflectionPlugin__objMethodMapper'
+2015-09-21 09:47:54,818 Message: "global name 'keys' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 45, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 54, in functions
+    return self._objServer.getMethodMapper().methods();
+  File "/var/vhosts/jsonrpc-python-new/MethodMapper.py", line 38, in methods
+    return keys(self.__dictMethods);
+NameError: global name 'keys' is not defined
+2015-09-21 11:24:53,499 Message: "getFunctionReflection() takes exactly 2 arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(*arrParams);
+TypeError: getFunctionReflection() takes exactly 2 arguments (1 given)
+2015-09-21 11:25:25,784 Message: "getFunctionReflection() takes exactly 2 arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(*arrParams);
+TypeError: getFunctionReflection() takes exactly 2 arguments (1 given)
+2015-09-21 11:26:00,633 Message: "The mapped function is not a routine." Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 64, in getFunctionReflection
+    assert inspect.isroutine(fnCallable), "The mapped function is not a routine.";
+AssertionError: The mapped function is not a routine.
+2015-09-21 11:26:29,329 Message: "The mapped function is not a routine." Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 65, in getFunctionReflection
+    assert inspect.isroutine(fnCallable), "The mapped function is not a routine.";
+AssertionError: The mapped function is not a routine.
+2015-09-21 11:27:51,063 Message: "" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 64, in getFunctionReflection
+    assert inspect.ismethod(fnCallable) or inspect.isfunction(fnCallable);
+AssertionError
+2015-09-21 11:28:31,452 Message: "" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 64, in getFunctionReflection
+    assert inspect.ismethod(fnCallable);
+AssertionError
+2015-09-21 11:28:44,110 Message: "" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 65, in getFunctionReflection
+    assert inspect.ismethod(fnCallable) or inspect.isfunction(fnCallable);
+AssertionError
+2015-09-21 11:28:52,908 Message: "" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 65, in getFunctionReflection
+    assert inspect.ismethod(fnCallable) or inspect.isfunction(fnCallable);
+AssertionError
+2015-09-21 11:29:03,627 Message: "" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 65, in getFunctionReflection
+    assert inspect.ismethod(fnCallable) or inspect.isfunction(fnCallable);
+AssertionError
+2015-09-21 11:29:31,264 Message: "" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 66, in getFunctionReflection
+    assert inspect.ismethod(fnCallable) or inspect.isfunction(fnCallable);
+AssertionError
+2015-09-21 11:29:45,121 Message: "getFunctionReflection() takes exactly 2 arguments (3 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(self, *arrParams);
+TypeError: getFunctionReflection() takes exactly 2 arguments (3 given)
+2015-09-21 11:29:53,235 Message: "unhashable type: 'list'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 64, in getFunctionReflection
+    fnCallable = self._objServer.getMethodMapper().map(strFunctionName);
+  File "/var/vhosts/jsonrpc-python-new/MethodMapper.py", line 29, in map
+    if strMethodName in self.__dictMethods:
+TypeError: unhashable type: 'list'
+2015-09-21 11:30:07,673 Message: "getFunctionReflection() takes exactly 2 arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(*arrParams);
+TypeError: getFunctionReflection() takes exactly 2 arguments (1 given)
+2015-09-21 11:30:16,818 Message: "getFunctionReflection() takes exactly 2 arguments (1 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 49, in callFunction
+    )(*arrParams);
+TypeError: getFunctionReflection() takes exactly 2 arguments (1 given)
+2015-09-21 11:30:36,482 Message: "'function' object has no attribute 'getargspec'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 49, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 70, in getFunctionReflection
+    print fnCallable.getargspec();
+AttributeError: 'function' object has no attribute 'getargspec'
+2015-09-21 11:31:01,628 Message: "'function' object has no attribute 'getargspec'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 47, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 67, in getFunctionReflection
+    print fnCallable.getargspec();
+AttributeError: 'function' object has no attribute 'getargspec'
+2015-09-21 16:19:24,184 Message: "'NoneType' object has no attribute 'group'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 93, in getFunctionReflection
+    strTypePrefix = re.search("^[a-z]+", strParamName).group(0);
+AttributeError: 'NoneType' object has no attribute 'group'
+2015-09-21 16:21:04,864 Message: "'NoneType' object is not iterable" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 89, in getFunctionReflection
+    arrDefaultValues = list(ntArgSpec.defaults);
+TypeError: 'NoneType' object is not iterable
+2015-09-21 16:21:22,018 Message: "'NoneType' object is not iterable" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 90, in getFunctionReflection
+    arrDefaultValues = list(ntArgSpec.defaults);
+TypeError: 'NoneType' object is not iterable
+2015-09-21 16:21:41,274 Message: "'NoneType' object is not iterable" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 90, in getFunctionReflection
+    arrDefaultValues = list(ntArgSpec.defaults);
+TypeError: 'NoneType' object is not iterable
+2015-09-21 16:23:06,161 Message: "'NoneType' object is not iterable" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 90, in getFunctionReflection
+    arrDefaultValues = list(ntArgSpec.defaults);
+TypeError: 'NoneType' object is not iterable
+2015-09-21 16:23:31,035 Message: "'NoneType' object is not iterable" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 90, in getFunctionReflection
+    arrDefaultValues = list(ntArgSpec.defaults);
+TypeError: 'NoneType' object is not iterable
+2015-09-21 16:23:35,459 Message: "'NoneType' object is not iterable" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 61, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    arrDefaultValues = list(ntArgSpec.defaults);
+TypeError: 'NoneType' object is not iterable
+2015-09-21 17:23:41,585 Message: "global name 'strReturnType' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 97, in getFunctionReflection
+    "function_return_type": strReturnType,
+NameError: global name 'strReturnType' is not defined
+2015-09-21 17:24:34,951 Message: "global name 'strDoc' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 98, in getFunctionReflection
+    "function_documentation_comment": strDoc,
+NameError: global name 'strDoc' is not defined
+2015-09-21 17:36:30,640 Message: "'str' object has no attribute 'trim'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    dictSpec = self.__getFunctionDocSpec(fnCallable);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 143, in __getFunctionDocSpec
+    strDocLine = strDocLine.trim();
+AttributeError: 'str' object has no attribute 'trim'
+2015-09-21 17:36:41,654 Message: "global name 'trim' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    dictSpec = self.__getFunctionDocSpec(fnCallable);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 143, in __getFunctionDocSpec
+    strDocLine = trim(strDocLine);
+NameError: global name 'trim' is not defined
+2015-09-21 18:11:39,485 Message: "'NoneType' object has no attribute 'group'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    dictSpec = self.__getFunctionDocSpec(fnCallable);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 147, in __getFunctionDocSpec
+    print re.match("^\s*@param.*", strDocLine).group(0);
+AttributeError: 'NoneType' object has no attribute 'group'
+2015-09-21 18:46:18,798 Message: "unbalanced parenthesis" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    dictSpec = self.__getFunctionDocSpec(fnCallable);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 149, in __getFunctionDocSpec
+    objMatch = re.match("^\s*@param\s+(\w+)\s+(\w+)(?:\s*=\s*([0-9]+)?.*", strDocLine);
+  File "/usr/lib64/python2.7/re.py", line 137, in match
+    return _compile(pattern, flags).match(string)
+  File "/usr/lib64/python2.7/re.py", line 242, in _compile
+    raise error, v # invalid expression
+error: unbalanced parenthesis
+2015-09-21 18:46:51,632 Message: "no such group" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    dictSpec = self.__getFunctionDocSpec(fnCallable);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 156, in __getFunctionDocSpec
+    mxDefaultValue = objMatch.group(3);
+IndexError: no such group
+2015-09-21 18:47:02,744 Message: "no such group" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 91, in getFunctionReflection
+    dictSpec = self.__getFunctionDocSpec(fnCallable);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 156, in __getFunctionDocSpec
+    mxDefaultValue = objMatch.group(3);
+IndexError: no such group
+2015-09-21 19:11:37,735 Message: "getReflections() takes exactly 1 argument (2 given)" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 142, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+TypeError: getReflections() takes exactly 1 argument (2 given)
+2015-09-21 19:14:14,619 Message: "dictionary update sequence element #1 has length 3; 2 is required" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 93, in getReflection
+    dictParams = dict(arrParams);
+ValueError: dictionary update sequence element #1 has length 3; 2 is required
+2015-09-21 19:18:57,113 Message: "global name 'JSONRPCException' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 71, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 94, in getReflection
+    raise JSONRPCException(
+NameError: global name 'JSONRPCException' is not defined
+2015-09-21 19:19:17,313 Message: "The "test1" function prototype is not consistent with the doc comment." Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 72, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 97, in getReflection
+    JSONRPCException.INTERNAL_ERROR
+JSONRPCException: The "test1" function prototype is not consistent with the doc comment.
+2015-09-21 19:19:38,031 Message: "The "test1" function prototype is not consistent with the doc comment." Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 136, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 218, in __callFunction
+    bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 72, in callFunction
+    )(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Plugins/Server/ReflectionPlugin.py", line 97, in getReflection
+    JSONRPCException.INTERNAL_ERROR
+JSONRPCException: The "test1" function prototype is not consistent with the doc comment.
+2015-09-21 19:36:19,350 Message: "'functions_parameters'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 233, in __checkParameters
+    if len(arrParams) > len(dictReflection["functions_parameters"]):
+KeyError: 'functions_parameters'
+2015-09-21 19:36:59,882 Message: "The function "test2" expects 0 parameters. 1 given." Code: -32601
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 241, in __checkParameters
+    JSONRPCException.METHOD_NOT_FOUND
+JSONRPCException: The function "test2" expects 0 parameters. 1 given.
+2015-09-21 19:37:14,738 Message: "The function "test2" expects 0 parameter(s). 1 parameter(s) given." Code: -32601
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 241, in __checkParameters
+    JSONRPCException.METHOD_NOT_FOUND
+JSONRPCException: The function "test2" expects 0 parameter(s). 1 parameter(s) given.
+2015-09-21 19:39:30,031 Message: "The function "test2" expects 0 parameter(s). 1 parameter(s) given." Code: -32602
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 241, in __checkParameters
+    JSONRPCException.INVALID_PARAMS
+JSONRPCException: The function "test2" expects 0 parameter(s). 1 parameter(s) given.
+2015-09-21 19:40:04,263 Message: "The function "test2" expects 0 parameter(s). 1 parameter(s) given." Code: -32602
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 241, in __checkParameters
+    JSONRPCException.INVALID_PARAMS
+JSONRPCException: The function "test2" expects 0 parameter(s). 1 parameter(s) given.
+2015-09-21 19:40:21,021 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 19:40:34,397 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 19:44:30,214 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 19:47:08,634 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 19:49:19,612 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 19:53:52,498 Message: "global name 'string' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 245, in __checkParameters
+    if not self.__checkType(dictReflection["function_parameters"][i], arrParams[i]):
+  File "Server.py", line 269, in __checkType
+    "str": string,
+NameError: global name 'string' is not defined
+2015-09-21 19:53:59,188 Message: "global name 'String' is not defined" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 245, in __checkParameters
+    if not self.__checkType(dictReflection["function_parameters"][i], arrParams[i]):
+  File "Server.py", line 269, in __checkType
+    "str": String,
+NameError: global name 'String' is not defined
+2015-09-21 19:54:03,637 Message: "unhashable type: 'dict'" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 245, in __checkParameters
+    if not self.__checkType(dictReflection["function_parameters"][i], arrParams[i]):
+  File "Server.py", line 277, in __checkType
+    assert strType in dictTypes, "\"%s\" type not supported." % strType;
+TypeError: unhashable type: 'dict'
+2015-09-21 19:54:47,879 Message: ""string" type not supported." Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 223, in __callFunction
+    self.__checkParameters(dictReflection, arrParams);
+  File "Server.py", line 245, in __checkParameters
+    if not self.__checkType(dictReflection["function_parameters"][i]["parameter_type"], arrParams[i]):
+  File "Server.py", line 277, in __checkType
+    assert strType in dictTypes, "\"%s\" type not supported." % strType;
+AssertionError: "string" type not supported.
+2015-09-21 19:56:35,771 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 20:05:24,898 Message: "Eroare de test" Code: 42
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 224, in __callFunction
+    mxResult = fnCallable(*arrParams);
+  File "/var/vhosts/jsonrpc-python-new/Test.py", line 19, in test1
+    raise TestException("Eroare de test", TestException.RANDOM_ERROR);
+TestException: Eroare de test
+2015-09-21 20:05:43,520 Message: "Parameter type "None" not supported." Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 271, in __checkReturnValue
+    if self.__checkType(dictReflection["function_return_type"], mxReturnValue):
+  File "Server.py", line 294, in __checkType
+    assert strType in dictTypes, "Parameter type \"%s\" not supported." % strType;
+AssertionError: Parameter type "None" not supported.
+2015-09-21 20:06:08,345 Message: "isinstance() arg 2 must be a class, type, or tuple of classes and types" Code: -32603
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 271, in __checkReturnValue
+    if self.__checkType(dictReflection["function_return_type"], mxReturnValue):
+  File "Server.py", line 297, in __checkType
+    return isinstance(mxVal, dictTypes[strType]);
+TypeError: isinstance() arg 2 must be a class, type, or tuple of classes and types
+2015-09-21 20:06:56,660 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.
+2015-09-21 20:07:08,812 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.
+2015-09-21 20:07:36,373 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.
+2015-10-02 15:46:10,421 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.
+2015-10-02 15:46:57,775 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.
+2015-10-02 15:48:34,869 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.
+2015-10-02 15:48:36,825 Message: "The value returned by the "test1" function is inconsistent with the defined return type." Code: -32604
+Traceback (most recent call last):
+  File "Server.py", line 128, in processRequest
+    dictRequest["method"], dictRequest["params"]
+  File "Server.py", line 225, in __callFunction
+    self.__checkReturnValue(dictReflection, mxResult);
+  File "Server.py", line 275, in __checkReturnValue
+    JSONRPCException.INVALID_RETURN_TYPE
+JSONRPCException: The value returned by the "test1" function is inconsistent with the defined return type.

@@ -1,56 +1,25 @@
-import Server
-from Filters.Server.ReflectionPlugin import ReflectionPlugin
-#from Filters.Server.ProcessForker import ProcessForker
+from JSONRPCBaseException import JSONRPCBaseException;
 
-def test():
-	#create a Server
-	a = Server.JSONRPC_Server()
 
-	#test it's members
-	assert a.arrAllowedFunctionCalls == []
-	assert a.arrAllowedFunctionCallsFor_HTTP_OPTIONS == []
-	assert a.arrExceptionTypesForCodes == ["JSONRPC\\Exception"]
-	assert a.arrExceptionTypesForMessages == ["JSONRPC\\Exception"]
-	assert a.bAuthenticated == False
-	assert a.bAuthorized == False
-	assert a.arrFilterPlugins == []
-	assert a.nHTTPResponseCode == 0
-	assert a.bNotificationMode == False
-	assert a.bValidateTypes == False
-	assert a.arrFunctionReflection == None
-	assert a.dictMethodsMappers == []
+class TestException(JSONRPCBaseException):
+    RANDOM_ERROR = 42;
 
-	#also print them	
-	"""
-	print a.arrAllowedFunctionCalls
-	print a.arrAllowedFunctionCallsFor_HTTP_OPTIONS
-	print a.arrExceptionTypesForCodes
-	print a.arrExceptionTypesForMessages
-	print a.bDebugAllowAllExceptionMessages
-	print a.bAuthenticated
-	print a.bAuthorized
-	print a.arrFilterPlugins
-	print a.strErrorLogFilePath
-	print a.nHTTPResponseCode
-	print a.bNotificationMode
-	print a.bValidateTypes
-	print a.arrFunctionReflection
-	print a.dictMethodsMappers
-	"""
 
-	#null request
-	#print a.processRequestAndReturn()
 
-	#valid request before configuration of server
-	strJSONRequest = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'
-	print a.processRequestAndReturn(strJSONRequest)
+def test1(strString, bCalled = True, nTimes = 2):
+    """
+    Functie de test 1.
 
-	#add plugins and test them
-	reflectionPlugin = ReflectionPlugin()
-	#processForker = ProcessForker()
-	a.addFilterPlugin(reflectionPlugin)
-	#a.addFilterPlugin(processForker)
+    @param String strString Bla bla.
+    @param boolean bCalled = True Cra cra.
+    @param int A = 2 aha aha
 
-	print a.processRequestAndReturn(strJSONRequest)
+    @return None
+    """
+    return 4;
 
-test()
+def test2():
+    return 0;
+
+def test3():
+    return "test";
