@@ -81,7 +81,6 @@ class Server(object):
         };
 
         try:
-        
             """
             *   If there is no request, then that must mean that we are sending request by console.
             """
@@ -89,8 +88,7 @@ class Server(object):
                 strJSONRequest = raw_input();
                 self.bAuthenticated = True;
                 self.bAuthorized = True;
-                
-                
+
             for objPlugin in self.__arrPlugins:
                 strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest);
 
@@ -291,7 +289,7 @@ class Server(object):
         Checks the type of a value.
         """
         dictTypes = {
-            "int": int,
+            "integer": int,
             "float": float,
             "string": basestring,
             "array": list,
@@ -337,7 +335,7 @@ class Server(object):
         """
         dictExc = self.__formatException(exc, False);
         self.__objLogger.exception(dictExc["message"]);
-        
+
     def _decode_dict(self, data):
         rv = {}
         for key, value in data.iteritems():
@@ -363,4 +361,3 @@ class Server(object):
                 item = self._decode_dict(item)
             rv.append(item)
         return rv
-
