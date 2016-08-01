@@ -81,14 +81,6 @@ class Server(object):
         };
 
         try:
-            """
-            *   If there is no request, then that must mean that we are sending request by console.
-            """
-            if (strJSONRequest == None and (os.environ.get("REQUEST_METHOD") == None or os.environ.get("REQUEST_METHOD") == "POST")):
-                strJSONRequest = raw_input();
-                self.bAuthenticated = True;
-                self.bAuthorized = True;
-
             for objPlugin in self.__arrPlugins:
                 strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest);
 
@@ -161,7 +153,6 @@ class Server(object):
         if bNotificationMode:
             return None;
 
-        print strResponse;
         return strResponse;
 
     def __checkRequest(self, dictRequest):
