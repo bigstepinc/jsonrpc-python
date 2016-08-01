@@ -17,7 +17,7 @@ class Server(object):
 
     """
     """
-    JSONRPC_VERSION = "2.0";
+    __JSONRPC_VERSION = "2.0";
 
     """
     """
@@ -37,11 +37,11 @@ class Server(object):
 
     """
     """
-    bAuthenticated = False;
+    bAuthenticated = False; # trebuie regandit modul in care se face autentificarea
 
     """
     """
-    bAuthorized = False;
+    bAuthorized = False; # trebuie regandit modul in care se face autorizarea
 
 
     def __init__(self, objMethodMapper, strLogFilePath = "JSONRPC.log"):
@@ -76,11 +76,19 @@ class Server(object):
         """
         bNotificationMode = False;
         dictResponse = {
-            "jsonrpc": self.JSONRPC_VERSION,
+            "jsonrpc": self.__JSONRPC_VERSION,
             "id": None
         };
 
         try:
+            """
+            If there is no request, then that must mean that we are sending request by console.
+            """
+            if (strJSONRequest == None):
+                strJSONRequest = raw_input();
+                self.bAuthenticated = True;
+                self.bAuthorized = True;
+
             for objPlugin in self.__arrPlugins:
                 strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest);
 
@@ -96,7 +104,7 @@ class Server(object):
                 );
 
             try:
-                dictRequest = json.loads(strJSONRequest, object_hook = self._decode_dict);
+                dictRequest = json.loads(strJSONRequest, object_hook = self.__decode_dict);
             except Exception:
                 raise JSONRPCException(
                     "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
@@ -170,9 +178,9 @@ class Server(object):
                 JSONRPCException.INVALID_REQUEST
             );
 
-        if not "jsonrpc" in dictRequest or dictRequest["jsonrpc"] != self.JSONRPC_VERSION:
+        if not "jsonrpc" in dictRequest or dictRequest["jsonrpc"] != self.__JSONRPC_VERSION:
             raise JSONRPCException(
-                "The \"jsonrpc\" version must be equal to " + self.JSONRPC_VERSION + ".",
+                "The \"jsonrpc\" version must be equal to " + self.__JSONRPC_VERSION + ".",
                 JSONRPCException.INVALID_REQUEST
             );
 
@@ -327,7 +335,7 @@ class Server(object):
         dictExc = self.__formatException(exc, False);
         self.__objLogger.exception(dictExc["message"]);
 
-    def _decode_dict(self, data):
+    def ___decode_dict(self, data):
         rv = {}
         for key, value in data.iteritems():
             if isinstance(key, unicode):
@@ -335,20 +343,20 @@ class Server(object):
             if isinstance(value, unicode):
                 value = value.encode('utf-8')
             elif isinstance(value, list):
-                value = self._decode_list(value)
+                value = self.__decode_list(value)
             elif isinstance(value, dict):
-                value = self._decode_dict(value)
+                value = self.__decode_dict(value)
             rv[key] = value
         return rv
 
-    def _decode_list(self, data):
+    def __decode_list(self, data):
         rv = []
         for item in data:
             if isinstance(item, unicode):
                 item = item.encode('utf-8')
             elif isinstance(item, list):
-                item = self._decode_list(item)
+                item = self.__decode_list(item)
             elif isinstance(item, dict):
-                item = self._decode_dict(item)
+                item = self.__decode_dict(item)
             rv.append(item)
         return rv

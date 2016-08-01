@@ -18,17 +18,17 @@ class Client(object):
     """
     JSON-RPC protocol call ID.
     """
-    _nCallID = 0;
+    __nCallID = 0;
 
     """
     Filter plugins which extend ClientPluginBase.
     """
-    _arrFilterPlugins = [];
+    __arrFilterPlugins = [];
 
     """
     JSON-RPC server endpoint URL.
     """
-    _strJSONRPCRouterURL = "";
+    __strJSONRPCRouterURL = "";
 
     def __init__(self, strJSONRPCRouterURL, strLogFilePath = "CommunicationLog.log"):
         """
@@ -39,10 +39,10 @@ class Client(object):
         @param string strLogFilePath. This is the file path where the info messages should
         be written. It is not mandatory, a file "CommunicationLog.log" is created by default.
         """
-        logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
-        self.__objLogger = logging.getLogger(__name__);
+        # logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
+        # self.__objLogger = logging.getLogger(__name__);
 
-        self._strJSONRPCRouterURL = strJSONRPCRouterURL;
+        self.__strJSONRPCRouterURL = strJSONRPCRouterURL;
 
     """
     HTTP credentials used for authentication plugins.
@@ -68,19 +68,19 @@ class Client(object):
             "jsonrpc": "2.0",
             "method": strFunctionName,
             "params": arrParams,
-            "id": ++self._nCallID
+            "id": ++self.__nCallID
         };
 
         dictFilterParams = {
             "dictRequest": dictRequest
         };
 
-        for objFilterPlugin in self._arrFilterPlugins:
+        for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.beforeJSONEncode(dictFilterParams) is not None:
                 dictRequest = objFilterPlugin.beforeJSONEncode(dictFilterParams)["dictRequest"];
 
         strRequest = json.dumps(dictRequest);
-        strEndPointURL = self._strJSONRPCRouterURL;
+        strEndPointURL = self.__strJSONRPCRouterURL;
 
         dictHTTPHeaders = {
             "Content-Type": "application/json"
@@ -91,11 +91,11 @@ class Client(object):
 
         dictFilterParams = {
             "strJSONRequest": strRequest,
-            "strEndPointURL": self._strJSONRPCRouterURL,
+            "strEndPointURL": self.__strJSONRPCRouterURL,
             "dictHTTPHeaders": dictHTTPHeaders
         };
 
-        for objFilterPlugin in self._arrFilterPlugins:
+        for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.afterJSONEncode(dictFilterParams) is not None:
                 strEndPointURL = objFilterPlugin.afterJSONEncode(dictFilterParams)["strEndPointURL"];
 
@@ -108,7 +108,7 @@ class Client(object):
             "bCalled": bCalled
         };
 
-        for objFilterPlugin in self._arrFilterPlugins:
+        for objFilterPlugin in self.__arrFilterPlugins:
             strResult = objFilterPlugin.makeRequest(dictFilterParams);
 
             if bCalled:
@@ -143,7 +143,7 @@ class Client(object):
                 "strJSONResponse": strResult
             };
 
-            for objFilterPlugin in self._arrFilterPlugins:
+            for objFilterPlugin in self.__arrFilterPlugins:
                 objFilterPlugin.beforeJSONDecode(dictFilterParams);
 
             try:
@@ -158,7 +158,7 @@ class Client(object):
                 "dictResponse": mxResponse
             }
 
-            for objFilterPlugin in self._arrFilterPlugins:
+            for objFilterPlugin in self.__arrFilterPlugins:
                 objFilterPlugin.afterJSONDecode(dictFilterParams["dictResponse"]);
 
             if isinstance(mxResponse, dict) == False or (bErrorMode == True and mxResponse.has_key("error") == False):
@@ -172,7 +172,7 @@ class Client(object):
                 str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
             );
         except JSONRPCException, objError:
-            for objFilterPlugin in self._arrFilterPlugins:
+            for objFilterPlugin in self.__arrFilterPlugins:
                 objFilterPlugin.exceptionCatch(objError);
 
             raise objError;
@@ -211,13 +211,13 @@ class Client(object):
         @param object objFilterPlugin. The class of this object should extend the
         ClientPluginBase.
         """
-        for objFilterPluginExisting in self._arrFilterPlugins:
+        for objFilterPluginExisting in self.__arrFilterPlugins:
             if objFilterPluginExisting.__class__ == objFilterPlugin.__class__:
                 raise Exception(
                     "Multiple instances of the same filter is not allowed."
                 );
 
-        self._arrFilterPlugins.append(objFilterPlugin);
+        self.__arrFilterPlugins.append(objFilterPlugin);
 
     def removeFilterPlugin(self, objFilterPlugin):
         """
@@ -230,8 +230,8 @@ class Client(object):
         """
         nIndex = None;
 
-        for i in range(len(self._arrFilterPlugins)):
-            if objFilterPlugin.__class__ == self._arrFilterPlugins[i].__class__:
+        for i in range(len(self.__arrFilterPlugins)):
+            if objFilterPlugin.__class__ == self.__arrFilterPlugins[i].__class__:
                 nIndex = i;
                 break;
 
@@ -240,7 +240,7 @@ class Client(object):
                 "Failed to remove filter plugin object, maybe plugin is not registered"
             );
 
-        del self._arrFilterPlugins[nIndex];
+        del self.__arrFilterPlugins[nIndex];
 
     def rpcFunctions(self):
         """

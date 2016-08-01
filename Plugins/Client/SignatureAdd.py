@@ -47,7 +47,7 @@ class SignatureAdd(ClientPluginBase):
         """
         strKEYSplit = self.strAPIKey.split(":", 2);
         if (strKEYSplit.__len__() == 1):
-            self.strKeyMetaData = "null";
+            self.strKeyMetaData = None;
         else:
             self.strKeyMetaData = strKEYSplit[0];
 
@@ -79,7 +79,7 @@ class SignatureAdd(ClientPluginBase):
         """
         strVerifyHash = hmac.new(self.strAPIKey, dictFilterParams["strJSONRequest"], hashlib.md5).hexdigest();
 
-        if (self.strKeyMetaData != "null"):
+        if (self.strKeyMetaData != None):
             strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash;
 
         if (dictFilterParams["strEndPointURL"].find("?") != -1):
