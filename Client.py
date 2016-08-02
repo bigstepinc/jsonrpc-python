@@ -64,6 +64,41 @@ class Client(object):
         self._strHTTPPassword = strPassword;
 
     def _rpc(self, strFunctionName, arrParams):
+        strRequest, strEndPointURL, dictHTTPHeaders = self.__prepareRequest(strFunctionName, arrParams);
+
+        strResult, bErrorMode = self.__makeRequest(strRequest, strEndPointURL, dictHTTPHeaders);
+
+        return self.processRAWResponse(strResult, bErrorMode);
+
+    def processRAWResponse(self, strResult, bErrorMode = False):
+        """
+        This is the function used to decode the received JSON and return its result.
+        It is automatically called by _rpc.
+
+        @param string strResult. It represents the received JSON.
+        @param boolean bErrorMode. Whether or not the received JSON contains errors.
+
+        @return mixed mxResponse["result"]. This is the server response result.
+        """
+        try:
+            bErrorMode, mxResponse = self.__processResponse(strResult, bErrorMode);
+
+            mxResponse = self.__createResponse(strResult, bErrorMode, mxResponse);
+
+            return mxResponse["result"];
+        except JSONRPCException, objError:
+            for objFilterPlugin in self.__arrFilterPlugins:
+                objFilterPlugin.exceptionCatch(objError);
+
+            raise objError;
+
+    def __prepareRequest(self, strFunctionName, arrParams):
+        """
+        @param string strFunctionName
+        @param array arrParams
+
+        @return array strRequest, strEndPointURL, dictHTTPHeaders
+        """
         dictRequest = {
             "jsonrpc": "2.0",
             "method": strFunctionName,
@@ -89,6 +124,16 @@ class Client(object):
             if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:
                 strRequest, strEndPointURL, dictHTTPHeaders = objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders);
 
+        return strRequest, strEndPointURL, dictHTTPHeaders;
+
+    def __makeRequest(self, strRequest, strEndPointURL, dictHTTPHeaders):
+        """
+        @param string strRequest
+        @param string strEndPointURL
+        @param dictionary dictHTTPHeaders
+
+        @return array strResult, bErrorMode
+        """
         bErrorMode = False;
         bCalled = False;
 
@@ -109,49 +154,50 @@ class Client(object):
                 bErrorMode = True;
                 strResult = objError.read();
 
-        return self.processRAWResponse(strResult, bErrorMode);
+        return strResult, bErrorMode;
 
-    def processRAWResponse(self, strResult, bErrorMode = False):
+    def __processResponse(self, strResult, bErrorMode):
         """
-        This is the function used to decode the received JSON and return its result.
-        It is automatically called by _rpc.
+        @param string strResult
+        @param boolean bErrorMode
 
-        @param string strResult. It represents the received JSON.
-        @param boolean bErrMode. Whether or not the received JSON contains errors.
-
-        @return mixed mxResponse["result"]. This is the server response result.
+        @return array bErrorMode, mxResponse
         """
+        mxResponse = None;
+
+        for objFilterPlugin in self.__arrFilterPlugins:
+            objFilterPlugin.beforeJSONDecode(strResult);
+
         try:
-            mxResponse = None;
-
-            for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.beforeJSONDecode(strResult);
-
-            try:
-                mxResponse = json.loads(strResult);
-            except Exception, objError:
-                raise JSONRPCException(
-                    objError.message + ". RAW response from server: " + strResult, JSONRPCException.PARSE_ERROR
-                );
-
-            for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.afterJSONDecode(strResult, mxResponse);
-
-            if isinstance(mxResponse, dict) == False or (bErrorMode == True and mxResponse.has_key("error") == False):
-                raise JSONRPCException(
-                    "Invalid response structure. RAW response: " + strResult, JSONRPCException.INTERNAL_ERROR
-                );
-            elif mxResponse.has_key("result") == True and mxResponse.has_key("error") == False and bErrorMode == False:
-                return mxResponse["result"];
-
+            mxResponse = json.loads(strResult);
+        except Exception, objError:
             raise JSONRPCException(
-                str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
+                objError.message + ". RAW response from server: " + strResult, JSONRPCException.PARSE_ERROR
             );
-        except JSONRPCException, objError:
-            for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.exceptionCatch(objError);
 
-            raise objError;
+        for objFilterPlugin in self.__arrFilterPlugins:
+            objFilterPlugin.afterJSONDecode(strResult, mxResponse);
+
+        return bErrorMode, mxResponse;
+
+    def __createResponse(self, strResult, bErrorMode, mxResponse):
+        """
+        @param string strResult
+        @param boolean bErrorMode
+        @param mixed mxResponse
+
+        @return mixed mxResponse
+        """
+        if isinstance(mxResponse, dict) == False or (bErrorMode == True and mxResponse.has_key("error") == False):
+            raise JSONRPCException(
+                "Invalid response structure. RAW response: " + strResult, JSONRPCException.INTERNAL_ERROR
+            );
+        elif mxResponse.has_key("result") == True and mxResponse.has_key("error") == False and bErrorMode == False:
+            return mxResponse;
+
+        raise JSONRPCException(
+            str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
+        );
 
     def __getattr__(self, strClassAttribute):
         """
