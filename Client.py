@@ -71,13 +71,9 @@ class Client(object):
             "id": ++self.__nCallID
         };
 
-        dictFilterParams = {
-            "dictRequest": dictRequest
-        };
-
         for objFilterPlugin in self.__arrFilterPlugins:
-            if objFilterPlugin.beforeJSONEncode(dictFilterParams) is not None:
-                dictRequest = objFilterPlugin.beforeJSONEncode(dictFilterParams)["dictRequest"];
+            if objFilterPlugin.beforeJSONEncode(dictRequest) is not None:
+                dictRequest = objFilterPlugin.beforeJSONEncode(dictRequest);
 
         strRequest = json.dumps(dictRequest);
         strEndPointURL = self.__strJSONRPCRouterURL;
@@ -89,27 +85,16 @@ class Client(object):
         if self._strHTTPUser is not None and self._strHTTPPassword is not None:
             dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(self._strHTTPUser + ":" + self._strHTTPPassword);
 
-        dictFilterParams = {
-            "strJSONRequest": strRequest,
-            "strEndPointURL": self.__strJSONRPCRouterURL,
-            "dictHTTPHeaders": dictHTTPHeaders
-        };
-
         for objFilterPlugin in self.__arrFilterPlugins:
-            if objFilterPlugin.afterJSONEncode(dictFilterParams) is not None:
-                strEndPointURL = objFilterPlugin.afterJSONEncode(dictFilterParams)["strEndPointURL"];
+            if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:
+                strRequest, strEndPointURL, dictHTTPHeaders = objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders);
 
         bErrorMode = False;
         bCalled = False;
 
-        dictFilterParams = {
-            "strJSONRequest": strRequest,
-            "strEndPointURL": strEndPointURL,
-            "bCalled": bCalled
-        };
-
         for objFilterPlugin in self.__arrFilterPlugins:
-            strResult = objFilterPlugin.makeRequest(dictFilterParams);
+            if objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL) is not None:
+                strResult = objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL);
 
             if bCalled:
                 break;
@@ -139,31 +124,22 @@ class Client(object):
         try:
             mxResponse = None;
 
-            dictFilterParams = {
-                "strJSONResponse": strResult
-            };
-
             for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.beforeJSONDecode(dictFilterParams);
+                objFilterPlugin.beforeJSONDecode(strResult);
 
             try:
-                mxResponse = json.loads(dictFilterParams["strJSONResponse"]);
+                mxResponse = json.loads(strResult);
             except Exception, objError:
                 raise JSONRPCException(
-                    objError.message + ". RAW response from server: " + dictFilterParams["strJSONResponse"], JSONRPCException.PARSE_ERROR
+                    objError.message + ". RAW response from server: " + strResult, JSONRPCException.PARSE_ERROR
                 );
 
-            dictFilterParams = {
-                "strJSONResponse": strResult,
-                "dictResponse": mxResponse
-            }
-
             for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.afterJSONDecode(dictFilterParams["dictResponse"]);
+                objFilterPlugin.afterJSONDecode(strResult, mxResponse);
 
             if isinstance(mxResponse, dict) == False or (bErrorMode == True and mxResponse.has_key("error") == False):
                 raise JSONRPCException(
-                    "Invalid response structure. RAW response: " + dictFilterParams["strJSONResponse"], JSONRPCException.INTERNAL_ERROR
+                    "Invalid response structure. RAW response: " + strResult, JSONRPCException.INTERNAL_ERROR
                 );
             elif mxResponse.has_key("result") == True and mxResponse.has_key("error") == False and bErrorMode == False:
                 return mxResponse["result"];

@@ -51,47 +51,43 @@ class SignatureAdd(ClientPluginBase):
         else:
             self.strKeyMetaData = strKEYSplit[0];
 
-    def beforeJSONEncode(self, dictFilterParams):
+    def beforeJSONEncode(self, dictRequest):
         """
         This function sets an uptime for the request.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "dictRequest"
+        @param dictionary dictRequest
 
-        @return dictionary dictFilterParams
+        @return dictionary dictRequest
         """
-        dictFilterParams["dictRequest"]["expires"] = int(time.time() + 86400);
-        return dictFilterParams;
+        dictRequest["expires"] = int(time.time() + 86400);
+        return dictRequest;
 
-    def afterJSONEncode(self, dictFilterParams):
+    def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
         This function is used for authentication. It alters the Endpoint URL such that it contains
         a specific signature.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "strJSONRequest"
-        - "strEndPointURL"
-        - "dictHTTPHeaders"
+        @param string strJSONRequest
+        @param string strEndPointURL
+        @param dictionary dictHTTPHeaders
 
-        @return dictionary dictFilterParams
+        @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """
-        strVerifyHash = hmac.new(self.strAPIKey, dictFilterParams["strJSONRequest"], hashlib.md5).hexdigest();
+        strVerifyHash = hmac.new(self.strAPIKey, strJSONRequest, hashlib.md5).hexdigest();
 
         if (self.strKeyMetaData != None):
             strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash;
 
-        if (dictFilterParams["strEndPointURL"].find("?") != -1):
-            dictFilterParams["strEndPointURL"] += "&";
+        if (strEndPointURL.find("?") != -1):
+            strEndPointURL += "&";
         else:
-            dictFilterParams["strEndPointURL"] += "?";
+            strEndPointURL += "?";
 
-        if dictFilterParams["strEndPointURL"].find("?verify") == -1:
-            dictFilterParams["strEndPointURL"] += "verify=" + urllib.quote(strVerifyHash);
+        if strEndPointURL.find("?verify") == -1:
+            strEndPointURL += "verify=" + urllib.quote(strVerifyHash);
 
         for key, value in self.dictExtraURLVariables.items():
             value = str(value);
-            dictFilterParams["strEndPointURL"] += "&" + urllib.quote(key) + "=" + urllib.quote(value);
+            strEndPointURL += "&" + urllib.quote(key) + "=" + urllib.quote(value);
 
-        return dictFilterParams;
+        return strJSONRequest, strEndPointURL, dictHTTPHeaders;

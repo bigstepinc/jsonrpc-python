@@ -10,75 +10,68 @@ class ClientPluginBase(object):
         """
         pass;
 
-    def beforeJSONEncode(self, dictFilterParams):
+    def beforeJSONEncode(self, dictRequest):
         """
         Should be used to:
         - add extra request object keys;
         - translate or encode output params into the expected server request object format.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "dictRequest"
+        @param dictionary dictRequest
 
-        @return dictionary dictFilterParams
+        @return dictionary dictRequest
         """
-        return dictFilterParams;
+        return dictRequest;
 
-    def afterJSONEncode(self, dictFilterParams):
+    def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
         Should be uset to:
         - encrypt, encode or otherwise prepare the JSON request string into the expected server input format;
         - log raw input.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "strJSONRequest"
-        - "strEndPointURL"
-        - "dictHTTPHeaders"
+        @param string strJSONRequest
+        @param string strEndPointURL
+        @param dictionary dictHTTPHeaders
 
-        @return dictionary dictFilterParams
+        @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """
-        return dictFilterParams;
+        return strJSONRequest, strEndPointURL, dictHTTPHeaders;
 
-    def makeRequest(self, dictFilterParams):
+    def makeRequest(self, bCalled, strJSONRequest, strEndPointURL):
         """
         First plugin to make request will be the last one. The respective plugin MUST set bCalled to true.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "mixed". The RAW string output of the server or false on error (or can throw)
+        @param boolean bCalled
+        @param string strJSONRequest
+        @param string strEndPointURL
 
-        @return dictionary dictFilterParams
+        @return array bCalled, strJSONRequest, strEndPointURL
         """
-        return dictFilterParams;
+        return bCalled, strJSONRequest, strEndPointURL;
 
-    def beforeJSONDecode(self, dictFilterParams):
+    def beforeJSONDecode(self, strJSONResponse):
         """
         Should be used to:
         - decrypt, decode or otherwise prepare the JSON response into the expected JSON-RPC client format;
         - log raw input.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "strJSONResponse"
+        @param string strJSONResponse
 
-        @return dictionary dictFilterParams
+        @return string strJSONResponse
         """
-        return dictFilterParams;
+        return strJSONResponse;
 
-    def afterJSONDecode(self, dictFilterParams):
+    def afterJSONDecode(self, strResult, mxResponse):
         """
         Should be used to:
         - add extra response object keys;
         - translate or decode response params into the expected JSON-RPC client response object format.
 
-        @param dictionary dictFilterParams. It is used for reference return for multiple variables,
-        which can be retrieved using specific keys
-        - "dictResponse"
+        @param string strResult
+        @param mixed mxResponse
 
-        @return dictionary dictFilterParams
+        @return array strResult, mxResponse
         """
-        return dictFilterParams;
+        return strResult, mxResponse;
 
     def exceptionCatch(self, exception):
         """

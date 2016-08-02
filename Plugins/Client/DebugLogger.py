@@ -21,8 +21,8 @@ class DebugLogger(ClientPluginBase):
             else:
                 raise Exception("No log path specified.");
 
-    def beforeJSONDecode(self, dictFilterParams):
-        strOutput = dictFilterParams["strJSONResponse"];
+    def beforeJSONDecode(self, strJSONResponse):
+        strOutput = strJSONResponse;
         objDecoded = json.loads(strOutput);
         strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n";
 
@@ -31,8 +31,8 @@ class DebugLogger(ClientPluginBase):
         else:
             self.hFile.write(strOutput + "\n");
 
-    def afterJSONEncode(self, dictFilterParams):
-        strOutput = dictFilterParams["strJSONRequest"];
+    def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
+        strOutput = strJSONRequest;
         objDecoded = json.loads(strOutput);
         strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n";
 
