@@ -335,7 +335,7 @@ class Server(object):
         dictExc = self.__formatException(exc, False);
         self.__objLogger.exception(dictExc["message"]);
 
-    def ___decode_dict(self, data):
+    def __decode_dict(self, data):
         rv = {}
         for key, value in data.iteritems():
             if isinstance(key, unicode):
