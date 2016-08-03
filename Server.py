@@ -81,63 +81,11 @@ class Server(object):
         };
 
         try:
-            """
-            If there is no request, then that must mean that we are sending request by console.
-            """
-            if (strJSONRequest == None):
-                strJSONRequest = raw_input();
-                self.bAuthenticated = True;
-                self.bAuthorized = True;
+            bNotificationMode, dictResponse, dictRequest = self.__processResponse(strJSONRequest, bNotificationMode, dictResponse);
 
-            for objPlugin in self.__arrPlugins:
-                strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest);
+            self.__verifyAcces();
 
-            if not isinstance(strJSONRequest, basestring):
-                raise JSONRPCException(
-                    "The request must be a string.", JSONRPCException.PARSE_ERROR
-                );
-
-            strJSONRequest = strJSONRequest.strip();
-            if len(strJSONRequest) == 0:
-                raise JSONRPCException(
-                    "The request string cannot be empty.", JSONRPCException.PARSE_ERROR
-                );
-
-            try:
-                dictRequest = json.loads(strJSONRequest, object_hook = self.__decode_dict);
-            except Exception:
-                raise JSONRPCException(
-                    "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
-                );
-
-            bNotificationMode = self.__checkRequest(dictRequest);
-            if not "params" in dictRequest:
-                dictRequest["params"] = [];
-            dictResponse["id"] = dictRequest["id"];
-
-            for objPlugin in self.__arrPlugins:
-                dictRequest = objPlugin.afterJSONDecode(dictRequest);
-
-            if not self.bAuthenticated:
-                raise JSONRPCException(
-                    "Not authenticated (bad credentials or signature).",
-                    JSONRPCException.NOT_AUTHENTICATED
-                );
-
-            if not self.bAuthorized:
-                raise JSONRPCException(
-                    "Authenticated user is not authorized.",
-                    JSONRPCException.NOT_AUTHORIZED
-                );
-
-            try:
-                dictResponse["result"] = self.__callFunction(
-                    dictRequest["method"], dictRequest["params"]
-                );
-            except Exception as exc:
-                for objPlugin in self.__arrPlugins:
-                    objPlugin.onException(exc);
-                raise;
+            dictResponse = self.__createResponse(dictResponse, dictRequest);
         except Exception as exc:
             self.__logException(exc);
 
@@ -162,6 +110,87 @@ class Server(object):
             return None;
 
         return strResponse;
+
+    def __processResponse(self, strJSONRequest, bNotificationMode, dictResponse):
+        """
+        @param string strJSONRequest
+        @param boolean bNotificationMode
+        @param dictionary dictResponse
+
+        @return array bNotificationMode, dictResponse, dictRequest
+        """
+
+        """
+        If there is no request, then that must mean that we are sending request by console.
+        """
+        if (strJSONRequest == None):
+            strJSONRequest = raw_input();
+            self.bAuthenticated = True;
+            self.bAuthorized = True;
+
+        for objPlugin in self.__arrPlugins:
+            strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest);
+
+        if not isinstance(strJSONRequest, basestring):
+            raise JSONRPCException(
+                "The request must be a string.", JSONRPCException.PARSE_ERROR
+            );
+
+        strJSONRequest = strJSONRequest.strip();
+        if len(strJSONRequest) == 0:
+            raise JSONRPCException(
+                "The request string cannot be empty.", JSONRPCException.PARSE_ERROR
+            );
+
+        try:
+            dictRequest = json.loads(strJSONRequest, object_hook = self.__decode_dict);
+        except Exception:
+            raise JSONRPCException(
+                "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
+            );
+
+        bNotificationMode = self.__checkRequest(dictRequest);
+        if not "params" in dictRequest:
+            dictRequest["params"] = [];
+        dictResponse["id"] = dictRequest["id"];
+
+        for objPlugin in self.__arrPlugins:
+            dictRequest = objPlugin.afterJSONDecode(dictRequest);
+
+        return bNotificationMode, dictResponse, dictRequest;
+
+    def __verifyAcces(self):
+        """
+        """
+        if not self.bAuthenticated:
+            raise JSONRPCException(
+                "Not authenticated (bad credentials or signature).",
+                JSONRPCException.NOT_AUTHENTICATED
+            );
+
+        if not self.bAuthorized:
+            raise JSONRPCException(
+                "Authenticated user is not authorized.",
+                JSONRPCException.NOT_AUTHORIZED
+            );
+
+    def __createResponse(self, dictResponse, dictRequest):
+        """
+        @param dictionary dictResponse
+        @param dictionary dictRequest
+
+        @return dictionary dictResponse
+        """
+        try:
+            dictResponse["result"] = self.__callFunction(
+                dictRequest["method"], dictRequest["params"]
+            );
+        except Exception as exc:
+            for objPlugin in self.__arrPlugins:
+                objPlugin.onException(exc);
+            raise;
+
+        return dictResponse;
 
     def __checkRequest(self, dictRequest):
         """
