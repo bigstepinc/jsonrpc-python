@@ -8,6 +8,7 @@ import os;
 import base64;
 import logging;
 import threading;
+from traceback import format_exc;
 from urllib2 import HTTPError;
 from JSONRPCException import JSONRPCException;
 from JSONRPCBaseException import JSONRPCBaseException;
