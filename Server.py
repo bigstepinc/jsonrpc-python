@@ -44,15 +44,18 @@ class Server(object):
     bAuthorized = False; # trebuie regandit modul in care se face autorizarea
 
 
-    def __init__(self, objMethodMapper, strLogFilePath = "JSONRPC.log", arrPlugins = []):
+    def __init__(self, dictParams, arrPlugins = []):
         """
         Class constructor.
         """
-        logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
+        if not "strLogFilePath" in dictParams:
+            dictParams["strLogFilePath"] = "JSONRPC.log";
+
+        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s");
         self.__objLogger = logging.getLogger(__name__);
 
-        assert isinstance(objMethodMapper, MethodMapper), "Invalid method mapper."
-        self.__objMethodMapper = objMethodMapper;
+        assert isinstance(dictParams["objMethodMapper"], MethodMapper), "Invalid method mapper."
+        self.__objMethodMapper = dictParams["objMethodMapper"];
 
         self.__objReflectionPlugin = ReflectionPlugin(self);
         self.__arrPlugins.append(self.__objReflectionPlugin);

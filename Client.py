@@ -36,44 +36,43 @@ class Client(object):
     """
     __lock = None;
 
-    def __init__(self, strJSONRPCRouterURL, strLogFilePath = "CommunicationLog.log", arrFilterPlugins = []):
+    """
+    HTTP credentials used for authentication plugins.
+    """
+    __strHTTPUser = None;
+    __strHTTPPassword = None;
+
+    def __init__(self, dictParams, arrFilterPlugins = []):
         """
         This is the constructor function. It creates a new instance of Client.
         Example: Client("http://example.ro").
 
-        @param string strJSONRPCRouterURL. The adress of the server.
-        @param string strLogFilePath. This is the file path where the info messages should
-        be written. It is not mandatory, a file "CommunicationLog.log" is created by default.
+        @param dictionary dictParams. It is used for reference return for multiple variables,
+        which can be retrieved using specific keys
+        - "strJSONRPCRouterURL". The adress of the server.
+        - "strLogFilePath". This is the file path where the info messages should
+        be written. A file "CommunicationLog.log" is created by default.
         @param array arrFilterPlugins
+        - "strUsername". Used to set the HTTP credentials set.
+        - "strPassword". Used to set the HTtp credentials set.
         """
-        logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
+        if not "strLogFilePath" in dictParams:
+            dictParams["strLogFilePath"] = "CommunicationLog";
+
+        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s");
         self.__objLogger = logging.getLogger(__name__);
 
         self.__lock = threading.Lock();
 
-        self.__strJSONRPCRouterURL = strJSONRPCRouterURL;
+        self.__strJSONRPCRouterURL = dictParams["strJSONRPCRouterURL"];
+
+        if "strUsername" in dictParams:
+            self.__strHTTPUser = dictParams["strUsername"];
+        if "strPassword" in dictParams:
+            self.__strHTTPPassword = dictParams["strPassword"];
 
         for objFilterPlugin in arrFilterPlugins:
             self.__arrFilterPlugins.append(objFilterPlugin);
-
-    """
-    HTTP credentials used for authentication plugins.
-    """
-    _strHTTPUser = None;
-    _strHTTPPassword = None;
-
-    def setHTTPCredentials(self, strUsername, strPassword):
-        """
-        This is the function used to set the HTTP credentials set.
-
-        @param string strUsername.
-        @param string strPassword.
-        """
-        assert isinstance(strUsername, str);
-        assert isinstance(strPassword, str);
-
-        self._strHTTPUser = strUsername;
-        self._strHTTPPassword = strPassword;
 
     def _rpc(self, strFunctionName, arrParams):
         strRequest, strEndPointURL, dictHTTPHeaders = self.__prepareRequest(strFunctionName, arrParams);
@@ -140,8 +139,8 @@ class Client(object):
             "Content-Type": "application/json"
         };
 
-        if self._strHTTPUser is not None and self._strHTTPPassword is not None:
-            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(self._strHTTPUser + ":" + self._strHTTPPassword);
+        if self.__strHTTPUser is not None and self.__strHTTPPassword is not None:
+            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(self.__strHTTPUser + ":" + self.__strHTTPPassword);
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:
