@@ -36,7 +36,7 @@ class Client(object):
     """
     __lock = None;
 
-    def __init__(self, strJSONRPCRouterURL, strLogFilePath = "CommunicationLog.log"):
+    def __init__(self, strJSONRPCRouterURL, strLogFilePath = "CommunicationLog.log", arrFilterPlugins = []):
         """
         This is the constructor function. It creates a new instance of Client.
         Example: Client("http://example.ro").
@@ -44,13 +44,17 @@ class Client(object):
         @param string strJSONRPCRouterURL. The adress of the server.
         @param string strLogFilePath. This is the file path where the info messages should
         be written. It is not mandatory, a file "CommunicationLog.log" is created by default.
+        @param array arrFilterPlugins
         """
         logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
         self.__objLogger = logging.getLogger(__name__);
 
+        self.__lock = threading.Lock();
+
         self.__strJSONRPCRouterURL = strJSONRPCRouterURL;
 
-        self.__lock = threading.Lock();
+        for objFilterPlugin in arrFilterPlugins:
+            self.__arrFilterPlugins.append(objFilterPlugin);
 
     """
     HTTP credentials used for authentication plugins.
@@ -272,46 +276,6 @@ class Client(object):
             return self._rpc(strClassAttribute, arrParams);
 
         return __call;
-
-    def addFilterPlugin(self, objFilterPlugin):
-        """
-        This function is used to add filter plugins to an instance of Client
-        If there is an attempt to add multiple instances of the same filter,
-        an exception is thrown.
-
-        @param object objFilterPlugin. The class of this object should extend the
-        ClientPluginBase.
-        """
-        for objFilterPluginExisting in self.__arrFilterPlugins:
-            if objFilterPluginExisting.__class__ == objFilterPlugin.__class__:
-                raise Exception(
-                    "Multiple instances of the same filter is not allowed."
-                );
-
-        self.__arrFilterPlugins.append(objFilterPlugin);
-
-    def removeFilterPlugin(self, objFilterPlugin):
-        """
-        This function is used to remove Client filter plugins.
-        If there is an attempt to remove an unregistred filter plugin,
-        an exception is thrown.
-
-        @param object objFilterPlugin. The class of this object should extend the
-        ClientPluginBase
-        """
-        nIndex = None;
-
-        for i in range(len(self.__arrFilterPlugins)):
-            if objFilterPlugin.__class__ == self.__arrFilterPlugins[i].__class__:
-                nIndex = i;
-                break;
-
-        if isinstance(nIndex, int) == False:
-            raise Exception(
-                "Failed to remove filter plugin object, maybe plugin is not registered"
-            );
-
-        del self.__arrFilterPlugins[nIndex];
 
     def rpcFunctions(self):
         """

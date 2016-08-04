@@ -44,7 +44,7 @@ class Server(object):
     bAuthorized = False; # trebuie regandit modul in care se face autorizarea
 
 
-    def __init__(self, objMethodMapper, strLogFilePath = "JSONRPC.log"):
+    def __init__(self, objMethodMapper, strLogFilePath = "JSONRPC.log", arrPlugins = []):
         """
         Class constructor.
         """
@@ -55,13 +55,10 @@ class Server(object):
         self.__objMethodMapper = objMethodMapper;
 
         self.__objReflectionPlugin = ReflectionPlugin(self);
-        self.addPlugin(self.__objReflectionPlugin);
+        self.__arrPlugins.append(self.__objReflectionPlugin);
 
-    def addPlugin(self, objPlugin):
-        """
-        Adds a plugin.
-        """
-        self.__arrPlugins.append(objPlugin);
+        for objPlugin in arrPlugins:
+            self.__arrPlugins.append(objPlugin);
 
     def getMethodMapper(self):
         """
