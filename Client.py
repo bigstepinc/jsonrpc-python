@@ -44,8 +44,8 @@ class Client(object):
         @param string strLogFilePath. This is the file path where the info messages should
         be written. It is not mandatory, a file "CommunicationLog.log" is created by default.
         """
-        # logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
-        # self.__objLogger = logging.getLogger(__name__);
+        logging.basicConfig(filename = strLogFilePath, format = "%(asctime)s %(message)s");
+        self.__objLogger = logging.getLogger(__name__);
 
         self.__strJSONRPCRouterURL = strJSONRPCRouterURL;
 
@@ -94,6 +94,12 @@ class Client(object):
 
             return mxResponse["result"];
         except JSONRPCException, objError:
+
+            """
+            Log the initial exception.
+            """
+            self.__logException(objError);
+
             for objFilterPlugin in self.__arrFilterPlugins:
                 objFilterPlugin.exceptionCatch(objError);
 
@@ -210,6 +216,36 @@ class Client(object):
         raise JSONRPCException(
             str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
         );
+
+    def __logException(self, exc):
+        """
+        * Logs an exception.
+        """
+        dictExc = self.__formatException(exc, False);
+        self.__objLogger.exception(dictExc["message"]);
+
+    def __formatException(self, exc, bIncludeStackTrace = True):
+        """
+        Formats an exception as an associative array with message and code keys properly set.
+        """
+        nCode = JSONRPCException.INTERNAL_ERROR;
+
+        if isinstance(exc, JSONRPCBaseException):
+            strStrackTrace = exc.getStackTrace();
+            strMessage = exc.getMessage();
+            nCode = exc.getCode();
+        else:
+            strMessage = str(exc);
+            strStrackTrace = format_exc();
+
+        strMessage = "Message: \"%s\" Code: %d" % (strMessage, nCode);
+        if bIncludeStackTrace:
+            strMessage = "%s\n\n%s" % (strMessage, strStrackTrace);
+
+        return {
+            "message": strMessage,
+            "code": nCode
+        };
 
     def __getattr__(self, strClassAttribute):
         """
