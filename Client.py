@@ -7,6 +7,7 @@ import time;
 import os;
 import base64;
 import logging;
+import threading;
 from urllib2 import HTTPError;
 from JSONRPCException import JSONRPCException;
 from JSONRPCBaseException import JSONRPCBaseException;
@@ -30,6 +31,10 @@ class Client(object):
     """
     __strJSONRPCRouterURL = "";
 
+    """
+    """
+    __lock = None;
+
     def __init__(self, strJSONRPCRouterURL, strLogFilePath = "CommunicationLog.log"):
         """
         This is the constructor function. It creates a new instance of Client.
@@ -43,6 +48,8 @@ class Client(object):
         # self.__objLogger = logging.getLogger(__name__);
 
         self.__strJSONRPCRouterURL = strJSONRPCRouterURL;
+
+        self.__lock = threading.Lock();
 
     """
     HTTP credentials used for authentication plugins.
@@ -99,11 +106,16 @@ class Client(object):
 
         @return array strRequest, strEndPointURL, dictHTTPHeaders
         """
+
+        self.__lock.acquire();
+        self.__nCallID += 1;
+        self.__lock.release();
+
         dictRequest = {
             "jsonrpc": "2.0",
             "method": strFunctionName,
             "params": arrParams,
-            "id": ++self.__nCallID
+            "id": self.__nCallID
         };
 
         for objFilterPlugin in self.__arrFilterPlugins:
