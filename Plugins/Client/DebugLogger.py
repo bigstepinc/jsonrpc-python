@@ -1,7 +1,9 @@
 import json;
 import datetime;
+
 from time import strftime, localtime;
 from ClientPluginBase import ClientPluginBase;
+
 
 class DebugLogger(ClientPluginBase):
     """
@@ -12,7 +14,12 @@ class DebugLogger(ClientPluginBase):
 
     bLogType = True;
 
+
     def __init__(self, bLogType, strLogPath = ""):
+        """
+        @param boolean bLogType
+        @param string strLogPath
+        """
         self.bLogType = bLogType;
 
         if bLogType == False:
@@ -21,7 +28,11 @@ class DebugLogger(ClientPluginBase):
             else:
                 raise Exception("No log path specified.");
 
+
     def beforeJSONDecode(self, strJSONResponse):
+        """
+        @param string strJSONResponse
+        """
         strOutput = strJSONResponse;
         objDecoded = json.loads(strOutput);
         strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n";
@@ -31,7 +42,13 @@ class DebugLogger(ClientPluginBase):
         else:
             self.hFile.write(strOutput + "\n");
 
+
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
+        """
+        @param string strJSONRequest
+        @param string strEndPointURL
+        @param object dictHTTPHeaders
+        """
         strOutput = strJSONRequest;
         objDecoded = json.loads(strOutput);
         strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n";

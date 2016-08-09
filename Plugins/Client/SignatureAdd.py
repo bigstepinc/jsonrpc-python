@@ -5,8 +5,10 @@ import urllib;
 import sys;
 import hashlib;
 import time;
+
 from ClientPluginBase import ClientPluginBase;
 from pprint import pprint;
+
 
 class SignatureAdd(ClientPluginBase):
     """
@@ -30,17 +32,19 @@ class SignatureAdd(ClientPluginBase):
     """
     strKeyMetaData = "";
 
+
     def __init__(self, strKey, dictExtraURLVariables):
         """
         This is the constructor function. It creates a new instance of SignatureAdd
         Example: SignatureAdd("secretKey");
 
         @param string strKey. The private key used for hashed messages sent to the server.
-        @param dictionary dictExtraURLVariables.
+        @param object dictExtraURLVariables.
         """
         self.strAPIKey = strKey;
         self.dictExtraURLVariables = dictExtraURLVariables;
         self.getKeyMetaData();
+
 
     def getKeyMetaData(self):
         """
@@ -51,16 +55,18 @@ class SignatureAdd(ClientPluginBase):
         else:
             self.strKeyMetaData = strKEYSplit[0];
 
+
     def beforeJSONEncode(self, dictRequest):
         """
         This function sets an uptime for the request.
 
-        @param dictionary dictRequest
+        @param object dictRequest
 
-        @return dictionary dictRequest
+        @return object dictRequest
         """
         dictRequest["expires"] = int(time.time() + 86400);
         return dictRequest;
+
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
@@ -69,7 +75,7 @@ class SignatureAdd(ClientPluginBase):
 
         @param string strJSONRequest
         @param string strEndPointURL
-        @param dictionary dictHTTPHeaders
+        @param object dictHTTPHeaders
 
         @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """

@@ -10,17 +10,19 @@ class ClientPluginBase(object):
         """
         pass;
 
+
     def beforeJSONEncode(self, dictRequest):
         """
         Should be used to:
         - add extra request object keys;
         - translate or encode output params into the expected server request object format.
 
-        @param dictionary dictRequest
+        @param object dictRequest
 
-        @return dictionary dictRequest
+        @return object dictRequest
         """
         return dictRequest;
+
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
@@ -30,11 +32,12 @@ class ClientPluginBase(object):
 
         @param string strJSONRequest
         @param string strEndPointURL
-        @param dictionary dictHTTPHeaders
+        @param object dictHTTPHeaders
 
         @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """
         return strJSONRequest, strEndPointURL, dictHTTPHeaders;
+
 
     def makeRequest(self, bCalled, strJSONRequest, strEndPointURL):
         """
@@ -48,6 +51,7 @@ class ClientPluginBase(object):
         """
         return bCalled, strJSONRequest, strEndPointURL;
 
+
     def beforeJSONDecode(self, strJSONResponse):
         """
         Should be used to:
@@ -59,6 +63,7 @@ class ClientPluginBase(object):
         @return string strJSONResponse
         """
         return strJSONResponse;
+
 
     def afterJSONDecode(self, strResult, mxResponse):
         """
@@ -73,6 +78,7 @@ class ClientPluginBase(object):
         """
         return strResult, mxResponse;
 
+
     def exceptionCatch(self, exception):
         """
         Should be used to rethrow exceptions as different types.
@@ -80,8 +86,8 @@ class ClientPluginBase(object):
         If there are no filter plugins registered or none of the plugins have throw exception,
         then Client will throw the original JSONRPCException.
 
-        @param Error exception
+        @param error exception
 
-        @return Error exception
+        @return error exception
         """
         return exception;

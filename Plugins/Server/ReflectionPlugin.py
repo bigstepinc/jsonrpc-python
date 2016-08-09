@@ -2,7 +2,6 @@ import re;
 import inspect;
 
 from os import linesep;
-
 from ServerPluginBase import ServerPluginBase;
 
 
@@ -37,11 +36,17 @@ class ReflectionPlugin(ServerPluginBase):
     def __init__(self, objServer):
         """
         Class constructor.
+
+        @param object objServer
         """
         self.setServerInstance(objServer);
 
+
     def afterJSONDecode(self, dictRequest):
         """
+        @param object dictRequest
+
+        @return object dictRequest
         """
         if dictRequest["method"] in self.__dictReflectionFunctions:
             self._objServer.bAuthenticated = True;
@@ -49,9 +54,15 @@ class ReflectionPlugin(ServerPluginBase):
 
         return dictRequest;
 
+
     def callFunction(self, strFunctionName, arrParams):
         """
         Calls the rpc functions exported by the plugin.
+
+        @param string strFunctionName
+        @param array arrParams
+
+        @return an array
         """
         bCalled = False;
         mxResult = None;
@@ -64,16 +75,20 @@ class ReflectionPlugin(ServerPluginBase):
 
         return (bCalled, mxResult);
 
+
     def getFunctions(self):
         """
-        Returns the list of exported functions.
+        @return the list of exported functions
         """
         return self._objServer.getMethodMapper().getMethods();
 
+
     def getReflection(self, strFunctionName):
         """
-        Returns the function reflection. The function name must be resolved prior to getting its
-        reflection.
+        @param strFunctionName
+
+        @return the function reflection. The function name must be resolved prior to getting its
+        reflection
         """
         fnCallable = self._objServer.getMethodMapper().map(strFunctionName);
         assert inspect.isroutine(fnCallable), "The mapped function is not a routine.";
@@ -90,9 +105,10 @@ class ReflectionPlugin(ServerPluginBase):
             "function_parameters": arrParams
         };
 
+
     def getReflections(self):
         """
-        Returns the list of reflections of all the function exported on the server.
+        @return the list of reflections of all the function exported on the server
         """
         arrReflections = [];
 
@@ -102,9 +118,12 @@ class ReflectionPlugin(ServerPluginBase):
 
         return arrReflections;
 
+
     def __getFunctionArgSpec(self, fnCallable):
         """
-        Returns argument specification of the function.
+        @param fnCallable
+
+        @return argument specification of the funciton
         """
         arrParams = [];
 
@@ -133,9 +152,12 @@ class ReflectionPlugin(ServerPluginBase):
 
         return arrParams;
 
+
     def __getFunctionDocSpec(self, fnCallable):
         """
-        Returns the complete specification of the function from the docstring.
+        @param fnCallable
+
+        @return the complete specification of the function from the docstring
         """
         arrParams = [];
         strReturnType = "unknown";

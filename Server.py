@@ -3,12 +3,10 @@ import logging;
 import os;
 
 from traceback import format_exc;
-
 from Plugins.Server import *;
 from MethodMapper import MethodMapper;
 from JSONRPCException import JSONRPCException;
 from JSONRPCBaseException import JSONRPCBaseException;
-
 
 
 class Server(object):
@@ -37,31 +35,39 @@ class Server(object):
 
     """
     """
-    bAuthenticated = False; # trebuie regandit modul in care se face autentificarea
+    bAuthenticated = False; # We need to modify the Authentication
 
     """
     """
-    bAuthorized = False; # trebuie regandit modul in care se face autorizarea
+    bAuthorized = False; # We need to modify the Authorization
 
 
     def __init__(self, dictParams, arrPlugins = []):
         """
         Class constructor.
+
+        @param object dictParams. It is used for reference return for multiple variables,
+        which can be retrieved using specific keys
+            - "strLogFilePath"
+            - "objMethodMapper"
+        @param array arrPlugins
         """
+        assert isinstance(dictParams["objMethodMapper"], MethodMapper), "Invalid method mapper."
+        self.__objMethodMapper = dictParams["objMethodMapper"];
         if not "strLogFilePath" in dictParams:
             dictParams["strLogFilePath"] = "JSONRPC.log";
+
+        self.__objReflectionPlugin = ReflectionPlugin(self);
+        self.__arrPlugins.append(self.__objReflectionPlugin);
+        if not len(set(arrPlugins)) == len(arrPlugins):
+            raise JSONRPCException(
+                "The client filter plugin list contains duplicates.", JSONRPCException.INVALID_PARAMS
+            );
+        self.__arrPlugins = list(arrPlugins);
 
         logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s");
         self.__objLogger = logging.getLogger(__name__);
 
-        assert isinstance(dictParams["objMethodMapper"], MethodMapper), "Invalid method mapper."
-        self.__objMethodMapper = dictParams["objMethodMapper"];
-
-        self.__objReflectionPlugin = ReflectionPlugin(self);
-        self.__arrPlugins.append(self.__objReflectionPlugin);
-
-        for objPlugin in arrPlugins:
-            self.__arrPlugins.append(objPlugin);
 
     def getMethodMapper(self):
         """
@@ -69,10 +75,15 @@ class Server(object):
         """
         return self.__objMethodMapper;
 
+
     def processRequest(self, strJSONRequest = None):
         """
         Processes the request and returns the response. In case of notifications no
         output is provided.
+
+        @param string strJSONRequest
+
+        @return string strResponse
         """
         bNotificationMode = False;
         dictResponse = {
@@ -81,11 +92,11 @@ class Server(object):
         };
 
         try:
-            bNotificationMode, dictResponse, dictRequest = self.__processResponse(strJSONRequest, bNotificationMode, dictResponse);
+            bNotificationMode, dictRequest = self.__processResponse(strJSONRequest);
 
             self.__verifyAcces();
 
-            dictResponse = self.__createResponse(dictResponse, dictRequest);
+            dictResponse = self.__createResponse(dictRequest);
         except Exception as exc:
             self.__logException(exc);
 
@@ -111,14 +122,15 @@ class Server(object):
 
         return strResponse;
 
-    def __processResponse(self, strJSONRequest, bNotificationMode, dictResponse):
+
+    def __processResponse(self, strJSONRequest):
         """
         @param string strJSONRequest
-        @param boolean bNotificationMode
-        @param dictionary dictResponse
 
-        @return array bNotificationMode, dictResponse, dictRequest
+        @return array bNotificationMode, dictRequest
         """
+
+        bNotificationMode = False;
 
         """
         If there is no request, then that must mean that we are sending request by console.
@@ -152,12 +164,12 @@ class Server(object):
         bNotificationMode = self.__checkRequest(dictRequest);
         if not "params" in dictRequest:
             dictRequest["params"] = [];
-        dictResponse["id"] = dictRequest["id"];
 
         for objPlugin in self.__arrPlugins:
             dictRequest = objPlugin.afterJSONDecode(dictRequest);
 
-        return bNotificationMode, dictResponse, dictRequest;
+        return bNotificationMode, dictRequest;
+
 
     def __verifyAcces(self):
         """
@@ -174,13 +186,19 @@ class Server(object):
                 JSONRPCException.NOT_AUTHORIZED
             );
 
-    def __createResponse(self, dictResponse, dictRequest):
-        """
-        @param dictionary dictResponse
-        @param dictionary dictRequest
 
-        @return dictionary dictResponse
+    def __createResponse(self, dictRequest):
         """
+        @param object dictResponse
+        @param object dictRequest
+
+        @return object dictResponse
+        """
+        dictResponse = {
+            "jsonrpc": self.__JSONRPC_VERSION,
+            "id": dictRequest["id"]
+        };
+
         try:
             dictResponse["result"] = self.__callFunction(
                 dictRequest["method"], dictRequest["params"]
@@ -192,9 +210,14 @@ class Server(object):
 
         return dictResponse;
 
+
     def __checkRequest(self, dictRequest):
         """
         Validates the request. Returns True or False if the request is a notification or not.
+
+        @param object dictRequest
+
+        @return boolean bNotificationMode
         """
         if isinstance(dictRequest, list):
             raise JSONRPCException(
@@ -231,10 +254,16 @@ class Server(object):
 
         return bNotificationMode;
 
+
     def __callFunction(self, strFunctionName, arrParams):
         """
         Calls the function with the given parameters. If type checking is enabled, the types of
         the parameters and of the returned object are checked against the function reflection.
+
+        @param string strFunctionName
+        @param array arrParams
+
+        @return mixed mxResult
         """
         for objPlugin in self.__arrPlugins:
             strFunctionName = objPlugin.resolveFunction(strFunctionName);
@@ -262,9 +291,13 @@ class Server(object):
 
         return mxResult;
 
+
     def __checkParameters(self, dictReflection, arrParams):
         """
         Checks the parameters against the function reflection.
+
+        @param object dictReflection
+        @param array arrParams
         """
         if len(arrParams) > len(dictReflection["function_parameters"]):
             raise JSONRPCException(
@@ -300,9 +333,13 @@ class Server(object):
                     JSONRPCException.INVALID_PARAMS
                 );
 
+
     def __checkReturnValue(self, dictReflection, mxReturnValue):
         """
         Checks the returned value against the function reflection.
+
+        @param object dictReflection
+        @param mixed mxReturnValue
         """
         if not self.__checkType(dictReflection["function_return_type"], mxReturnValue):
             raise JSONRPCException(
@@ -312,9 +349,15 @@ class Server(object):
             );
         pass;
 
+
     def __checkType(self, strType, mxVal):
         """
         Checks the type of a value.
+
+        @param string strType
+        @param mixed mxVal
+
+        @return True or False
         """
         dictTypes = {
             "integer": int,
@@ -334,9 +377,15 @@ class Server(object):
 
         return isinstance(mxVal, dictTypes[strType]);
 
+
     def __formatException(self, exc, bIncludeStackTrace = True):
         """
         Formats an exception as an associative array with message and code keys properly set.
+
+        @param exception exc
+        @param boolean bIncludeStackTrace
+
+        @return a object
         """
         nCode = JSONRPCException.INTERNAL_ERROR;
 
@@ -357,14 +406,25 @@ class Server(object):
             "code": nCode
         };
 
+
     def __logException(self, exc):
         """
-        * Logs an exception.
+        @param exception exc
+        """
+
+        """
+        Logs an exception.
         """
         dictExc = self.__formatException(exc, False);
         self.__objLogger.exception(dictExc["message"]);
 
+
     def __decode_dict(self, data):
+        """
+        @param data
+
+        @return a decoded object
+        """
         rv = {}
         for key, value in data.iteritems():
             if isinstance(key, unicode):
@@ -378,7 +438,13 @@ class Server(object):
             rv[key] = value
         return rv
 
+
     def __decode_list(self, data):
+        """
+        @param data
+
+        @return a decoded list
+        """
         rv = []
         for item in data:
             if isinstance(item, unicode):
