@@ -154,6 +154,7 @@ class Client(object):
         @return array strRequest, strEndPointURL, dictHTTPHeaders
         """
         self.__lock.acquire();
+        nCallID = self.__nCallID;
         self.__nCallID += 1;
         self.__lock.release();
 
@@ -161,7 +162,7 @@ class Client(object):
             "jsonrpc": "2.0",
             "method": strFunctionName,
             "params": arrParams,
-            "id": self.__nCallID
+            "id": nCallID
         };
 
         for objFilterPlugin in self.__arrFilterPlugins:
