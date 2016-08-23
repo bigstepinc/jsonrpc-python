@@ -35,6 +35,7 @@ class Client(object):
     __strJSONRPCRouterURL = "";
 
     """
+    Used for locking variables in case of multithreading.
     """
     __lock = None;
 
@@ -70,7 +71,7 @@ class Client(object):
         if "strPassword" in dictParams:
             self.__strHTTPPassword = dictParams["strPassword"];
         if not "strLogFilePath" in dictParams:
-            dictParams["strLogFilePath"] = "CommunicationLog";
+            dictParams["strLogFilePath"] = "CommunicationLog.log";
 
         if not len(set(arrFilterPlugins)) == len(arrFilterPlugins):
             raise JSONRPCException(
@@ -92,7 +93,6 @@ class Client(object):
         @return processRAWResponse. The function used to decode the received JSON.
         """
         strRequest, strEndPointURL, dictHTTPHeaders = self.__prepareRequest(strFunctionName, arrParams);
-
         strResult, bErrorMode = self.__makeRequest(strRequest, strEndPointURL, dictHTTPHeaders);
 
         return self.processRAWResponse(strResult, bErrorMode);

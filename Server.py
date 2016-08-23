@@ -14,22 +14,27 @@ class Server(object):
     """
 
     """
+    The version of the JSONRPC.
     """
     __JSONRPC_VERSION = "2.0";
 
     """
+    The name of the logger.
     """
     __objLogger = None;
 
     """
+    Plugins which extend ServerPluginBase.
     """
     __arrPlugins = [];
 
     """
+    Object of MethodMapper class.
     """
     __objMethodMapper = None;
 
     """
+    Object of ReflectionPlugin class.
     """
     __objReflectionPlugin = None;
 
@@ -93,9 +98,7 @@ class Server(object):
 
         try:
             bNotificationMode, dictRequest = self.__processResponse(strJSONRequest);
-
             self.__verifyAcces();
-
             dictResponse = self.__createResponse(dictRequest);
         except Exception as exc:
             self.__logException(exc);
