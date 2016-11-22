@@ -199,7 +199,7 @@ class Client(object):
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL) is not None:
-                strResult = objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL);
+                bCalled, strResult, strEndPointURL = objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL);
 
             if bCalled:
                 break;
