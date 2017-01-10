@@ -1,16 +1,12 @@
 import json;
-import urllib;
 import urllib2;
-import hmac;
-import hashlib;
-import time;
-import os;
-import base64;
+
 import logging;
 import threading;
 
 from traceback import format_exc;
-from urllib2 import HTTPError;
+
+import HeaderFactory
 from JSONRPCException import JSONRPCException;
 from JSONRPCBaseException import JSONRPCBaseException;
 
@@ -172,12 +168,9 @@ class Client(object):
         strRequest = json.dumps(dictRequest);
         strEndPointURL = self.__strJSONRPCRouterURL;
 
-        dictHTTPHeaders = {
-            "Content-Type": "application/json"
-        };
-
-        if self.__strHTTPUser is not None and self.__strHTTPPassword is not None:
-            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(self.__strHTTPUser + ":" + self.__strHTTPPassword);
+        headerFactory = HeaderFactory()
+        dictHTTPHeaders = headerFactory.create(sUser= self.__strHTTPUser, sPassword= self.__strHTTPPassword,
+                                                 sContentType= "application/json")
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:

@@ -1,5 +1,6 @@
 *.pyc
 *.dll
+*.ideea
 *.pyc
 LOG/*
 *.dll
