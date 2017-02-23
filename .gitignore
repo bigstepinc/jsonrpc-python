@@ -1,9 +1,11 @@
 *.pyc
 *.dll
-*.ideea
 *.pyc
 LOG/*
 *.dll
 LOG/*
 index.html
 logger.txt
+
+# for PhpStorm
+.idea/*

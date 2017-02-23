@@ -14,4 +14,5 @@ __all__ = [
     "MethodMapper",
     "JSONRPCException",
     "JSONRPCBaseException",
+    "HeaderFactory"
 ];
