@@ -99,14 +99,14 @@ class Server(object):
         try:
             bNotificationMode, dictRequest = self.__processResponse(strJSONRequest)
             self.__verifyAcces()
-            dictResponse = self.__createResponse(dictRequest)
+            dictResponse = self._createResponse(dictRequest)
         except Exception as exc:
-            self.__logException(exc)
+            self._logException(exc)
 
             if "result" in dictResponse:
                 del dictResponse["result"]
 
-            dictResponse["error"] = self.__formatException(exc)
+            dictResponse["error"] = self._formatException(exc)
         finally:
             try:
                 strResponse = json.dumps(dictResponse)
@@ -117,7 +117,7 @@ class Server(object):
                     if "result" in dictResponse:
                         del dictResponse["result"]
 
-                    dictResponse["error"] = self.__formatException(exc)
+                    dictResponse["error"] = self._formatException(exc)
                     strResponse = json.dumps(dictResponse)
 
         if bNotificationMode:
@@ -164,7 +164,7 @@ class Server(object):
                 "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
             )
 
-        bNotificationMode = self.__checkRequest(dictRequest)
+        bNotificationMode = self._checkRequest(dictRequest)
         if not "params" in dictRequest:
             dictRequest["params"] = []
 
@@ -190,7 +190,7 @@ class Server(object):
             )
 
 
-    def __createResponse(self, dictRequest):
+    def _createResponse(self, dictRequest):
         """
         @param object dictResponse
         @param object dictRequest
@@ -214,7 +214,7 @@ class Server(object):
         return dictResponse
 
 
-    def __checkRequest(self, dictRequest):
+    def _checkRequest(self, dictRequest):
         """
         Validates the request. Returns True or False if the request is a notification or not.
 
@@ -288,14 +288,14 @@ class Server(object):
                 )
 
             dictReflection = self.__objReflectionPlugin.getReflection(strFunctionName)
-            self.__checkParameters(dictReflection, arrParams)
+            self._checkParameters(dictReflection, arrParams)
             mxResult = fnCallable(*arrParams)
-            self.__checkReturnValue(dictReflection, mxResult)
+            self._checkReturnValue(dictReflection, mxResult)
 
         return mxResult
 
 
-    def __checkParameters(self, dictReflection, arrParams):
+    def _checkParameters(self, dictReflection, arrParams):
         """
         Checks the parameters against the function reflection.
 
@@ -325,7 +325,7 @@ class Server(object):
                 )
 
         for i in range(0, len(arrParams)):
-            if not self.__checkType(dictReflection["function_parameters"][i]["parameter_type"], arrParams[i]):
+            if not self._checkType(dictReflection["function_parameters"][i]["parameter_type"], arrParams[i]):
                 raise JSONRPCException(
                     "The function \"%s\" expects the parameter with index %d to be a %s value."
                         % (
@@ -337,14 +337,14 @@ class Server(object):
                 )
 
 
-    def __checkReturnValue(self, dictReflection, mxReturnValue):
+    def _checkReturnValue(self, dictReflection, mxReturnValue):
         """
         Checks the returned value against the function reflection.
 
         @param object dictReflection
         @param mixed mxReturnValue
         """
-        if not self.__checkType(dictReflection["function_return_type"], mxReturnValue):
+        if not self._checkType(dictReflection["function_return_type"], mxReturnValue):
             raise JSONRPCException(
                 "The value returned by the \"%s\" function is inconsistent with the defined return type."
                     % (dictReflection["function_name"]),
@@ -353,7 +353,7 @@ class Server(object):
         pass
 
 
-    def __checkType(self, strType, mxVal):
+    def _checkType(self, strType, mxVal):
         """
         Checks the type of a value.
 
@@ -381,7 +381,7 @@ class Server(object):
         return isinstance(mxVal, dictTypes[strType])
 
 
-    def __formatException(self, exc, bIncludeStackTrace = True):
+    def _formatException(self, exc, bIncludeStackTrace = True):
         """
         Formats an exception as an associative array with message and code keys properly set.
 
@@ -410,7 +410,7 @@ class Server(object):
         }
 
 
-    def __logException(self, exc):
+    def _logException(self, exc):
         """
         @param exception exc
         """
@@ -418,7 +418,7 @@ class Server(object):
         """
         Logs an exception.
         """
-        dictExc = self.__formatException(exc, False)
+        dictExc = self._formatException(exc, False)
         self.__objLogger.exception(dictExc["message"])
 
 
@@ -435,14 +435,14 @@ class Server(object):
             if isinstance(value, unicode):
                 value = value.encode('utf-8')
             elif isinstance(value, list):
-                value = self.__decode_list(value)
+                value = self._decode_list(value)
             elif isinstance(value, dict):
                 value = self.__decode_dict(value)
             rv[key] = value
         return rv
 
 
-    def __decode_list(self, data):
+    def _decode_list(self, data):
         """
         @param data
 
@@ -453,7 +453,7 @@ class Server(object):
             if isinstance(item, unicode):
                 item = item.encode('utf-8')
             elif isinstance(item, list):
-                item = self.__decode_list(item)
+                item = self._decode_list(item)
             elif isinstance(item, dict):
                 item = self.__decode_dict(item)
             rv.append(item)

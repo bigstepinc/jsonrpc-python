@@ -88,8 +88,8 @@ class Client(object):
 
         @return processRAWResponse. The function used to decode the received JSON.
         """
-        strRequest, strEndPointURL, dictHTTPHeaders = self.__prepareRequest(strFunctionName, arrParams)
-        strResult, bErrorMode = self.__makeRequest(strRequest, strEndPointURL, dictHTTPHeaders)
+        strRequest, strEndPointURL, dictHTTPHeaders = self._prepareRequest(strFunctionName, arrParams)
+        strResult, bErrorMode = self._makeRequest(strRequest, strEndPointURL, dictHTTPHeaders)
 
         return self.processRAWResponse(strResult, bErrorMode)
 
@@ -134,7 +134,7 @@ class Client(object):
             """
             Log the initial exception.
             """
-            self.__logException(objError)
+            self._logException(objError)
 
             for objFilterPlugin in self.__arrFilterPlugins:
                 objFilterPlugin.exceptionCatch(objError)
@@ -142,7 +142,7 @@ class Client(object):
             raise objError
 
 
-    def __prepareRequest(self, strFunctionName, arrParams):
+    def _prepareRequest(self, strFunctionName, arrParams):
         """
         @param string strFunctionName
         @param array arrParams
@@ -178,7 +178,7 @@ class Client(object):
         return strRequest, strEndPointURL, dictHTTPHeaders
 
 
-    def __makeRequest(self, strRequest, strEndPointURL, dictHTTPHeaders):
+    def _makeRequest(self, strRequest, strEndPointURL, dictHTTPHeaders):
         """
         @param string strRequest
         @param string strEndPointURL
@@ -209,17 +209,17 @@ class Client(object):
         return strResult, bErrorMode
 
 
-    def __logException(self, exc):
+    def _logException(self, exc):
         """
         Logs an exception.
 
         @param exception exc
         """
-        dictExc = self.__formatException(exc, False)
+        dictExc = self._formatException(exc, False)
         self.__objLogger.exception(dictExc["message"])
 
 
-    def __formatException(self, exc, bIncludeStackTrace = True):
+    def _formatException(self, exc, bIncludeStackTrace = True):
         """
         Formats an exception as an associative array with message and code keys properly set.
 
