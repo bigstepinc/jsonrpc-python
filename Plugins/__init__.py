@@ -1,7 +1,7 @@
-import Server;
-import Client;
+import Server
+import Client
 
 __all__ = [
     "Server",
     "Client"
-];
+]

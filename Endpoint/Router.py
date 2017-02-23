@@ -1,4 +1,4 @@
-from sys import exit;
+from sys import exit
 
 
 class Router(object):
@@ -56,14 +56,14 @@ class Router(object):
 				print "Page not found. Unknown JSON-RPC endpoint URL: " + strRequestURI
 			else:
 				"""
-				header("HTTP/1.1 404 Not Found", true, 404);
-				//header("Content-Type: text/plain; charset=utf-8");
-				header("Content-type: application/json");
+				header("HTTP/1.1 404 Not Found", true, 404)
+				//header("Content-Type: text/plain charset=utf-8")
+				header("Content-type: application/json")
 
-				header("Cache-Control: no-cache, must-revalidate");
-				header("Expires: Mon, 26 Jul 1991 05:00:00 GMT");
-				header("Accept-Ranges: none");
-				header("Connection: close");
+				header("Cache-Control: no-cache, must-revalidate")
+				header("Expires: Mon, 26 Jul 1991 05:00:00 GMT")
+				header("Accept-Ranges: none")
+				header("Connection: close")
 				"""
 
 				print json.loads('"jsonrpc": "2.0", "error": {"code": -32099, "message":' + os.environ.get("HTTP_HOST") + \

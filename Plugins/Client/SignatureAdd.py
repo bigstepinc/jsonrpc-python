@@ -1,13 +1,13 @@
-import hmac;
-import json;
-import urllib2;
-import urllib;
-import sys;
-import hashlib;
-import time;
+import hmac
+import json
+import urllib2
+import urllib
+import sys
+import hashlib
+import time
 
-from ClientPluginBase import ClientPluginBase;
-from pprint import pprint;
+from ClientPluginBase import ClientPluginBase
+from pprint import pprint
 
 
 class SignatureAdd(ClientPluginBase):
@@ -20,40 +20,40 @@ class SignatureAdd(ClientPluginBase):
     """
     Private key used for hashed messages sent to the server
     """
-    strAPIKey = "";
+    strAPIKey = ""
 
     """
     Extra URL variables
     """
-    dictExtraURLVariables = {};
+    dictExtraURLVariables = {}
 
     """
     Private key used for hashed messages sent to the server
     """
-    strKeyMetaData = "";
+    strKeyMetaData = ""
 
 
     def __init__(self, strKey, dictExtraURLVariables):
         """
         This is the constructor function. It creates a new instance of SignatureAdd
-        Example: SignatureAdd("secretKey");
+        Example: SignatureAdd("secretKey")
 
         @param string strKey. The private key used for hashed messages sent to the server.
         @param object dictExtraURLVariables.
         """
-        self.strAPIKey = strKey;
-        self.dictExtraURLVariables = dictExtraURLVariables;
-        self.getKeyMetaData();
+        self.strAPIKey = strKey
+        self.dictExtraURLVariables = dictExtraURLVariables
+        self.getKeyMetaData()
 
 
     def getKeyMetaData(self):
         """
         """
-        strKEYSplit = self.strAPIKey.split(":", 2);
+        strKEYSplit = self.strAPIKey.split(":", 2)
         if (strKEYSplit.__len__() == 1):
-            self.strKeyMetaData = None;
+            self.strKeyMetaData = None
         else:
-            self.strKeyMetaData = strKEYSplit[0];
+            self.strKeyMetaData = strKEYSplit[0]
 
 
     def beforeJSONEncode(self, dictRequest):
@@ -64,8 +64,8 @@ class SignatureAdd(ClientPluginBase):
 
         @return object dictRequest
         """
-        dictRequest["expires"] = int(time.time() + 86400);
-        return dictRequest;
+        dictRequest["expires"] = int(time.time() + 86400)
+        return dictRequest
 
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
@@ -79,21 +79,21 @@ class SignatureAdd(ClientPluginBase):
 
         @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """
-        strVerifyHash = hmac.new(self.strAPIKey, strJSONRequest, hashlib.md5).hexdigest();
+        strVerifyHash = hmac.new(self.strAPIKey, strJSONRequest, hashlib.md5).hexdigest()
 
         if (self.strKeyMetaData != None):
-            strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash;
+            strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash
 
         if (strEndPointURL.find("?") != -1):
-            strEndPointURL += "&";
+            strEndPointURL += "&"
         else:
-            strEndPointURL += "?";
+            strEndPointURL += "?"
 
         if strEndPointURL.find("?verify") == -1:
-            strEndPointURL += "verify=" + urllib.quote(strVerifyHash);
+            strEndPointURL += "verify=" + urllib.quote(strVerifyHash)
 
         for key, value in self.dictExtraURLVariables.items():
-            value = str(value);
-            strEndPointURL += "&" + urllib.quote(key) + "=" + urllib.quote(value);
+            value = str(value)
+            strEndPointURL += "&" + urllib.quote(key) + "=" + urllib.quote(value)
 
-        return strJSONRequest, strEndPointURL, dictHTTPHeaders;
+        return strJSONRequest, strEndPointURL, dictHTTPHeaders

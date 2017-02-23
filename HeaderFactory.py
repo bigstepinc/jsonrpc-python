@@ -1,4 +1,4 @@
-import base64;
+import base64
 
 
 class HeaderFactory(object):
@@ -15,9 +15,9 @@ class HeaderFactory(object):
     	"""
         dictHTTPHeaders = {
             "Content-Type": strContentType
-        };
+        }
 
         if strUser is not None and strPassword is not None:
-            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(strUser + ":" + strPassword);
+            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(strUser + ":" + strPassword)
 
-        return dictHTTPHeaders;
+        return dictHTTPHeaders

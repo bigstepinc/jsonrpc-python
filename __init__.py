@@ -1,10 +1,10 @@
-import Plugins;
+import Plugins
 
-from Server import Server;
-from Client import Client;
-from MethodMapper import MethodMapper;
-from JSONRPCException import JSONRPCException;
-from JSONRPCBaseException import JSONRPCBaseException;
+from Server import Server
+from Client import Client
+from MethodMapper import MethodMapper
+from JSONRPCException import JSONRPCException
+from JSONRPCBaseException import JSONRPCBaseException
 
 
 __all__ = [
@@ -15,4 +15,4 @@ __all__ = [
     "JSONRPCException",
     "JSONRPCBaseException",
     "HeaderFactory"
-];
+]

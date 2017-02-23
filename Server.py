@@ -1,12 +1,12 @@
-import json;
-import logging;
-import os;
+import json
+import logging
+import os
 
-from traceback import format_exc;
-from Plugins.Server import *;
-from MethodMapper import MethodMapper;
-from JSONRPCException import JSONRPCException;
-from JSONRPCBaseException import JSONRPCBaseException;
+from traceback import format_exc
+from Plugins.Server import *
+from MethodMapper import MethodMapper
+from JSONRPCException import JSONRPCException
+from JSONRPCBaseException import JSONRPCBaseException
 
 
 class Server(object):
@@ -16,35 +16,35 @@ class Server(object):
     """
     The version of the JSONRPC.
     """
-    __JSONRPC_VERSION = "2.0";
+    __JSONRPC_VERSION = "2.0"
 
     """
     The name of the logger.
     """
-    __objLogger = None;
+    __objLogger = None
 
     """
     Plugins which extend ServerPluginBase.
     """
-    __arrPlugins = [];
+    __arrPlugins = []
 
     """
     Object of MethodMapper class.
     """
-    __objMethodMapper = None;
+    __objMethodMapper = None
 
     """
     Object of ReflectionPlugin class.
     """
-    __objReflectionPlugin = None;
+    __objReflectionPlugin = None
 
     """
     """
-    bAuthenticated = False; # We need to modify the Authentication
+    bAuthenticated = False # We need to modify the Authentication
 
     """
     """
-    bAuthorized = False; # We need to modify the Authorization
+    bAuthorized = False # We need to modify the Authorization
 
 
     def __init__(self, dictParams, arrPlugins = []):
@@ -58,27 +58,27 @@ class Server(object):
         @param array arrPlugins
         """
         assert isinstance(dictParams["objMethodMapper"], MethodMapper), "Invalid method mapper."
-        self.__objMethodMapper = dictParams["objMethodMapper"];
+        self.__objMethodMapper = dictParams["objMethodMapper"]
         if not "strLogFilePath" in dictParams:
-            dictParams["strLogFilePath"] = "JSONRPC.log";
+            dictParams["strLogFilePath"] = "JSONRPC.log"
 
-        self.__objReflectionPlugin = ReflectionPlugin(self);
-        self.__arrPlugins.append(self.__objReflectionPlugin);
+        self.__objReflectionPlugin = ReflectionPlugin(self)
+        self.__arrPlugins.append(self.__objReflectionPlugin)
         if not len(set(arrPlugins)) == len(arrPlugins):
             raise JSONRPCException(
                 "The client filter plugin list contains duplicates.", JSONRPCException.INVALID_PARAMS
-            );
-        self.__arrPlugins = list(arrPlugins);
+            )
+        self.__arrPlugins = list(arrPlugins)
 
-        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s");
-        self.__objLogger = logging.getLogger(__name__);
+        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s")
+        self.__objLogger = logging.getLogger(__name__)
 
 
     def getMethodMapper(self):
         """
         Method mapper getter method.
         """
-        return self.__objMethodMapper;
+        return self.__objMethodMapper
 
 
     def processRequest(self, strJSONRequest = None):
@@ -90,40 +90,40 @@ class Server(object):
 
         @return string strResponse
         """
-        bNotificationMode = False;
+        bNotificationMode = False
         dictResponse = {
             "jsonrpc": self.__JSONRPC_VERSION,
             "id": None
-        };
+        }
 
         try:
-            bNotificationMode, dictRequest = self.__processResponse(strJSONRequest);
-            self.__verifyAcces();
-            dictResponse = self.__createResponse(dictRequest);
+            bNotificationMode, dictRequest = self.__processResponse(strJSONRequest)
+            self.__verifyAcces()
+            dictResponse = self.__createResponse(dictRequest)
         except Exception as exc:
-            self.__logException(exc);
+            self.__logException(exc)
 
             if "result" in dictResponse:
-                del dictResponse["result"];
+                del dictResponse["result"]
 
-            dictResponse["error"] = self.__formatException(exc);
+            dictResponse["error"] = self.__formatException(exc)
         finally:
             try:
-                strResponse = json.dumps(dictResponse);
+                strResponse = json.dumps(dictResponse)
                 for objPlugin in self.__arrPlugins:
-                    objPlugin.sendResponse(strResponse);
+                    objPlugin.sendResponse(strResponse)
             except Exception as exc:
                 if not "error" in dictResponse:
                     if "result" in dictResponse:
-                        del dictResponse["result"];
+                        del dictResponse["result"]
 
-                    dictResponse["error"] = self.__formatException(exc);
-                    strResponse = json.dumps(dictResponse);
+                    dictResponse["error"] = self.__formatException(exc)
+                    strResponse = json.dumps(dictResponse)
 
         if bNotificationMode:
-            return None;
+            return None
 
-        return strResponse;
+        return strResponse
 
 
     def __processResponse(self, strJSONRequest):
@@ -133,45 +133,45 @@ class Server(object):
         @return array bNotificationMode, dictRequest
         """
 
-        bNotificationMode = False;
+        bNotificationMode = False
 
         """
         If there is no request, then that must mean that we are sending request by console.
         """
         if (strJSONRequest == None):
-            strJSONRequest = raw_input();
-            self.bAuthenticated = True;
-            self.bAuthorized = True;
+            strJSONRequest = raw_input()
+            self.bAuthenticated = True
+            self.bAuthorized = True
 
         for objPlugin in self.__arrPlugins:
-            strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest);
+            strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest)
 
         if not isinstance(strJSONRequest, basestring):
             raise JSONRPCException(
                 "The request must be a string.", JSONRPCException.PARSE_ERROR
-            );
+            )
 
-        strJSONRequest = strJSONRequest.strip();
+        strJSONRequest = strJSONRequest.strip()
         if len(strJSONRequest) == 0:
             raise JSONRPCException(
                 "The request string cannot be empty.", JSONRPCException.PARSE_ERROR
-            );
+            )
 
         try:
-            dictRequest = json.loads(strJSONRequest, object_hook = self.__decode_dict);
+            dictRequest = json.loads(strJSONRequest, object_hook = self.__decode_dict)
         except Exception:
             raise JSONRPCException(
                 "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
-            );
+            )
 
-        bNotificationMode = self.__checkRequest(dictRequest);
+        bNotificationMode = self.__checkRequest(dictRequest)
         if not "params" in dictRequest:
-            dictRequest["params"] = [];
+            dictRequest["params"] = []
 
         for objPlugin in self.__arrPlugins:
-            dictRequest = objPlugin.afterJSONDecode(dictRequest);
+            dictRequest = objPlugin.afterJSONDecode(dictRequest)
 
-        return bNotificationMode, dictRequest;
+        return bNotificationMode, dictRequest
 
 
     def __verifyAcces(self):
@@ -181,13 +181,13 @@ class Server(object):
             raise JSONRPCException(
                 "Not authenticated (bad credentials or signature).",
                 JSONRPCException.NOT_AUTHENTICATED
-            );
+            )
 
         if not self.bAuthorized:
             raise JSONRPCException(
                 "Authenticated user is not authorized.",
                 JSONRPCException.NOT_AUTHORIZED
-            );
+            )
 
 
     def __createResponse(self, dictRequest):
@@ -200,18 +200,18 @@ class Server(object):
         dictResponse = {
             "jsonrpc": self.__JSONRPC_VERSION,
             "id": dictRequest["id"]
-        };
+        }
 
         try:
             dictResponse["result"] = self.__callFunction(
                 dictRequest["method"], dictRequest["params"]
-            );
+            )
         except Exception as exc:
             for objPlugin in self.__arrPlugins:
-                objPlugin.onException(exc);
-            raise;
+                objPlugin.onException(exc)
+            raise
 
-        return dictResponse;
+        return dictResponse
 
 
     def __checkRequest(self, dictRequest):
@@ -226,36 +226,36 @@ class Server(object):
             raise JSONRPCException(
                 "JSON-RPC batch requests are not supported by this server",
                 JSONRPCException.INVALID_REQUEST
-            );
+            )
         elif not isinstance(dictRequest, dict):
             raise JSONRPCException(
                 "The request must be an encoded associative array.",
                 JSONRPCException.INVALID_REQUEST
-            );
+            )
 
         if not "jsonrpc" in dictRequest or dictRequest["jsonrpc"] != self.__JSONRPC_VERSION:
             raise JSONRPCException(
                 "The \"jsonrpc\" version must be equal to " + self.__JSONRPC_VERSION + ".",
                 JSONRPCException.INVALID_REQUEST
-            );
+            )
 
-        bNotificationMode = not "id" in dictRequest;
+        bNotificationMode = not "id" in dictRequest
         if not bNotificationMode and not isinstance(dictRequest["id"], int):
             raise JSONRPCException(
                 "The \"id\" key must be an integer.", JSONRPCException.INVALID_REQUEST
-            );
+            )
 
         if not "method" in dictRequest or not isinstance(dictRequest["method"], basestring):
             raise JSONRPCException(
                 "The \"method\" key must be a string.", JSONRPCException.INVALID_REQUEST
-            );
+            )
 
         if "params" in dictRequest and not isinstance(dictRequest["params"], list):
             raise JSONRPCException(
                 "The \"params\" key must be an array.", JSONRPCException.INVALID_REQUEST
-            );
+            )
 
-        return bNotificationMode;
+        return bNotificationMode
 
 
     def __callFunction(self, strFunctionName, arrParams):
@@ -269,30 +269,30 @@ class Server(object):
         @return mixed mxResult
         """
         for objPlugin in self.__arrPlugins:
-            strFunctionName = objPlugin.resolveFunction(strFunctionName);
+            strFunctionName = objPlugin.resolveFunction(strFunctionName)
 
         """ Type checking is not done for functions that are called by the plugins. The plugins
         should implement its own type checking. """
-        bCalled = False;
+        bCalled = False
         for objPlugin in self.__arrPlugins:
-            bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams);
+            bCalled, mxResult = objPlugin.callFunction(strFunctionName, arrParams)
             if bCalled:
-                break;
+                break
 
         if not bCalled:
-            fnCallable = self.__objMethodMapper.map(strFunctionName);
+            fnCallable = self.__objMethodMapper.map(strFunctionName)
             if fnCallable is None:
                 raise JSONRPCException(
                     "The function \"" + strFunctionName + "\" does not exist or is not exported.",
                     JSONRPCException.METHOD_NOT_FOUND
-                );
+                )
 
-            dictReflection = self.__objReflectionPlugin.getReflection(strFunctionName);
-            self.__checkParameters(dictReflection, arrParams);
-            mxResult = fnCallable(*arrParams);
-            self.__checkReturnValue(dictReflection, mxResult);
+            dictReflection = self.__objReflectionPlugin.getReflection(strFunctionName)
+            self.__checkParameters(dictReflection, arrParams)
+            mxResult = fnCallable(*arrParams)
+            self.__checkReturnValue(dictReflection, mxResult)
 
-        return mxResult;
+        return mxResult
 
 
     def __checkParameters(self, dictReflection, arrParams):
@@ -311,7 +311,7 @@ class Server(object):
                         len(arrParams)
                     ),
                 JSONRPCException.INVALID_PARAMS
-            );
+            )
 
         if len(dictReflection["function_parameters"]) > len(arrParams):
             if not "parameter_default_value_json" in dictReflection["function_parameters"][len(arrParams)]:
@@ -322,7 +322,7 @@ class Server(object):
                             dictReflection["function_name"]
                         ),
                     JSONRPCException.INVALID_PARAMS
-                );
+                )
 
         for i in range(0, len(arrParams)):
             if not self.__checkType(dictReflection["function_parameters"][i]["parameter_type"], arrParams[i]):
@@ -334,7 +334,7 @@ class Server(object):
                             dictReflection["function_parameters"][i]["parameter_type"]
                         ),
                     JSONRPCException.INVALID_PARAMS
-                );
+                )
 
 
     def __checkReturnValue(self, dictReflection, mxReturnValue):
@@ -349,8 +349,8 @@ class Server(object):
                 "The value returned by the \"%s\" function is inconsistent with the defined return type."
                     % (dictReflection["function_name"]),
                 JSONRPCException.INVALID_RETURN_TYPE
-            );
-        pass;
+            )
+        pass
 
 
     def __checkType(self, strType, mxVal):
@@ -371,14 +371,14 @@ class Server(object):
             "object": dict,
             "mixed": object,
             "unknown": object
-        };
+        }
 
         if strType == "None":
-            return mxVal is None;
+            return mxVal is None
 
-        assert strType in dictTypes, "Parameter type \"%s\" not supported." % strType;
+        assert strType in dictTypes, "Parameter type \"%s\" not supported." % strType
 
-        return isinstance(mxVal, dictTypes[strType]);
+        return isinstance(mxVal, dictTypes[strType])
 
 
     def __formatException(self, exc, bIncludeStackTrace = True):
@@ -390,24 +390,24 @@ class Server(object):
 
         @return a object
         """
-        nCode = JSONRPCException.INTERNAL_ERROR;
+        nCode = JSONRPCException.INTERNAL_ERROR
 
         if isinstance(exc, JSONRPCBaseException):
-            strStrackTrace = exc.getStackTrace();
-            strMessage = exc.getMessage();
-            nCode = exc.getCode();
+            strStrackTrace = exc.getStackTrace()
+            strMessage = exc.getMessage()
+            nCode = exc.getCode()
         else:
-            strMessage = str(exc);
-            strStrackTrace = format_exc();
+            strMessage = str(exc)
+            strStrackTrace = format_exc()
 
-        strMessage = "Message: \"%s\" Code: %d" % (strMessage, nCode);
+        strMessage = "Message: \"%s\" Code: %d" % (strMessage, nCode)
         if bIncludeStackTrace:
-            strMessage = "%s\n\n%s" % (strMessage, strStrackTrace);
+            strMessage = "%s\n\n%s" % (strMessage, strStrackTrace)
 
         return {
             "message": strMessage,
             "code": nCode
-        };
+        }
 
 
     def __logException(self, exc):
@@ -418,8 +418,8 @@ class Server(object):
         """
         Logs an exception.
         """
-        dictExc = self.__formatException(exc, False);
-        self.__objLogger.exception(dictExc["message"]);
+        dictExc = self.__formatException(exc, False)
+        self.__objLogger.exception(dictExc["message"])
 
 
     def __decode_dict(self, data):

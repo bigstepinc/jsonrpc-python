@@ -1,8 +1,8 @@
-import re;
-import inspect;
+import re
+import inspect
 
-from os import linesep;
-from ServerPluginBase import ServerPluginBase;
+from os import linesep
+from ServerPluginBase import ServerPluginBase
 
 
 class ReflectionPlugin(ServerPluginBase):
@@ -17,7 +17,7 @@ class ReflectionPlugin(ServerPluginBase):
         "rpc.functions": "getFunctions",
         "rpc.reflectionFunction": "getReflection",
         "rpc.reflectionFunctions": "getReflections"
-    };
+    }
 
     """
     Reflection plugin type mnemonics.
@@ -30,7 +30,7 @@ class ReflectionPlugin(ServerPluginBase):
         "b": "boolean",
         "dict": "object",
         "mx": "mixed"
-    };
+    }
 
 
     def __init__(self, objServer):
@@ -39,7 +39,7 @@ class ReflectionPlugin(ServerPluginBase):
 
         @param object objServer
         """
-        self.setServerInstance(objServer);
+        self.setServerInstance(objServer)
 
 
     def afterJSONDecode(self, dictRequest):
@@ -49,10 +49,10 @@ class ReflectionPlugin(ServerPluginBase):
         @return object dictRequest
         """
         if dictRequest["method"] in self.__dictReflectionFunctions:
-            self._objServer.bAuthenticated = True;
-            self._objServer.bAuthorized = True;
+            self._objServer.bAuthenticated = True
+            self._objServer.bAuthorized = True
 
-        return dictRequest;
+        return dictRequest
 
 
     def callFunction(self, strFunctionName, arrParams):
@@ -64,23 +64,23 @@ class ReflectionPlugin(ServerPluginBase):
 
         @return an array
         """
-        bCalled = False;
-        mxResult = None;
+        bCalled = False
+        mxResult = None
 
         if strFunctionName in self.__dictReflectionFunctions:
             mxResult = getattr(
                 self, self.__dictReflectionFunctions[strFunctionName]
-            )(*arrParams);
-            bCalled = True;
+            )(*arrParams)
+            bCalled = True
 
-        return (bCalled, mxResult);
+        return (bCalled, mxResult)
 
 
     def getFunctions(self):
         """
         @return the list of exported functions
         """
-        return self._objServer.getMethodMapper().getMethods();
+        return self._objServer.getMethodMapper().getMethods()
 
 
     def getReflection(self, strFunctionName):
@@ -90,11 +90,11 @@ class ReflectionPlugin(ServerPluginBase):
         @return the function reflection. The function name must be resolved prior to getting its
         reflection
         """
-        fnCallable = self._objServer.getMethodMapper().map(strFunctionName);
-        assert inspect.isroutine(fnCallable), "The mapped function is not a routine.";
+        fnCallable = self._objServer.getMethodMapper().map(strFunctionName)
+        assert inspect.isroutine(fnCallable), "The mapped function is not a routine."
 
-        arrParams = self.__getFunctionArgSpec(fnCallable);
-        dictSpec = self.__getFunctionDocSpec(fnCallable);
+        arrParams = self.__getFunctionArgSpec(fnCallable)
+        dictSpec = self.__getFunctionDocSpec(fnCallable)
 
         """ TODO: Check the function prototype agains its doc comment. """
 
@@ -103,20 +103,20 @@ class ReflectionPlugin(ServerPluginBase):
             "function_return_type": dictSpec["function_return_type"],
             "function_documentation_comment": dictSpec["function_documentation_comment"],
             "function_parameters": arrParams
-        };
+        }
 
 
     def getReflections(self):
         """
         @return the list of reflections of all the function exported on the server
         """
-        arrReflections = [];
+        arrReflections = []
 
-        arrFunctions = self.getFunctions();
+        arrFunctions = self.getFunctions()
         for strFunction in arrFunctions:
-            arrReflections.append(self.getReflection(strFunction));
+            arrReflections.append(self.getReflection(strFunction))
 
-        return arrReflections;
+        return arrReflections
 
 
     def __getFunctionArgSpec(self, fnCallable):
@@ -125,32 +125,32 @@ class ReflectionPlugin(ServerPluginBase):
 
         @return argument specification of the funciton
         """
-        arrParams = [];
+        arrParams = []
 
-        ntArgSpec = inspect.getargspec(fnCallable);
-        assert ntArgSpec.varargs is None, "Variable arguments list functions not supported.";
+        ntArgSpec = inspect.getargspec(fnCallable)
+        assert ntArgSpec.varargs is None, "Variable arguments list functions not supported."
 
-        arrParamNames = ntArgSpec.args;
-        arrDefaultValues = list(ntArgSpec.defaults or ());
+        arrParamNames = ntArgSpec.args
+        arrDefaultValues = list(ntArgSpec.defaults or ())
 
         for strParamName in reversed(arrParamNames):
-            strParamType = "unknown";
-            strTypePrefix = re.search("^[a-z]*", strParamName).group(0);
+            strParamType = "unknown"
+            strTypePrefix = re.search("^[a-z]*", strParamName).group(0)
             if strTypePrefix in self.dictTypeMnemonics:
-                strParamType = self.dictTypeMnemonics[strTypePrefix];
+                strParamType = self.dictTypeMnemonics[strTypePrefix]
 
             dictParam = {
                 "parameter_name": strParamName,
                 "parameter_type": strParamType
-            };
+            }
 
             if len(arrDefaultValues) > 0:
-                dictParam["parameter_default_value_json"] = arrDefaultValues.pop();
+                dictParam["parameter_default_value_json"] = arrDefaultValues.pop()
                 """ TODO: check the type of the default value against the type inferred from the mnemonic. """
 
-            arrParams.insert(0, dictParam);
+            arrParams.insert(0, dictParam)
 
-        return arrParams;
+        return arrParams
 
 
     def __getFunctionDocSpec(self, fnCallable):
@@ -159,51 +159,51 @@ class ReflectionPlugin(ServerPluginBase):
 
         @return the complete specification of the function from the docstring
         """
-        arrParams = [];
-        strReturnType = "unknown";
+        arrParams = []
+        strReturnType = "unknown"
 
-        strDoc = inspect.getdoc(fnCallable) or inspect.getcomments(fnCallable);
-        arrDocLines = [];
+        strDoc = inspect.getdoc(fnCallable) or inspect.getcomments(fnCallable)
+        arrDocLines = []
         if not strDoc is None:
-            arrDocLines = strDoc.split(linesep);
+            arrDocLines = strDoc.split(linesep)
 
         for strDocLine in arrDocLines:
-            strDocLine = strDocLine.strip();
+            strDocLine = strDocLine.strip()
 
-            objMatch = re.match("^\s*@param\s+(\w+)\s+(\w+)(?:\s*=\s*(None|True|False|(?:\-?\d+(?:\.\d+)?)|(?:\".*\")))?.*$", strDocLine);
+            objMatch = re.match("^\s*@param\s+(\w+)\s+(\w+)(?:\s*=\s*(None|True|False|(?:\-?\d+(?:\.\d+)?)|(?:\".*\")))?.*$", strDocLine)
             if objMatch:
                 dictParam = {
                     "parameter_name": objMatch.group(2),
                     "parameter_type": objMatch.group(1)
-                };
+                }
 
-                mxDefaultValue = objMatch.group(3);
+                mxDefaultValue = objMatch.group(3)
                 if mxDefaultValue:
                     if mxDefaultValue == "None":
-                        mxDefaultValue = None;
+                        mxDefaultValue = None
                     elif mxDefaultValue in ["True", "False"]:
-                        mxDefaultValue = mxDefaultValue == "True";
+                        mxDefaultValue = mxDefaultValue == "True"
                     else:
                         try:
-                            mxDefaultValue = int(mxDefaultValue);
+                            mxDefaultValue = int(mxDefaultValue)
                         except:
                             try:
-                                mxDefaultValue = float(mxDefaultValue);
+                                mxDefaultValue = float(mxDefaultValue)
                             except:
-                                pass;
+                                pass
 
-                    dictParam["parameter_default_value_json"] = mxDefaultValue;
+                    dictParam["parameter_default_value_json"] = mxDefaultValue
 
-                arrParams.append(dictParam);
+                arrParams.append(dictParam)
 
-                continue;
+                continue
 
-            objMatch = re.match("^\s*@return\s+(None|(?:\w+))(?:\s*.*)?$", strDocLine);
+            objMatch = re.match("^\s*@return\s+(None|(?:\w+))(?:\s*.*)?$", strDocLine)
             if objMatch:
-                strReturnType = objMatch.group(1);
+                strReturnType = objMatch.group(1)
 
         return {
             "function_parameters": arrParams,
             "function_return_type": strReturnType,
             "function_documentation_comment": strDoc
-        };
+        }

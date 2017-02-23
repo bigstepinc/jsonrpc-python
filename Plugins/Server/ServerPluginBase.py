@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod;
+from abc import ABCMeta, abstractmethod
 
 
 class ServerPluginBase(object):
@@ -10,19 +10,19 @@ class ServerPluginBase(object):
     """
     The server plugin base must be abstract. It should not be instantiated.
     """
-    __metaclass__ = ABCMeta;
+    __metaclass__ = ABCMeta
 
     """
     The server instance is useful for most plugins.
     """
-    _objServer = None;
+    _objServer = None
 
 
     def __init__(self):
         """
         Class constructor.
         """
-        pass;
+        pass
 
 
     def beforeJSONDecode(self, strJSONRequest):
@@ -34,7 +34,7 @@ class ServerPluginBase(object):
 
         @return string strJSONRequest
         """
-        return strJSONRequest;
+        return strJSONRequest
 
 
     def afterJSONDecode(self, dictRequest):
@@ -46,7 +46,7 @@ class ServerPluginBase(object):
 
         @return object dictRequest
         """
-        return dictRequest;
+        return dictRequest
 
 
     def resolveFunction(self, strFunctionName):
@@ -58,7 +58,7 @@ class ServerPluginBase(object):
 
         @return string strFunctionName
         """
-        return strFunctionName;
+        return strFunctionName
 
 
     def callFunction(self, strFunctionName, arrParams):
@@ -70,7 +70,7 @@ class ServerPluginBase(object):
 
         @return array arrParams
         """
-        return (False, None);
+        return (False, None)
 
 
     def onException(self, exc):
@@ -79,7 +79,7 @@ class ServerPluginBase(object):
 
         @param exception exc
         """
-        pass;
+        pass
 
 
     def sendResponse(self, dictResponse):
@@ -88,7 +88,7 @@ class ServerPluginBase(object):
 
         @param object dictResponse
         """
-        pass;
+        pass
 
 
     def setServerInstance(self, objServer):
@@ -97,4 +97,4 @@ class ServerPluginBase(object):
 
         @param object objServer
         """
-        self._objServer = objServer;
+        self._objServer = objServer

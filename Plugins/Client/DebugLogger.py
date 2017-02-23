@@ -1,8 +1,8 @@
-import json;
-import datetime;
+import json
+import datetime
 
-from time import strftime, localtime;
-from ClientPluginBase import ClientPluginBase;
+from time import strftime, localtime
+from ClientPluginBase import ClientPluginBase
 
 
 class DebugLogger(ClientPluginBase):
@@ -12,7 +12,7 @@ class DebugLogger(ClientPluginBase):
     Also translates thrown exceptions.
     """
 
-    bLogType = True;
+    bLogType = True
 
 
     def __init__(self, bLogType, strLogPath = ""):
@@ -20,27 +20,27 @@ class DebugLogger(ClientPluginBase):
         @param boolean bLogType
         @param string strLogPath
         """
-        self.bLogType = bLogType;
+        self.bLogType = bLogType
 
         if bLogType == False:
             if strLogPath != "":
-                self.hFile = open(strLogPath, "a");
+                self.hFile = open(strLogPath, "a")
             else:
-                raise Exception("No log path specified.");
+                raise Exception("No log path specified.")
 
 
     def beforeJSONDecode(self, strJSONResponse):
         """
         @param string strJSONResponse
         """
-        strOutput = strJSONResponse;
-        objDecoded = json.loads(strOutput);
-        strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n";
+        strOutput = strJSONResponse
+        objDecoded = json.loads(strOutput)
+        strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n"
 
         if self.bLogType == True:
-            print strOutput;
+            print strOutput
         else:
-            self.hFile.write(strOutput + "\n");
+            self.hFile.write(strOutput + "\n")
 
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
@@ -49,11 +49,11 @@ class DebugLogger(ClientPluginBase):
         @param string strEndPointURL
         @param object dictHTTPHeaders
         """
-        strOutput = strJSONRequest;
-        objDecoded = json.loads(strOutput);
-        strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n";
+        strOutput = strJSONRequest
+        objDecoded = json.loads(strOutput)
+        strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n"
 
         if self.bLogType == True:
-            print strOutput;
+            print strOutput
         else:
-            self.hFile.write(strOutput + "\n");
+            self.hFile.write(strOutput + "\n")

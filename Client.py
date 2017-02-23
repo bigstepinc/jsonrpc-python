@@ -1,14 +1,14 @@
-import json;
-import urllib2;
+import json
+import urllib2
 
-import logging;
-import threading;
+import logging
+import threading
 
-from traceback import format_exc;
+from traceback import format_exc
 
-from HeaderFactory import HeaderFactory;
-from JSONRPCException import JSONRPCException;
-from JSONRPCBaseException import JSONRPCBaseException;
+from HeaderFactory import HeaderFactory
+from JSONRPCException import JSONRPCException
+from JSONRPCBaseException import JSONRPCBaseException
 
 
 class Client(object):
@@ -18,28 +18,28 @@ class Client(object):
     """
     JSON-RPC protocol call ID.
     """
-    __nCallID = 0;
+    __nCallID = 0
 
     """
     Filter plugins which extend ClientPluginBase.
     """
-    __arrFilterPlugins = [];
+    __arrFilterPlugins = []
 
     """
     JSON-RPC server endpoint URL.
     """
-    __strJSONRPCRouterURL = "";
+    __strJSONRPCRouterURL = ""
 
     """
     Used for locking variables in case of multithreading.
     """
-    __lock = None;
+    __lock = None
 
     """
     HTTP credentials used for authentication plugins.
     """
-    __strHTTPUser = None;
-    __strHTTPPassword = None;
+    __strHTTPUser = None
+    __strHTTPPassword = None
 
 
     def __init__(self, dictParams, arrFilterPlugins = []):
@@ -59,26 +59,26 @@ class Client(object):
         if not "strJSONRPCRouterURL" in dictParams:
             raise JSONRPCException(
                 "The strJSONRPCRouterURL property must be set.", JSONRPCException.INVALID_PARAMS
-            );
-        self.__strJSONRPCRouterURL = dictParams["strJSONRPCRouterURL"];
+            )
+        self.__strJSONRPCRouterURL = dictParams["strJSONRPCRouterURL"]
 
         if "strUsername" in dictParams:
-            self.__strHTTPUser = dictParams["strUsername"];
+            self.__strHTTPUser = dictParams["strUsername"]
         if "strPassword" in dictParams:
-            self.__strHTTPPassword = dictParams["strPassword"];
+            self.__strHTTPPassword = dictParams["strPassword"]
         if not "strLogFilePath" in dictParams:
-            dictParams["strLogFilePath"] = "CommunicationLog.log";
+            dictParams["strLogFilePath"] = "CommunicationLog.log"
 
         if not len(set(arrFilterPlugins)) == len(arrFilterPlugins):
             raise JSONRPCException(
                 "The client filter plugin list contains duplicates.", JSONRPCException.INVALID_PARAMS
-            );
-        self.__arrFilterPlugins = list(arrFilterPlugins);
+            )
+        self.__arrFilterPlugins = list(arrFilterPlugins)
 
-        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s");
-        self.__objLogger = logging.getLogger(__name__);
+        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s")
+        self.__objLogger = logging.getLogger(__name__)
 
-        self.__lock = threading.Lock();
+        self.__lock = threading.Lock()
 
 
     def _rpc(self, strFunctionName, arrParams):
@@ -88,10 +88,10 @@ class Client(object):
 
         @return processRAWResponse. The function used to decode the received JSON.
         """
-        strRequest, strEndPointURL, dictHTTPHeaders = self.__prepareRequest(strFunctionName, arrParams);
-        strResult, bErrorMode = self.__makeRequest(strRequest, strEndPointURL, dictHTTPHeaders);
+        strRequest, strEndPointURL, dictHTTPHeaders = self.__prepareRequest(strFunctionName, arrParams)
+        strResult, bErrorMode = self.__makeRequest(strRequest, strEndPointURL, dictHTTPHeaders)
 
-        return self.processRAWResponse(strResult, bErrorMode);
+        return self.processRAWResponse(strResult, bErrorMode)
 
 
     def processRAWResponse(self, strResult, bErrorMode = False):
@@ -105,41 +105,41 @@ class Client(object):
         @return mixed mxResponse["result"]. This is the server response result.
         """
         try:
-            mxResponse = None;
+            mxResponse = None
 
             for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.beforeJSONDecode(strResult);
+                objFilterPlugin.beforeJSONDecode(strResult)
 
             try:
-                mxResponse = json.loads(strResult);
+                mxResponse = json.loads(strResult)
             except Exception, objError:
                 raise JSONRPCException(
                     objError.message + ". RAW response from server: " + strResult, JSONRPCException.PARSE_ERROR
-                );
+                )
 
             for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.afterJSONDecode(strResult, mxResponse);
+                objFilterPlugin.afterJSONDecode(strResult, mxResponse)
 
             if isinstance(mxResponse, dict) == False or (bErrorMode == True and mxResponse.has_key("error") == False):
                 raise JSONRPCException(
                     "Invalid response structure. RAW response: " + strResult, JSONRPCException.INTERNAL_ERROR
-                );
+                )
             elif mxResponse.has_key("result") == True and mxResponse.has_key("error") == False and bErrorMode == False:
-                return mxResponse["result"];
+                return mxResponse["result"]
 
             raise JSONRPCException(
                 str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
-            );
+            )
         except JSONRPCException, objError:
             """
             Log the initial exception.
             """
-            self.__logException(objError);
+            self.__logException(objError)
 
             for objFilterPlugin in self.__arrFilterPlugins:
-                objFilterPlugin.exceptionCatch(objError);
+                objFilterPlugin.exceptionCatch(objError)
 
-            raise objError;
+            raise objError
 
 
     def __prepareRequest(self, strFunctionName, arrParams):
@@ -149,33 +149,33 @@ class Client(object):
 
         @return array strRequest, strEndPointURL, dictHTTPHeaders
         """
-        self.__lock.acquire();
-        nCallID = self.__nCallID;
-        self.__nCallID += 1;
-        self.__lock.release();
+        self.__lock.acquire()
+        nCallID = self.__nCallID
+        self.__nCallID += 1
+        self.__lock.release()
 
         dictRequest = {
             "jsonrpc": "2.0",
             "method": strFunctionName,
             "params": arrParams,
             "id": nCallID
-        };
+        }
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.beforeJSONEncode(dictRequest) is not None:
-                dictRequest = objFilterPlugin.beforeJSONEncode(dictRequest);
+                dictRequest = objFilterPlugin.beforeJSONEncode(dictRequest)
 
-        strRequest = json.dumps(dictRequest);
-        strEndPointURL = self.__strJSONRPCRouterURL;
+        strRequest = json.dumps(dictRequest)
+        strEndPointURL = self.__strJSONRPCRouterURL
 
-        headerFactory = HeaderFactory();
-        dictHTTPHeaders = headerFactory.create(self.__strHTTPUser, self.__strHTTPPassword, "application/json");
+        headerFactory = HeaderFactory()
+        dictHTTPHeaders = headerFactory.create(self.__strHTTPUser, self.__strHTTPPassword, "application/json")
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:
-                strRequest, strEndPointURL, dictHTTPHeaders = objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders);
+                strRequest, strEndPointURL, dictHTTPHeaders = objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders)
 
-        return strRequest, strEndPointURL, dictHTTPHeaders;
+        return strRequest, strEndPointURL, dictHTTPHeaders
 
 
     def __makeRequest(self, strRequest, strEndPointURL, dictHTTPHeaders):
@@ -186,27 +186,27 @@ class Client(object):
 
         @return array strResult, bErrorMode
         """
-        bErrorMode = False;
-        bCalled = False;
+        bErrorMode = False
+        bCalled = False
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL) is not None:
-                bCalled, strResult, strEndPointURL = objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL);
+                bCalled, strResult, strEndPointURL = objFilterPlugin.makeRequest(bCalled, strRequest, strEndPointURL)
 
             if bCalled:
-                break;
+                break
 
         if bCalled == False:
-            objRequest = urllib2.Request(strEndPointURL, headers = dictHTTPHeaders, data = strRequest);
+            objRequest = urllib2.Request(strEndPointURL, headers = dictHTTPHeaders, data = strRequest)
 
             try:
-                objFile = urllib2.urlopen(objRequest);
-                strResult = objFile.read();
+                objFile = urllib2.urlopen(objRequest)
+                strResult = objFile.read()
             except urllib2.HTTPError, objError:
-                bErrorMode = True;
-                strResult = objError.read();
+                bErrorMode = True
+                strResult = objError.read()
 
-        return strResult, bErrorMode;
+        return strResult, bErrorMode
 
 
     def __logException(self, exc):
@@ -215,8 +215,8 @@ class Client(object):
 
         @param exception exc
         """
-        dictExc = self.__formatException(exc, False);
-        self.__objLogger.exception(dictExc["message"]);
+        dictExc = self.__formatException(exc, False)
+        self.__objLogger.exception(dictExc["message"])
 
 
     def __formatException(self, exc, bIncludeStackTrace = True):
@@ -228,24 +228,24 @@ class Client(object):
 
         @return a dictionary with message and code keys properly set.
         """
-        nCode = JSONRPCException.INTERNAL_ERROR;
+        nCode = JSONRPCException.INTERNAL_ERROR
 
         if isinstance(exc, JSONRPCBaseException):
-            strStrackTrace = exc.getStackTrace();
-            strMessage = exc.getMessage();
-            nCode = exc.getCode();
+            strStrackTrace = exc.getStackTrace()
+            strMessage = exc.getMessage()
+            nCode = exc.getCode()
         else:
-            strMessage = str(exc);
-            strStrackTrace = format_exc();
+            strMessage = str(exc)
+            strStrackTrace = format_exc()
 
-        strMessage = "Message: \"%s\" Code: %d" % (strMessage, nCode);
+        strMessage = "Message: \"%s\" Code: %d" % (strMessage, nCode)
         if bIncludeStackTrace:
-            strMessage = "%s\n\n%s" % (strMessage, strStrackTrace);
+            strMessage = "%s\n\n%s" % (strMessage, strStrackTrace)
 
         return {
             "message": strMessage,
             "code": nCode
-        };
+        }
 
 
     def __getattr__(self, strClassAttribute):
@@ -269,17 +269,17 @@ class Client(object):
 
             @return the result of the _rpc function.
             """
-            arrParams = list(tupleParams);
-            return self._rpc(strClassAttribute, arrParams);
+            arrParams = list(tupleParams)
+            return self._rpc(strClassAttribute, arrParams)
 
-        return __call;
+        return __call
 
 
     def rpcFunctions(self):
         """
         @return all API functions
         """
-        return self._rpc("rpc.functions", []);
+        return self._rpc("rpc.functions", [])
 
 
     def rpcReflectionFunction(self, strFunctionName):
@@ -288,7 +288,7 @@ class Client(object):
 
         @return a specific rpcReflectionFunction of the API
         """
-        return self._rpc("rpc.rpcReflectionFunction", [strFunctionName]);
+        return self._rpc("rpc.rpcReflectionFunction", [strFunctionName])
 
 
     def rpcReflectionFunctions(self, arrFunctionNames):
@@ -297,4 +297,4 @@ class Client(object):
 
         @return specific rpcReflectionFunctions of the API
         """
-        return self._rpc("rpc.rpcReflectionFunctions", [arrFunctionNames]);
+        return self._rpc("rpc.rpcReflectionFunctions", [arrFunctionNames])

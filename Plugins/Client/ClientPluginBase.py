@@ -8,26 +8,26 @@ class ClientPluginBase(object):
         """
         Class constructor.
         """
-        pass;
+        pass
 
 
     def beforeJSONEncode(self, dictRequest):
         """
         Should be used to:
-        - add extra request object keys;
+        - add extra request object keys
         - translate or encode output params into the expected server request object format.
 
         @param object dictRequest
 
         @return object dictRequest
         """
-        return dictRequest;
+        return dictRequest
 
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
         Should be uset to:
-        - encrypt, encode or otherwise prepare the JSON request string into the expected server input format;
+        - encrypt, encode or otherwise prepare the JSON request string into the expected server input format
         - log raw input.
 
         @param string strJSONRequest
@@ -36,7 +36,7 @@ class ClientPluginBase(object):
 
         @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """
-        return strJSONRequest, strEndPointURL, dictHTTPHeaders;
+        return strJSONRequest, strEndPointURL, dictHTTPHeaders
 
 
     def makeRequest(self, bCalled, strJSONRequest, strEndPointURL):
@@ -49,26 +49,26 @@ class ClientPluginBase(object):
 
         @return array bCalled, strJSONRequest, strEndPointURL
         """
-        return bCalled, strJSONRequest, strEndPointURL;
+        return bCalled, strJSONRequest, strEndPointURL
 
 
     def beforeJSONDecode(self, strJSONResponse):
         """
         Should be used to:
-        - decrypt, decode or otherwise prepare the JSON response into the expected JSON-RPC client format;
+        - decrypt, decode or otherwise prepare the JSON response into the expected JSON-RPC client format
         - log raw input.
 
         @param string strJSONResponse
 
         @return string strJSONResponse
         """
-        return strJSONResponse;
+        return strJSONResponse
 
 
     def afterJSONDecode(self, strResult, mxResponse):
         """
         Should be used to:
-        - add extra response object keys;
+        - add extra response object keys
         - translate or decode response params into the expected JSON-RPC client response object format.
 
         @param string strResult
@@ -76,7 +76,7 @@ class ClientPluginBase(object):
 
         @return array strResult, mxResponse
         """
-        return strResult, mxResponse;
+        return strResult, mxResponse
 
 
     def exceptionCatch(self, exception):
@@ -90,4 +90,4 @@ class ClientPluginBase(object):
 
         @return error exception
         """
-        return exception;
+        return exception
