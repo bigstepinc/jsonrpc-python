@@ -1,12 +1,23 @@
 import base64;
 
+
 class HeaderFactory(object):
-    def create(self, sUser, sPassword, sContentType):
+    """
+    """
+
+    def create(self, strUser, strPassword, strContentType):
+    	"""
+    	@param string strUser
+    	@param string strPassword
+    	@param string strContentType
+
+    	@return object
+    	"""
         dictHTTPHeaders = {
-            "Content-Type": sContentType
-        }
+            "Content-Type": strContentType
+        };
 
-        if sUser is not None and sPassword is not None:
-            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(sUser + ":" + sPassword)
+        if strUser is not None and strPassword is not None:
+            dictHTTPHeaders["Authorization"] = "Basic " + base64.b64encode(strUser + ":" + strPassword);
 
-        return dictHTTPHeaders
+        return dictHTTPHeaders;

@@ -6,7 +6,7 @@ import threading;
 
 from traceback import format_exc;
 
-import HeaderFactory
+from HeaderFactory import HeaderFactory;
 from JSONRPCException import JSONRPCException;
 from JSONRPCBaseException import JSONRPCBaseException;
 
@@ -168,9 +168,8 @@ class Client(object):
         strRequest = json.dumps(dictRequest);
         strEndPointURL = self.__strJSONRPCRouterURL;
 
-        headerFactory = HeaderFactory()
-        dictHTTPHeaders = headerFactory.create(sUser= self.__strHTTPUser, sPassword= self.__strHTTPPassword,
-                                                 sContentType= "application/json")
+        headerFactory = HeaderFactory();
+        dictHTTPHeaders = headerFactory.create(self.__strHTTPUser, self.__strHTTPPassword, "application/json");
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:
