@@ -1,5 +1,5 @@
 import unittest
-from .. import HeaderFactory
+from HeaderFactory import HeaderFactory
 
 class HeaderFactoryTest(unittest.TestCase):
     def test(self):
