@@ -98,7 +98,7 @@ class Server(object):
 
         try:
             bNotificationMode, dictRequest = self.__processResponse(strJSONRequest)
-            self.__verifyAcces()
+            self._verifyAcces()
             dictResponse = self._createResponse(dictRequest)
         except Exception as exc:
             self._logException(exc)
@@ -158,7 +158,7 @@ class Server(object):
             )
 
         try:
-            dictRequest = json.loads(strJSONRequest, object_hook = self.__decode_dict)
+            dictRequest = json.loads(strJSONRequest, object_hook = self._decode_dict)
         except Exception:
             raise JSONRPCException(
                 "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
@@ -174,7 +174,7 @@ class Server(object):
         return bNotificationMode, dictRequest
 
 
-    def __verifyAcces(self):
+    def _verifyAcces(self):
         """
         """
         if not self.bAuthenticated:
@@ -203,7 +203,7 @@ class Server(object):
         }
 
         try:
-            dictResponse["result"] = self.__callFunction(
+            dictResponse["result"] = self._callFunction(
                 dictRequest["method"], dictRequest["params"]
             )
         except Exception as exc:
@@ -258,7 +258,7 @@ class Server(object):
         return bNotificationMode
 
 
-    def __callFunction(self, strFunctionName, arrParams):
+    def _callFunction(self, strFunctionName, arrParams):
         """
         Calls the function with the given parameters. If type checking is enabled, the types of
         the parameters and of the returned object are checked against the function reflection.
@@ -422,7 +422,7 @@ class Server(object):
         self.__objLogger.exception(dictExc["message"])
 
 
-    def __decode_dict(self, data):
+    def _decode_dict(self, data):
         """
         @param data
 
@@ -437,7 +437,7 @@ class Server(object):
             elif isinstance(value, list):
                 value = self._decode_list(value)
             elif isinstance(value, dict):
-                value = self.__decode_dict(value)
+                value = self._decode_dict(value)
             rv[key] = value
         return rv
 
@@ -455,6 +455,6 @@ class Server(object):
             elif isinstance(item, list):
                 item = self._decode_list(item)
             elif isinstance(item, dict):
-                item = self.__decode_dict(item)
+                item = self._decode_dict(item)
             rv.append(item)
         return rv
