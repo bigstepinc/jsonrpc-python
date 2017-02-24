@@ -244,15 +244,15 @@ class Client(object):
         """
         This is a magic function, which facilitates the lookup for client class attributes.
         In order to be able to call whitelisted server functions, they are defined as class attributes
-        through the medium of the function __call.
+        through the medium of the function _call.
         If the function is not whitelisted, an exception is thrown.
 
         @param string strFunctionName. This is the name of the function to be called.
 
-        @return object __call. The new defined function.
+        @return object _call. The new defined function.
         """
 
-        def __call(*tupleParams):
+        def _call(*tupleParams):
             """
             This is a local function, which is used to define a function in a class attributes
             for client, based on its name and array of parameters
@@ -264,7 +264,7 @@ class Client(object):
             arrParams = list(tupleParams)
             return self._rpc(strClassAttribute, arrParams)
 
-        return __call
+        return _call
 
     def rpcFunctions(self):
         """
