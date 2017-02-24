@@ -77,7 +77,7 @@ class Client(object):
 
         self.__lock = threading.Lock()
 
-    def _rpc(self, strFunctionName, arrParams):
+    def rpc(self, strFunctionName, arrParams):
         """
         @param string strFunctionName
         @param array arrParams
@@ -262,7 +262,7 @@ class Client(object):
             @return the result of the _rpc function.
             """
             arrParams = list(tupleParams)
-            return self._rpc(strClassAttribute, arrParams)
+            return self.rpc(strClassAttribute, arrParams)
 
         return _call
 
@@ -270,7 +270,7 @@ class Client(object):
         """
         @return all API functions
         """
-        return self._rpc("rpc.functions", [])
+        return self.rpc("rpc.functions", [])
 
     def rpcReflectionFunction(self, strFunctionName):
         """
@@ -278,7 +278,7 @@ class Client(object):
 
         @return a specific rpcReflectionFunction of the API
         """
-        return self._rpc("rpc.rpcReflectionFunction", [strFunctionName])
+        return self.rpc("rpc.rpcReflectionFunction", [strFunctionName])
 
     def rpcReflectionFunctions(self, arrFunctionNames):
         """
@@ -286,4 +286,4 @@ class Client(object):
 
         @return specific rpcReflectionFunctions of the API
         """
-        return self._rpc("rpc.rpcReflectionFunctions", [arrFunctionNames])
+        return self.rpc("rpc.rpcReflectionFunctions", [arrFunctionNames])
