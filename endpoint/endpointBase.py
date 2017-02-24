@@ -1,4 +1,4 @@
-from JSONRPC import Server
+from server import Server
 
 
 class EndpointBase(object):
