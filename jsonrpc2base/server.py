@@ -4,7 +4,7 @@ from traceback import format_exc
 
 from JSONRPCBaseException import JSONRPCBaseException
 from JSONRPCException import JSONRPCException
-from plugins.server import *
+from plugins.server.reflectionPlugin import ReflectionPlugin
 
 from methodMapper import MethodMapper
 

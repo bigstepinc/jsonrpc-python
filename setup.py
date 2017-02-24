@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
-  name = 'jsonrpc2-base',
-  packages = ['jsonrpc2-base'], # this must be the same as the name above
+  name = 'jsonrpc2base',
+  packages = ['jsonrpc2base'], # this must be the same as the name above
   version = '0.1',
   description = 'A base package for jsp rpc handling',
   author = 'Bigstep inc',
