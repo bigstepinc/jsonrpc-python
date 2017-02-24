@@ -7,5 +7,7 @@ LOG/*
 index.html
 logger.txt
 
+dist/*
+
 # for Pycharm
 .idea/*
