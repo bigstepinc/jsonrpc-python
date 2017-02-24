@@ -4,8 +4,9 @@ from traceback import format_exc
 
 from JSONRPCBaseException import JSONRPCBaseException
 from JSONRPCException import JSONRPCException
-from methodMapper import MethodMapper
 from plugins.server import *
+
+from methodMapper import MethodMapper
 
 
 class Server(object):
