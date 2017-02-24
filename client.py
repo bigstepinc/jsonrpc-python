@@ -1,14 +1,12 @@
 import json
-import urllib2
-
 import logging
 import threading
-
+import urllib2
 from traceback import format_exc
 
-from HeaderFactory import HeaderFactory
-from JSONRPCException import JSONRPCException
 from JSONRPCBaseException import JSONRPCBaseException
+from JSONRPCException import JSONRPCException
+from headerFactory import HeaderFactory
 
 
 class Client(object):
@@ -41,11 +39,10 @@ class Client(object):
     __strHTTPUser = None
     __strHTTPPassword = None
 
-
-    def __init__(self, dictParams, arrFilterPlugins = []):
+    def __init__(self, dictParams, arrFilterPlugins=[]):
         """
-        This is the constructor function. It creates a new instance of Client.
-        Example: Client("http://example.ro").
+        This is the constructor function. It creates a new instance of client.
+        Example: client("http://example.ro").
 
         @param object dictParams. It is used for reference return for multiple variables,
         which can be retrieved using specific keys
@@ -75,11 +72,10 @@ class Client(object):
             )
         self.__arrFilterPlugins = list(arrFilterPlugins)
 
-        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s")
+        logging.basicConfig(filename=dictParams["strLogFilePath"], format="%(asctime)s %(message)s")
         self.__objLogger = logging.getLogger(__name__)
 
         self.__lock = threading.Lock()
-
 
     def _rpc(self, strFunctionName, arrParams):
         """
@@ -93,8 +89,7 @@ class Client(object):
 
         return self.processRAWResponse(strResult, bErrorMode)
 
-
-    def processRAWResponse(self, strResult, bErrorMode = False):
+    def processRAWResponse(self, strResult, bErrorMode=False):
         """
         This is the function used to decode the received JSON and return its result.
         It is automatically called by _rpc.
@@ -141,7 +136,6 @@ class Client(object):
 
             raise objError
 
-
     def _prepareRequest(self, strFunctionName, arrParams):
         """
         @param string strFunctionName
@@ -173,10 +167,11 @@ class Client(object):
 
         for objFilterPlugin in self.__arrFilterPlugins:
             if objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders) is not None:
-                strRequest, strEndPointURL, dictHTTPHeaders = objFilterPlugin.afterJSONEncode(strRequest, strEndPointURL, dictHTTPHeaders)
+                strRequest, strEndPointURL, dictHTTPHeaders = objFilterPlugin.afterJSONEncode(strRequest,
+                                                                                              strEndPointURL,
+                                                                                              dictHTTPHeaders)
 
         return strRequest, strEndPointURL, dictHTTPHeaders
-
 
     def _makeRequest(self, strRequest, strEndPointURL, dictHTTPHeaders):
         """
@@ -197,7 +192,7 @@ class Client(object):
                 break
 
         if bCalled == False:
-            objRequest = urllib2.Request(strEndPointURL, headers = dictHTTPHeaders, data = strRequest)
+            objRequest = urllib2.Request(strEndPointURL, headers=dictHTTPHeaders, data=strRequest)
 
             try:
                 objFile = urllib2.urlopen(objRequest)
@@ -208,7 +203,6 @@ class Client(object):
 
         return strResult, bErrorMode
 
-
     def _logException(self, exc):
         """
         Logs an exception.
@@ -218,8 +212,7 @@ class Client(object):
         dictExc = self._formatException(exc, False)
         self.__objLogger.exception(dictExc["message"])
 
-
-    def _formatException(self, exc, bIncludeStackTrace = True):
+    def _formatException(self, exc, bIncludeStackTrace=True):
         """
         Formats an exception as an associative array with message and code keys properly set.
 
@@ -247,10 +240,9 @@ class Client(object):
             "code": nCode
         }
 
-
     def __getattr__(self, strClassAttribute):
         """
-        This is a magic function, which facilitates the lookup for Client class attributes.
+        This is a magic function, which facilitates the lookup for client class attributes.
         In order to be able to call whitelisted server functions, they are defined as class attributes
         through the medium of the function __call.
         If the function is not whitelisted, an exception is thrown.
@@ -263,7 +255,7 @@ class Client(object):
         def __call(*tupleParams):
             """
             This is a local function, which is used to define a function in a class attributes
-            for Client, based on its name and array of parameters
+            for client, based on its name and array of parameters
 
             @param *tupleParams. It allows you to pass an arbitrary number of parameters, no matter their type.
 
@@ -274,13 +266,11 @@ class Client(object):
 
         return __call
 
-
     def rpcFunctions(self):
         """
         @return all API functions
         """
         return self._rpc("rpc.functions", [])
-
 
     def rpcReflectionFunction(self, strFunctionName):
         """
@@ -289,7 +279,6 @@ class Client(object):
         @return a specific rpcReflectionFunction of the API
         """
         return self._rpc("rpc.rpcReflectionFunction", [strFunctionName])
-
 
     def rpcReflectionFunctions(self, arrFunctionNames):
         """

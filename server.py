@@ -1,12 +1,11 @@
 import json
 import logging
-import os
-
 from traceback import format_exc
-from Plugins.Server import *
-from MethodMapper import MethodMapper
-from JSONRPCException import JSONRPCException
+
 from JSONRPCBaseException import JSONRPCBaseException
+from JSONRPCException import JSONRPCException
+from methodMapper import MethodMapper
+from plugins.server import *
 
 
 class Server(object):
@@ -24,7 +23,7 @@ class Server(object):
     __objLogger = None
 
     """
-    Plugins which extend ServerPluginBase.
+    plugins which extend ServerPluginBase.
     """
     __arrPlugins = []
 
@@ -40,14 +39,13 @@ class Server(object):
 
     """
     """
-    bAuthenticated = False # We need to modify the Authentication
+    bAuthenticated = False  # We need to modify the Authentication
 
     """
     """
-    bAuthorized = False # We need to modify the Authorization
+    bAuthorized = False  # We need to modify the Authorization
 
-
-    def __init__(self, dictParams, arrPlugins = []):
+    def __init__(self, dictParams, arrPlugins=[]):
         """
         Class constructor.
 
@@ -70,9 +68,8 @@ class Server(object):
             )
         self.__arrPlugins = list(arrPlugins)
 
-        logging.basicConfig(filename = dictParams["strLogFilePath"], format = "%(asctime)s %(message)s")
+        logging.basicConfig(filename=dictParams["strLogFilePath"], format="%(asctime)s %(message)s")
         self.__objLogger = logging.getLogger(__name__)
-
 
     def getMethodMapper(self):
         """
@@ -80,8 +77,7 @@ class Server(object):
         """
         return self.__objMethodMapper
 
-
-    def processRequest(self, strJSONRequest = None):
+    def processRequest(self, strJSONRequest=None):
         """
         Processes the request and returns the response. In case of notifications no
         output is provided.
@@ -125,7 +121,6 @@ class Server(object):
 
         return strResponse
 
-
     def __processResponse(self, strJSONRequest):
         """
         @param string strJSONRequest
@@ -158,7 +153,7 @@ class Server(object):
             )
 
         try:
-            dictRequest = json.loads(strJSONRequest, object_hook = self._decode_dict)
+            dictRequest = json.loads(strJSONRequest, object_hook=self._decode_dict)
         except Exception:
             raise JSONRPCException(
                 "The request must be a valid JSON encoded string.", JSONRPCException.PARSE_ERROR
@@ -172,7 +167,6 @@ class Server(object):
             dictRequest = objPlugin.afterJSONDecode(dictRequest)
 
         return bNotificationMode, dictRequest
-
 
     def _verifyAcces(self):
         """
@@ -188,7 +182,6 @@ class Server(object):
                 "Authenticated user is not authorized.",
                 JSONRPCException.NOT_AUTHORIZED
             )
-
 
     def _createResponse(self, dictRequest):
         """
@@ -212,7 +205,6 @@ class Server(object):
             raise
 
         return dictResponse
-
 
     def _checkRequest(self, dictRequest):
         """
@@ -257,7 +249,6 @@ class Server(object):
 
         return bNotificationMode
 
-
     def _callFunction(self, strFunctionName, arrParams):
         """
         Calls the function with the given parameters. If type checking is enabled, the types of
@@ -294,7 +285,6 @@ class Server(object):
 
         return mxResult
 
-
     def _checkParameters(self, dictReflection, arrParams):
         """
         Checks the parameters against the function reflection.
@@ -305,11 +295,11 @@ class Server(object):
         if len(arrParams) > len(dictReflection["function_parameters"]):
             raise JSONRPCException(
                 "The function \"%s\" expects %d parameter(s). %d parameter(s) given."
-                    % (
-                        dictReflection["function_name"],
-                        len(dictReflection["function_parameters"]),
-                        len(arrParams)
-                    ),
+                % (
+                    dictReflection["function_name"],
+                    len(dictReflection["function_parameters"]),
+                    len(arrParams)
+                ),
                 JSONRPCException.INVALID_PARAMS
             )
 
@@ -317,10 +307,10 @@ class Server(object):
             if not "parameter_default_value_json" in dictReflection["function_parameters"][len(arrParams)]:
                 raise JSONRPCException(
                     "The parameter with index %d of the \"%s\" function does not have a default value."
-                        % (
-                            len(arrParams),
-                            dictReflection["function_name"]
-                        ),
+                    % (
+                        len(arrParams),
+                        dictReflection["function_name"]
+                    ),
                     JSONRPCException.INVALID_PARAMS
                 )
 
@@ -328,14 +318,13 @@ class Server(object):
             if not self._checkType(dictReflection["function_parameters"][i]["parameter_type"], arrParams[i]):
                 raise JSONRPCException(
                     "The function \"%s\" expects the parameter with index %d to be a %s value."
-                        % (
-                            dictReflection["function_name"],
-                            i,
-                            dictReflection["function_parameters"][i]["parameter_type"]
-                        ),
+                    % (
+                        dictReflection["function_name"],
+                        i,
+                        dictReflection["function_parameters"][i]["parameter_type"]
+                    ),
                     JSONRPCException.INVALID_PARAMS
                 )
-
 
     def _checkReturnValue(self, dictReflection, mxReturnValue):
         """
@@ -347,11 +336,10 @@ class Server(object):
         if not self._checkType(dictReflection["function_return_type"], mxReturnValue):
             raise JSONRPCException(
                 "The value returned by the \"%s\" function is inconsistent with the defined return type."
-                    % (dictReflection["function_name"]),
+                % (dictReflection["function_name"]),
                 JSONRPCException.INVALID_RETURN_TYPE
             )
         pass
-
 
     def _checkType(self, strType, mxVal):
         """
@@ -380,8 +368,7 @@ class Server(object):
 
         return isinstance(mxVal, dictTypes[strType])
 
-
-    def _formatException(self, exc, bIncludeStackTrace = True):
+    def _formatException(self, exc, bIncludeStackTrace=True):
         """
         Formats an exception as an associative array with message and code keys properly set.
 
@@ -409,7 +396,6 @@ class Server(object):
             "code": nCode
         }
 
-
     def _logException(self, exc):
         """
         @param exception exc
@@ -420,7 +406,6 @@ class Server(object):
         """
         dictExc = self._formatException(exc, False)
         self.__objLogger.exception(dictExc["message"])
-
 
     def _decode_dict(self, data):
         """
@@ -440,7 +425,6 @@ class Server(object):
                 value = self._decode_dict(value)
             rv[key] = value
         return rv
-
 
     def _decode_list(self, data):
         """

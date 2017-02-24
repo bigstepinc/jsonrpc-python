@@ -11,7 +11,6 @@ class JSONRPCBaseException(Exception):
     """
     __nCode = None
 
-
     def __init__(self, strMessage, nCode):
         """
         Class constructor. Initializes the exception message and code.
@@ -19,7 +18,6 @@ class JSONRPCBaseException(Exception):
         super(JSONRPCBaseException, self).__init__(strMessage)
 
         self.__nCode = nCode
-
 
     def getMessage(self):
         """
@@ -29,7 +27,6 @@ class JSONRPCBaseException(Exception):
         """
         return str(self)
 
-
     def getCode(self):
         """
         Getter method for the exception code.
@@ -37,7 +34,6 @@ class JSONRPCBaseException(Exception):
         @return a code
         """
         return self.__nCode
-
 
     def getStackTrace(self):
         """

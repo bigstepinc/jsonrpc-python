@@ -1,13 +1,13 @@
-import re
 import inspect
-
+import re
 from os import linesep
-from ServerPluginBase import ServerPluginBase
+
+from serverPluginBase import ServerPluginBase
 
 
 class ReflectionPlugin(ServerPluginBase):
     """
-    Server reflection plugin.
+    server reflection plugin.
     """
 
     """
@@ -32,7 +32,6 @@ class ReflectionPlugin(ServerPluginBase):
         "mx": "mixed"
     }
 
-
     def __init__(self, objServer):
         """
         Class constructor.
@@ -40,7 +39,6 @@ class ReflectionPlugin(ServerPluginBase):
         @param object objServer
         """
         self.setServerInstance(objServer)
-
 
     def afterJSONDecode(self, dictRequest):
         """
@@ -53,7 +51,6 @@ class ReflectionPlugin(ServerPluginBase):
             self._objServer.bAuthorized = True
 
         return dictRequest
-
 
     def callFunction(self, strFunctionName, arrParams):
         """
@@ -75,13 +72,11 @@ class ReflectionPlugin(ServerPluginBase):
 
         return (bCalled, mxResult)
 
-
     def getFunctions(self):
         """
         @return the list of exported functions
         """
         return self._objServer.getMethodMapper().getMethods()
-
 
     def getReflection(self, strFunctionName):
         """
@@ -105,7 +100,6 @@ class ReflectionPlugin(ServerPluginBase):
             "function_parameters": arrParams
         }
 
-
     def getReflections(self):
         """
         @return the list of reflections of all the function exported on the server
@@ -117,7 +111,6 @@ class ReflectionPlugin(ServerPluginBase):
             arrReflections.append(self.getReflection(strFunction))
 
         return arrReflections
-
 
     def __getFunctionArgSpec(self, fnCallable):
         """
@@ -152,7 +145,6 @@ class ReflectionPlugin(ServerPluginBase):
 
         return arrParams
 
-
     def __getFunctionDocSpec(self, fnCallable):
         """
         @param fnCallable
@@ -170,7 +162,9 @@ class ReflectionPlugin(ServerPluginBase):
         for strDocLine in arrDocLines:
             strDocLine = strDocLine.strip()
 
-            objMatch = re.match("^\s*@param\s+(\w+)\s+(\w+)(?:\s*=\s*(None|True|False|(?:\-?\d+(?:\.\d+)?)|(?:\".*\")))?.*$", strDocLine)
+            objMatch = re.match(
+                "^\s*@param\s+(\w+)\s+(\w+)(?:\s*=\s*(None|True|False|(?:\-?\d+(?:\.\d+)?)|(?:\".*\")))?.*$",
+                strDocLine)
             if objMatch:
                 dictParam = {
                     "parameter_name": objMatch.group(2),

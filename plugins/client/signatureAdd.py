@@ -1,13 +1,9 @@
-import hmac
-import json
-import urllib2
-import urllib
-import sys
 import hashlib
+import hmac
 import time
+import urllib
 
-from ClientPluginBase import ClientPluginBase
-from pprint import pprint
+from clientPluginBase import ClientPluginBase
 
 
 class SignatureAdd(ClientPluginBase):
@@ -32,7 +28,6 @@ class SignatureAdd(ClientPluginBase):
     """
     strKeyMetaData = ""
 
-
     def __init__(self, strKey, dictExtraURLVariables):
         """
         This is the constructor function. It creates a new instance of SignatureAdd
@@ -45,7 +40,6 @@ class SignatureAdd(ClientPluginBase):
         self.dictExtraURLVariables = dictExtraURLVariables
         self.getKeyMetaData()
 
-
     def getKeyMetaData(self):
         """
         """
@@ -54,7 +48,6 @@ class SignatureAdd(ClientPluginBase):
             self.strKeyMetaData = None
         else:
             self.strKeyMetaData = strKEYSplit[0]
-
 
     def beforeJSONEncode(self, dictRequest):
         """
@@ -67,10 +60,9 @@ class SignatureAdd(ClientPluginBase):
         dictRequest["expires"] = int(time.time() + 86400)
         return dictRequest
 
-
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
-        This function is used for authentication. It alters the Endpoint URL such that it contains
+        This function is used for authentication. It alters the endpoint URL such that it contains
         a specific signature.
 
         @param string strJSONRequest

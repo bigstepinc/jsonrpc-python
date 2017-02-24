@@ -1,8 +1,7 @@
 import json
-import datetime
-
 from time import strftime, localtime
-from ClientPluginBase import ClientPluginBase
+
+from clientPluginBase import ClientPluginBase
 
 
 class DebugLogger(ClientPluginBase):
@@ -14,8 +13,7 @@ class DebugLogger(ClientPluginBase):
 
     bLogType = True
 
-
-    def __init__(self, bLogType, strLogPath = ""):
+    def __init__(self, bLogType, strLogPath=""):
         """
         @param boolean bLogType
         @param string strLogPath
@@ -28,20 +26,20 @@ class DebugLogger(ClientPluginBase):
             else:
                 raise Exception("No log path specified.")
 
-
     def beforeJSONDecode(self, strJSONResponse):
         """
         @param string strJSONResponse
         """
         strOutput = strJSONResponse
         objDecoded = json.loads(strOutput)
-        strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n"
+        strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded,
+                                                                                                        sort_keys=True,
+                                                                                                        indent=4) + "\n"
 
         if self.bLogType == True:
             print strOutput
         else:
             self.hFile.write(strOutput + "\n")
-
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
@@ -51,7 +49,9 @@ class DebugLogger(ClientPluginBase):
         """
         strOutput = strJSONRequest
         objDecoded = json.loads(strOutput)
-        strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded, sort_keys = True, indent = 4) + "\n"
+        strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded,
+                                                                                                   sort_keys=True,
+                                                                                                   indent=4) + "\n"
 
         if self.bLogType == True:
             print strOutput

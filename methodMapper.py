@@ -11,7 +11,6 @@ class MethodMapper(object):
     """
     __dictMethods = {}
 
-
     def __init__(self, dictObjectsToMethods):
         """
         Class constructor.
@@ -23,7 +22,6 @@ class MethodMapper(object):
             for strMethod in arrMethods:
                 assert strMethod in arrMethods, "Method %s not found in object." % strMethodName
                 self.__dictMethods[strMethod] = arrMethods[strMethod]
-
 
     def map(self, strMethodName):
         """
@@ -37,7 +35,6 @@ class MethodMapper(object):
             return self.__dictMethods[strMethodName]
 
         return None
-
 
     def getMethods(self):
         """

@@ -1,5 +1,5 @@
-import Server
-import Client
+import client
+import server
 
 __all__ = [
     "Server",

@@ -7,5 +7,5 @@ LOG/*
 index.html
 logger.txt
 
-# for PhpStorm
+# for Pycharm
 .idea/*

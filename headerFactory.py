@@ -6,13 +6,13 @@ class HeaderFactory(object):
     """
 
     def create(self, strUser, strPassword, strContentType):
-    	"""
-    	@param string strUser
-    	@param string strPassword
-    	@param string strContentType
+        """
+        @param string strUser
+        @param string strPassword
+        @param string strContentType
 
-    	@return object
-    	"""
+        @return object
+        """
         dictHTTPHeaders = {
             "Content-Type": strContentType
         }

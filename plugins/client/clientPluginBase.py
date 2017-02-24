@@ -10,7 +10,6 @@ class ClientPluginBase(object):
         """
         pass
 
-
     def beforeJSONEncode(self, dictRequest):
         """
         Should be used to:
@@ -22,7 +21,6 @@ class ClientPluginBase(object):
         @return object dictRequest
         """
         return dictRequest
-
 
     def afterJSONEncode(self, strJSONRequest, strEndPointURL, dictHTTPHeaders):
         """
@@ -38,7 +36,6 @@ class ClientPluginBase(object):
         """
         return strJSONRequest, strEndPointURL, dictHTTPHeaders
 
-
     def makeRequest(self, bCalled, strJSONRequest, strEndPointURL):
         """
         First plugin to make request will be the last one. The respective plugin MUST set bCalled to true.
@@ -51,7 +48,6 @@ class ClientPluginBase(object):
         """
         return bCalled, strJSONRequest, strEndPointURL
 
-
     def beforeJSONDecode(self, strJSONResponse):
         """
         Should be used to:
@@ -63,7 +59,6 @@ class ClientPluginBase(object):
         @return string strJSONResponse
         """
         return strJSONResponse
-
 
     def afterJSONDecode(self, strResult, mxResponse):
         """
@@ -78,13 +73,12 @@ class ClientPluginBase(object):
         """
         return strResult, mxResponse
 
-
     def exceptionCatch(self, exception):
         """
         Should be used to rethrow exceptions as different types.
         The first plugin to throw an exception will be the last one.
         If there are no filter plugins registered or none of the plugins have throw exception,
-        then Client will throw the original JSONRPCException.
+        then client will throw the original JSONRPCException.
 
         @param error exception
 

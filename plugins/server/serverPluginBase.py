@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 
 class ServerPluginBase(object):
     """
-    Server plugin base class. Methods are not declared abstract because the plugins should not
+    server plugin base class. Methods are not declared abstract because the plugins should not
     be forced to reimplement all of them.
     """
 
@@ -17,13 +17,11 @@ class ServerPluginBase(object):
     """
     _objServer = None
 
-
     def __init__(self):
         """
         Class constructor.
         """
         pass
-
 
     def beforeJSONDecode(self, strJSONRequest):
         """
@@ -36,7 +34,6 @@ class ServerPluginBase(object):
         """
         return strJSONRequest
 
-
     def afterJSONDecode(self, dictRequest):
         """
         Method that is called after the request is deserialized. A plugin may modify the request
@@ -47,7 +44,6 @@ class ServerPluginBase(object):
         @return object dictRequest
         """
         return dictRequest
-
 
     def resolveFunction(self, strFunctionName):
         """
@@ -60,7 +56,6 @@ class ServerPluginBase(object):
         """
         return strFunctionName
 
-
     def callFunction(self, strFunctionName, arrParams):
         """
         Method that is called to execute the function. A plugin that calls the function must
@@ -72,7 +67,6 @@ class ServerPluginBase(object):
         """
         return (False, None)
 
-
     def onException(self, exc):
         """
         Method that is called on exceptions.
@@ -80,7 +74,6 @@ class ServerPluginBase(object):
         @param exception exc
         """
         pass
-
 
     def sendResponse(self, dictResponse):
         """
@@ -90,10 +83,9 @@ class ServerPluginBase(object):
         """
         pass
 
-
     def setServerInstance(self, objServer):
         """
-        Server instance setter method.
+        server instance setter method.
 
         @param object objServer
         """
