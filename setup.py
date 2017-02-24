@@ -7,7 +7,7 @@ setup(
   author = 'Bigstep inc',
   author_email = 'adrian.ciausu@bigstep.com',
   url = 'https://github.com/bigstepinc/jsonrpc-python',
-  download_url = 'https://github.com/peterldowns/mypackage/tarball/0.1', # I'll explain this in a second
+  download_url = 'https://github.com/bigstepinc/jsonrpc-python/tarball/0.1',
   keywords = ['jsonrpc2', 'client', 'server', 'base'],
   classifiers = [],
 )
