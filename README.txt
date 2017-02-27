@@ -1,9 +1,7 @@
 JSONRPC 2.0 client over HTTP
 
-Usage
+Usage:
 client = Client({
-    "strJSONRPCRouterURL": "https://gurujsonrpc.appspot.com/guru"
+    "strJSONRPCRouterURL": "your-url-here"
 })
-
-response = client.rpc("guru.test", ["guru"])
-assert ("Hello guru!" == response)
+response = client.rpc("test", ["param1", "param2"])
