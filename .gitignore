@@ -11,3 +11,4 @@ dist/*
 
 # for Pycharm
 .idea/*
+jsonrpc2base.egg-info/
