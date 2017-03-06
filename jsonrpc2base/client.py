@@ -8,7 +8,6 @@ from JSONRPCBaseException import JSONRPCBaseException
 from JSONRPCException import JSONRPCException
 from headerFactory import HeaderFactory
 
-
 class Client(object):
     """
     """
