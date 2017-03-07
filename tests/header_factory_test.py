@@ -1,6 +1,6 @@
 import unittest
 
-from jsonrpc2base.headerFactory import HeaderFactory
+from jsonrpc2base.header_factory import HeaderFactory
 
 
 class HeaderFactoryTest(unittest.TestCase):
