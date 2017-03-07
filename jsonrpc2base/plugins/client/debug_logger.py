@@ -1,7 +1,7 @@
 import json
 from time import strftime, localtime
 
-from clientPluginBase import ClientPluginBase
+from client_plugin_base import ClientPluginBase
 
 
 class DebugLogger(ClientPluginBase):

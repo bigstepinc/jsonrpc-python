@@ -2,7 +2,7 @@ import inspect
 import re
 from os import linesep
 
-from serverPluginBase import ServerPluginBase
+from server_plugin_base import ServerPluginBase
 
 
 class ReflectionPlugin(ServerPluginBase):

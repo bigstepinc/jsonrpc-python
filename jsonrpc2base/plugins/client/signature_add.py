@@ -3,8 +3,7 @@ import hmac
 import time
 import urllib
 
-from clientPluginBase import ClientPluginBase
-
+from client_plugin_base import ClientPluginBase
 
 class SignatureAdd(ClientPluginBase):
     """

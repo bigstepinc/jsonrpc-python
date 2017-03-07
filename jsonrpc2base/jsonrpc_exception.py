@@ -1,4 +1,4 @@
-from JSONRPCBaseException import JSONRPCBaseException
+from jsonrpc_base_exception import JSONRPCBaseException
 
 
 class JSONRPCException(JSONRPCBaseException):

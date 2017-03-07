@@ -2,11 +2,11 @@ import json
 import logging
 from traceback import format_exc
 
-from JSONRPCBaseException import JSONRPCBaseException
-from JSONRPCException import JSONRPCException
-from plugins.server.reflectionPlugin import ReflectionPlugin
+from jsonrpc_base_exception import JSONRPCBaseException
+from jsonrpc_exception import JSONRPCException
+from plugins.server.reflection_plugin import ReflectionPlugin
 
-from methodMapper import MethodMapper
+from method_mapper import MethodMapper
 
 
 class Server(object):

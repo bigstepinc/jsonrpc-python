@@ -4,9 +4,9 @@ import threading
 import urllib2
 from traceback import format_exc
 
-from JSONRPCBaseException import JSONRPCBaseException
-from JSONRPCException import JSONRPCException
-from headerFactory import HeaderFactory
+from jsonrpc_base_exception import JSONRPCBaseException
+from jsonrpc_exception import JSONRPCException
+from header_factory import HeaderFactory
 
 class Client(object):
     """
