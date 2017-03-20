@@ -1,4 +1,4 @@
-from jsonrpc2base.client import Client
+from jsonrpc2_base.client import Client
 
 client = Client({
     "strJSONRPCRouterURL": "https://gurujsonrpc.appspot.com/guru"

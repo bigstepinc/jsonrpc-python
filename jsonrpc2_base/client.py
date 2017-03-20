@@ -91,7 +91,7 @@ class Client(object):
     def processRAWResponse(self, strResult, bErrorMode=False):
         """
         This is the function used to decode the received JSON and return its result.
-        It is automatically called by _rpc.
+        It is automatically called by rpc.
 
         @param string strResult. It represents the received JSON.
         @param boolean bErrorMode. Whether or not the received JSON contains errors.
@@ -258,7 +258,7 @@ class Client(object):
 
             @param *tupleParams. It allows you to pass an arbitrary number of parameters, no matter their type.
 
-            @return the result of the _rpc function.
+            @return the result of the rpc function.
             """
             arrParams = list(tupleParams)
             return self.rpc(strClassAttribute, arrParams)

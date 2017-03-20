@@ -2,7 +2,7 @@ from distutils.core import setup
 from setuptools import find_packages
 
 version = '0.5'
-name = 'jsonrpc2base'
+name = 'jsonrpc2_base'
 
 setup(
     name=name,
