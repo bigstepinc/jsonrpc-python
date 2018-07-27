@@ -1,8 +1,8 @@
 from __future__ import print_function
+from six import string_types
 import json
 import os
 from sys import exit
-
 
 class Router(object):
     """
@@ -30,7 +30,7 @@ class Router(object):
     """
 
     def _route(self, strRequestURI):
-        if not isinstance(strRequestURI, basestring):
+        if not isinstance(strRequestURI, string_types):
             raise Exception("strRequestURI must be a string.")
 
         """WARNING: Remove slash error-prone. May not behave as expected"""

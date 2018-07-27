@@ -1,12 +1,13 @@
 import json
 import logging
 from traceback import format_exc
+from six import string_types
+from builtins import input
 
 from jsonrpc2_base.jsonrpc_base_exception import JSONRPCBaseException
 from jsonrpc2_base.jsonrpc_exception import JSONRPCException
 from jsonrpc2_base.plugins.server.reflection_plugin import ReflectionPlugin
 from jsonrpc2_base.method_mapper import MethodMapper
-from builtins import input
 
 class Server(object):
     """
@@ -141,7 +142,7 @@ class Server(object):
         for objPlugin in self.__arrPlugins:
             strJSONRequest = objPlugin.beforeJSONDecode(strJSONRequest)
 
-        if not isinstance(strJSONRequest, basestring):
+        if not isinstance(strJSONRequest, string_types):
             raise JSONRPCException(
                 "The request must be a string.", JSONRPCException.PARSE_ERROR
             )
@@ -237,7 +238,7 @@ class Server(object):
                 "The \"id\" key must be an integer.", JSONRPCException.INVALID_REQUEST
             )
 
-        if not "method" in dictRequest or not isinstance(dictRequest["method"], basestring):
+        if not "method" in dictRequest or not isinstance(dictRequest["method"], string_types):
             raise JSONRPCException(
                 "The \"method\" key must be a string.", JSONRPCException.INVALID_REQUEST
             )
@@ -353,7 +354,7 @@ class Server(object):
         dictTypes = {
             "integer": int,
             "float": float,
-            "string": basestring,
+            "string": string_types,
             "array": list,
             "boolean": bool,
             "object": dict,
