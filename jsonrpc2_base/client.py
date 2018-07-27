@@ -125,8 +125,14 @@ class Client(object):
             elif "result" in mxResponse == True and mxResponse.has_key("error") == False and bErrorMode == False:
                 return mxResponse["result"]
 
+            strErrorMessage = None
+            nErrorCode = 0
+            if "error" in mxResponse:
+                strErrorMessage = str(mxResponse["errir"].get("message", None))
+                nErrorCode = int(mxResponse["error"].get("code", None))
+
             raise JSONRPCException(
-                str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
+                strErrorMessage, nErrorCode
             )
         except JSONRPCException as objError:
             """
