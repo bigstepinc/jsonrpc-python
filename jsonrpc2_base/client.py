@@ -1,12 +1,25 @@
 import json
 import logging
 import threading
-import urllib2
 from traceback import format_exc
 
-from jsonrpc_base_exception import JSONRPCBaseException
-from jsonrpc_exception import JSONRPCException
-from header_factory import HeaderFactory
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+    from urllib.request import Request
+    from urllib.request import HTTPError
+
+    HTTPError
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
+    from urllib2 import Request
+    from urllib2 import HTTPError
+
+from jsonrpc2_base.jsonrpc_base_exception import JSONRPCBaseException
+from jsonrpc2_base.jsonrpc_exception import JSONRPCException
+from jsonrpc2_base.header_factory import HeaderFactory
+
 
 class Client(object):
     """
@@ -106,9 +119,9 @@ class Client(object):
 
             try:
                 mxResponse = json.loads(strResult)
-            except Exception, objError:
+            except ValueError as objError:
                 raise JSONRPCException(
-                    objError.message + ". RAW response from server: " + strResult, JSONRPCException.PARSE_ERROR
+                    str(objError) + ". RAW response from server: " + strResult, JSONRPCException.PARSE_ERROR
                 )
 
             for objFilterPlugin in self.__arrFilterPlugins:
@@ -124,7 +137,7 @@ class Client(object):
             raise JSONRPCException(
                 str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
             )
-        except JSONRPCException, objError:
+        except JSONRPCException as objError:
             """
             Log the initial exception.
             """
@@ -191,16 +204,16 @@ class Client(object):
                 break
 
         if bCalled == False:
-            objRequest = urllib2.Request(strEndPointURL, headers=dictHTTPHeaders, data=strRequest)
+            objRequest = Request(strEndPointURL, headers=dictHTTPHeaders, data=strRequest.encode("utf-8"))
 
             try:
-                objFile = urllib2.urlopen(objRequest)
+                objFile = urlopen(objRequest)
                 strResult = objFile.read()
-            except urllib2.HTTPError, objError:
+            except HTTPError as objError:
                 bErrorMode = True
                 strResult = objError.read()
 
-        return strResult, bErrorMode
+        return strResult.decode("utf-8"), bErrorMode
 
     def _logException(self, exc):
         """

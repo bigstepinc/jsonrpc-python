@@ -8,7 +8,7 @@ index.html
 logger.txt
 
 dist/*
-
+examples/Communication.log
 # for Pycharm
 .idea/*
 jsonrpc2_base.egg-info/

@@ -2,7 +2,7 @@ import inspect
 import re
 from os import linesep
 
-from server_plugin_base import ServerPluginBase
+from jsonrpc2_base.plugins.server.server_plugin_base import ServerPluginBase
 
 
 class ReflectionPlugin(ServerPluginBase):
