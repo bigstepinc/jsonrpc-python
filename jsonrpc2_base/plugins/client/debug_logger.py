@@ -1,7 +1,7 @@
+from __future__ import print_function
 import json
 from time import strftime, localtime
 from jsonrpc2_base.plugins.client.client_plugin_base import ClientPluginBase
-from __future__ import print_function
 
 class DebugLogger(ClientPluginBase):
     """

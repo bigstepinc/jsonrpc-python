@@ -1,7 +1,7 @@
+from __future__ import print_function
 import json
 import os
 from sys import exit
-from __future__ import print_function
 
 
 class Router(object):
