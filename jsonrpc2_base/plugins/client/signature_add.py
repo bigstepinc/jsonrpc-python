@@ -70,7 +70,7 @@ class SignatureAdd(ClientPluginBase):
 
         @return array strJSONRequest, strEndPointURL, dictHTTPHeaders
         """
-        strVerifyHash = hmac.new(self.strAPIKey.encode("utf-8"), strJSONRequest, hashlib.md5).hexdigest()
+        strVerifyHash = hmac.new(self.strAPIKey.encode("utf-8"), strJSONRequest.encode("utf-8"), hashlib.md5).hexdigest()
 
         if (self.strKeyMetaData != None):
             strVerifyHash = self.strKeyMetaData + ":" + strVerifyHash
