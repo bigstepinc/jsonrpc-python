@@ -1,7 +1,10 @@
+from future.standard_library import hooks
+with hooks():
+    from urllib.parse import quote
+
 import hashlib
 import hmac
 import time
-import urllib
 
 from jsonrpc2_base.plugins.client.client_plugin_base import ClientPluginBase
 
@@ -81,10 +84,10 @@ class SignatureAdd(ClientPluginBase):
             strEndPointURL += "?"
 
         if strEndPointURL.find("?verify") == -1:
-            strEndPointURL += "verify=" + urllib.quote(strVerifyHash)
+            strEndPointURL += "verify=" + quote(strVerifyHash)
 
         for key, value in self.dictExtraURLVariables.items():
             value = str(value)
-            strEndPointURL += "&" + urllib.quote(key) + "=" + urllib.quote(value)
+            strEndPointURL += "&" + quote(key) + "=" + quote(value)
 
         return strJSONRequest, strEndPointURL, dictHTTPHeaders

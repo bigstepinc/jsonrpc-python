@@ -1,25 +1,16 @@
+from future.standard_library import hooks
+with hooks():
+    from urllib.request import urlopen, Request
+    from urllib.error import HTTPError
+
 import json
 import logging
 import threading
 from traceback import format_exc
 
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-    from urllib.request import Request
-    from urllib.request import HTTPError
-
-    HTTPError
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-    from urllib2 import Request
-    from urllib2 import HTTPError
-
 from jsonrpc2_base.jsonrpc_base_exception import JSONRPCBaseException
 from jsonrpc2_base.jsonrpc_exception import JSONRPCException
 from jsonrpc2_base.header_factory import HeaderFactory
-
 
 class Client(object):
     """
