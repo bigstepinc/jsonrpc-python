@@ -14,5 +14,8 @@ setup(
     url='https://github.com/bigstepinc/jsonrpc-python',
     download_url='https://github.com/bigstepinc/jsonrpc-python/tarball/' + version,
     keywords=['jsonrpc2', 'client', 'server', 'base'],
-    classifiers=[]
+    classifiers=[
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
+    ]
 )
