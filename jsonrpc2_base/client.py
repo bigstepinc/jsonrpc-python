@@ -122,17 +122,11 @@ class Client(object):
                 raise JSONRPCException(
                     "Invalid response structure. RAW response: " + strResult, JSONRPCException.INTERNAL_ERROR
                 )
-            elif "result" in mxResponse == True and mxResponse.has_key("error") == False and bErrorMode == False:
+            elif "result" in mxResponse and "error" not in mxResponse and bErrorMode == False:
                 return mxResponse["result"]
 
-            strErrorMessage = None
-            nErrorCode = 0
-            if "error" in mxResponse:
-                strErrorMessage = str(mxResponse["errir"].get("message", None))
-                nErrorCode = int(mxResponse["error"].get("code", None))
-
             raise JSONRPCException(
-                strErrorMessage, nErrorCode
+                str(mxResponse["error"]["message"]), int(mxResponse["error"]["code"])
             )
         except JSONRPCException as objError:
             """
