@@ -1,7 +1,6 @@
 import inspect
 import re
 from os import linesep
-
 from jsonrpc2_base.plugins.server.server_plugin_base import ServerPluginBase
 
 

@@ -1,6 +1,7 @@
 import json
 import os
 from sys import exit
+from __future__ import print_function
 
 
 class Router(object):
@@ -54,7 +55,7 @@ class Router(object):
                 header("Content-type: text/html")
                 """
 
-                print "Page not found. Unknown JSON-RPC endpoint URL: " + strRequestURI
+                print("Page not found. Unknown JSON-RPC endpoint URL: " + strRequestURI)
             else:
                 """
                 header("HTTP/1.1 404 Not Found", true, 404)
@@ -67,8 +68,8 @@ class Router(object):
                 header("Connection: close")
                 """
 
-                print json.loads(
+                print(json.loads(
                     '"jsonrpc": "2.0", "error": {"code": -32099, "message":' + os.environ.get("HTTP_HOST") + \
-                    '...Unknown JSON-RPC endpoint URL: ' + strRequestURI + '), "id": None')
+                    '...Unknown JSON-RPC endpoint URL: ' + strRequestURI + '), "id": None'))
 
             exit(1)

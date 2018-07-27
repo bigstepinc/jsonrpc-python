@@ -1,8 +1,7 @@
 import json
 from time import strftime, localtime
-
-from client_plugin_base import ClientPluginBase
-
+from jsonrpc2_base.plugins.client.client_plugin_base import ClientPluginBase
+from __future__ import print_function
 
 class DebugLogger(ClientPluginBase):
     """
@@ -35,9 +34,8 @@ class DebugLogger(ClientPluginBase):
         strOutput = "Received response at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded,
                                                                                                         sort_keys=True,
                                                                                                         indent=4) + "\n"
-
         if self.bLogType == True:
-            print strOutput
+            print(strOutput)
         else:
             self.hFile.write(strOutput + "\n")
 
@@ -52,8 +50,7 @@ class DebugLogger(ClientPluginBase):
         strOutput = "Sent request at: " + strftime("%Y-%m-%d %X", localtime()) + "\n" + json.dumps(objDecoded,
                                                                                                    sort_keys=True,
                                                                                                    indent=4) + "\n"
-
         if self.bLogType == True:
-            print strOutput
+            print(strOutput)
         else:
             self.hFile.write(strOutput + "\n")

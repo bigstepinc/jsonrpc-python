@@ -2,12 +2,11 @@ import json
 import logging
 from traceback import format_exc
 
-from jsonrpc_base_exception import JSONRPCBaseException
-from jsonrpc_exception import JSONRPCException
-from plugins.server.reflection_plugin import ReflectionPlugin
-
-from method_mapper import MethodMapper
-
+from jsonrpc2_base.jsonrpc_base_exception import JSONRPCBaseException
+from jsonrpc2_base.jsonrpc_exception import JSONRPCException
+from jsonrpc2_base.plugins.server.reflection_plugin import ReflectionPlugin
+from jsonrpc2_base.method_mapper import MethodMapper
+from builtins import input
 
 class Server(object):
     """
@@ -135,7 +134,7 @@ class Server(object):
         If there is no request, then that must mean that we are sending request by console.
         """
         if (strJSONRequest == None):
-            strJSONRequest = raw_input()
+            strJSONRequest = input()
             self.bAuthenticated = True
             self.bAuthorized = True
 
