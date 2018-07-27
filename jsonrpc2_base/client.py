@@ -118,11 +118,11 @@ class Client(object):
             for objFilterPlugin in self.__arrFilterPlugins:
                 objFilterPlugin.afterJSONDecode(strResult, mxResponse)
 
-            if isinstance(mxResponse, dict) == False or (bErrorMode == True and mxResponse.has_key("error") == False):
+            if isinstance(mxResponse, dict) == False or (bErrorMode == True and "error" not in mxResponse):
                 raise JSONRPCException(
                     "Invalid response structure. RAW response: " + strResult, JSONRPCException.INTERNAL_ERROR
                 )
-            elif mxResponse.has_key("result") == True and mxResponse.has_key("error") == False and bErrorMode == False:
+            elif "result" in mxResponse == True and mxResponse.has_key("error") == False and bErrorMode == False:
                 return mxResponse["result"]
 
             raise JSONRPCException(
